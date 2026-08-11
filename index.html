@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventSphere — Find something worth remembering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="home">
+
+<!-- Navbar -->
+<nav class="es-navbar">
+  <div class="container-narrow d-flex align-items-center justify-content-between">
+    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks">
+      <i class="bi bi-list fs-3"></i>
+    </button>
+    <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
+      <ul class="navbar-nav d-flex flex-row align-items-center gap-3 my-0">
+        <li class="nav-item"><a class="nav-link active" data-nav="home" href="/index.html">Discover</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="events" href="/pages/events.html">Categories</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="bookings" href="/pages/my-bookings.html">My Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="/pages/organizer-dashboard.html">Organizer</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="about" href="#about">About</a></li>
+      </ul>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="icon-btn d-none d-sm-inline-flex" title="Search"><i class="bi bi-search"></i></button>
+      <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-blob" style="width:260px;height:260px;background:var(--blush);top:-60px;right:8%;opacity:0.6;"></div>
+  <div class="hero-blob" style="width:180px;height:180px;background:var(--lavender-soft);bottom:-40px;left:6%;opacity:0.7;"></div>
+  <div class="container-narrow position-relative">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <p class="eyebrow mb-3">Curated experiences, close to home</p>
+        <h1 class="headline mb-3">Find something<br>worth remembering.</h1>
+        <p class="sub mb-4">Discover events, book your tickets, and keep every experience in one place.</p>
+        <form class="hero-search mb-4" onsubmit="window.location.href='/pages/events.html?keyword='+encodeURIComponent(this.q.value); return false;">
+          <i class="bi bi-search text-muted"></i>
+          <input type="text" name="q" placeholder="Search concerts, workshops, sports, experiences...">
+          <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </form>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="/pages/events.html?categoryId=1" class="pill-badge pill-blush">Music</a>
+          <a href="/pages/events.html?categoryId=2" class="pill-badge pill-blue">Technology</a>
+          <a href="/pages/events.html?categoryId=4" class="pill-badge pill-sage">Sports</a>
+          <a href="/pages/events.html?categoryId=6" class="pill-badge pill-beige">Food &amp; Lifestyle</a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="ratio ratio-4x3 rounded-4 overflow-hidden shadow-lg" style="border-radius: var(--radius-lg);">
+          <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&q=80" alt="People enjoying a live outdoor event" style="object-fit:cover;">
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Popular categories -->
+<section class="section-sm" id="about">
+  <div class="container-narrow">
+    <div class="section-head text-center">
+      <p class="eyebrow">Browse by mood</p>
+      <h2>Popular Categories</h2>
+    </div>
+    <div class="row g-3" id="categoryGrid"></div>
+  </div>
+</section>
+
+<!-- Featured events -->
+<section class="section-sm">
+  <div class="container-narrow">
+    <div class="section-head d-flex align-items-end justify-content-between flex-wrap gap-2">
+      <div>
+        <p class="eyebrow">Handpicked for this week</p>
+        <h2>Something wonderful, nearby</h2>
+      </div>
+      <a href="/pages/events.html" class="btn btn-outline-soft">View all events</a>
+    </div>
+    <div class="row g-4" id="featuredGrid"></div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="es-footer">
+  <div class="container-narrow">
+    <div class="row g-4">
+      <div class="col-6 col-lg-3">
+        <a href="/index.html" class="brand mb-2 d-inline-flex"><span class="sparkle" style="width:1.1em;height:1.1em;color:var(--dusty-rose);"></span>EventSphere</a>
+        <p class="text-muted-soft" style="font-size:0.85rem;">A calmer way to find, book, and keep your favourite experiences.</p>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h6>Explore</h6>
+        <a href="/pages/events.html">Discover Events</a>
+        <a href="/pages/events.html">Categories</a>
+        <a href="/pages/my-bookings.html">My Bookings</a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h6>Organizers</h6>
+        <a href="/pages/organizer-apply.html">Become an Organizer</a>
+        <a href="/pages/organizer-dashboard.html">Organizer Dashboard</a>
+        <a href="/pages/create-event.html">Create an Event</a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h6>Company</h6>
+        <a href="#">About EventSphere</a>
+        <a href="#">Contact</a>
+        <a href="#">Privacy</a>
+      </div>
+    </div>
+    <div class="footer-bottom d-flex justify-content-between flex-wrap gap-2">
+      <span>© 2026 EventSphere. All rights reserved.</span>
+      <span>Made for people who love a good gathering.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api/config.js"></script>
+<script src="js/api/auth.js"></script>
+<script src="js/api/events.js"></script>
+<script src="js/api/bookings.js"></script>
+<script src="js/api/payments.js"></script>
+<script src="js/api/organizer.js"></script>
+<script src="js/utils/icons.js"></script>
+<script src="js/utils/toast.js"></script>
+<script src="js/utils/mock-data.js"></script>
+<script src="js/utils/nav.js"></script>
+<script src="js/utils/ai-widget.js"></script>
+<script>
+document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+document.querySelectorAll('.brand .sparkle').forEach(s => { if(!s.innerHTML.trim()) s.innerHTML = EsIcons.sparkle; });
+
+function renderCategories(list) {
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = list.map(c => `
+    <div class="col-6 col-md-3">
+      <a href="/pages/events.html?categoryId=${c.id}" class="category-card ${c.cls} d-block text-decoration-none">
+        <div class="cat-icon">${c.icon}</div>
+        <div class="cat-name">${c.name}</div>
+      </a>
+    </div>`).join('');
+}
+
+function availabilityLabel(a) {
+  return a === 'low'
+    ? `<span class="availability-dot low">Few tickets left</span>`
+    : `<span class="availability-dot">Tickets available</span>`;
+}
+
+function eventCard(ev) {
+  const priceText = ev.price === 0 ? 'Free' : `From LKR ${ev.price.toLocaleString()}`;
+  return `
+  <div class="col-md-6 col-lg-3">
+    <div class="event-card">
+      <div class="img-wrap">
+        <img src="${ev.img}" alt="${ev.title}">
+        <span class="pill-badge ${ev.pill}">${ev.category}</span>
+      </div>
+      <div class="body">
+        <div class="title">${ev.title}</div>
+        <div class="meta"><i class="bi bi-calendar3"></i> ${ev.date}, ${ev.time}</div>
+        <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venue}</div>
+        <div class="price-row">
+          <div>
+            <div class="price">${priceText}</div>
+            ${availabilityLabel(ev.availability)}
+          </div>
+          <a href="/pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function loadHome() {
+  try {
+    const cats = await CategoriesAPI.getAll();
+    renderCategories(cats && cats.length ? cats : EsMock.categories);
+  } catch (e) { renderCategories(EsMock.categories); }
+
+  try {
+    const events = await EventsAPI.searchPublished({ size: 4 });
+    const list = (events && events.content) ? events.content : EsMock.events.slice(0, 4);
+    document.getElementById('featuredGrid').innerHTML = list.map(eventCard).join('');
+  } catch (e) {
+    document.getElementById('featuredGrid').innerHTML = EsMock.events.slice(0, 4).map(eventCard).join('');
+  }
+}
+loadHome();
+</script>
+</body>
+</html>

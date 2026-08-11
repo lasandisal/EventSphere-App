@@ -1,0 +1,47 @@
+/* =========================================================
+   EventSphere — Dashboard extras
+   ========================================================= */
+
+.chart-card{
+  background: var(--cream-card); border: 1px solid var(--line);
+  border-radius: var(--radius-md); padding: 1.4rem 1.5rem;
+}
+.chart-card .chart-title{ font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem; }
+.bar-chart{ display:flex; align-items:flex-end; gap: 0.7rem; height: 160px; margin-top: 1rem; }
+.bar-chart .bar{
+  flex:1; background: linear-gradient(180deg, var(--dusty-rose), var(--blush));
+  border-radius: 8px 8px 0 0; position: relative; min-height: 6px;
+}
+.bar-chart .bar .bar-label{ position:absolute; bottom:-22px; left:0; right:0; text-align:center; font-size:0.68rem; color: var(--charcoal-faint); }
+.bar-chart .bar.sage{ background: linear-gradient(180deg, var(--sage), var(--sage-soft)); }
+.bar-chart .bar.blue{ background: linear-gradient(180deg, var(--powder-blue), var(--powder-blue-soft)); }
+
+.donut{
+  width: 130px; height: 130px; border-radius: 50%; margin: 0 auto;
+  background: conic-gradient(var(--dusty-rose) 0% 62%, var(--lavender) 62% 85%, var(--sage) 85% 100%);
+  display:flex; align-items:center; justify-content:center; position:relative;
+}
+.donut::after{ content:''; width: 74px; height:74px; border-radius:50%; background: var(--cream-card); position:absolute; }
+.donut .donut-center{ position:relative; z-index:1; text-align:center; font-family: var(--font-display); font-weight:700; }
+
+.scanner-frame{
+  width: 260px; height: 260px; margin: 0 auto;
+  border-radius: var(--radius-lg);
+  background: var(--charcoal);
+  position: relative; overflow: hidden;
+  display: flex; align-items:center; justify-content:center;
+}
+.scanner-frame .corner{ position:absolute; width: 34px; height:34px; border: 3px solid var(--sage); }
+.scanner-frame .tl{ top:14px; left:14px; border-right:none; border-bottom:none; }
+.scanner-frame .tr{ top:14px; right:14px; border-left:none; border-bottom:none; }
+.scanner-frame .bl{ bottom:14px; left:14px; border-right:none; border-top:none; }
+.scanner-frame .br{ bottom:14px; right:14px; border-left:none; border-top:none; }
+.scanner-frame .scan-line{
+  position:absolute; left:14px; right:14px; height:2px; background: var(--sage);
+  box-shadow: 0 0 12px var(--sage);
+  animation: scan 2.2s ease-in-out infinite;
+}
+@keyframes scan{ 0%,100%{ top:16px; } 50%{ top: 244px; } }
+.scanner-frame .icon-camera{ color: rgba(255,255,255,0.25); font-size: 2.4rem; }
+
+.progress-ring-wrap{ text-align:center; }

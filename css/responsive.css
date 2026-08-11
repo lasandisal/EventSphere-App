@@ -1,0 +1,49 @@
+/* =========================================================
+   EventSphere — Responsive
+   ========================================================= */
+
+@media (max-width: 991px){
+  h1{ font-size: 2.5rem; }
+  .dash-shell{ flex-direction: column; }
+  .es-sidebar{
+    width: 100%; min-height: auto; position: static;
+    display: flex; overflow-x: auto; gap: 0.4rem; padding: 1rem;
+    border-right: none; border-bottom: 1px solid var(--line);
+  }
+  .es-sidebar .side-link{ white-space: nowrap; margin-bottom: 0; }
+  .dash-main{ padding: 1.5rem 1.2rem; }
+  .auth-visual{ display: none; }
+  .summary-card{ position: static; margin-top: 1.5rem; }
+}
+
+@media (max-width: 767px){
+  .section{ padding: 3.2rem 0; }
+  h1{ font-size: 2.1rem; }
+  h2{ font-size: 1.75rem; }
+  .hero{ padding: 3rem 0 2.5rem; text-align: center; }
+  .hero .headline, .hero .sub{ max-width: 100%; }
+  .hero-search{ max-width: 100%; }
+  .step-indicator .connector{ width: 24px; }
+  .step-indicator .step .label{ display: none; }
+  .ai-panel{ right: 12px; left: 12px; width: auto; bottom: 90px; }
+  .ai-fab{ right: 18px; bottom: 18px; }
+  .es-table{ font-size: 0.82rem; }
+  .es-table thead{ display: none; }
+  .es-table tbody tr{
+    display: block; margin-bottom: 0.8rem; border: 1px solid var(--line);
+    border-radius: var(--radius-sm); padding: 0.5rem 0.8rem;
+  }
+  .es-table tbody td{
+    display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line);
+    padding: 0.5rem 0.1rem;
+  }
+  .es-table tbody td:last-child{ border-bottom: none; }
+  .es-table tbody td::before{ content: attr(data-label); font-weight: 700; color: var(--charcoal-faint); font-size: 0.72rem; text-transform: uppercase; }
+  .digital-ticket{ max-width: 100%; }
+}
+
+@media (max-width: 480px){
+  .es-navbar .brand{ font-size: 1.3rem; }
+  .category-card{ padding: 1rem 0.6rem; }
+  .event-card .title{ font-size: 1.1rem; }
+}

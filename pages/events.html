@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discover Events — EventSphere</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body data-page="events">
+
+<nav class="es-navbar">
+  <div class="container-narrow d-flex align-items-center justify-content-between">
+    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks"><i class="bi bi-list fs-3"></i></button>
+    <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
+      <ul class="navbar-nav gap-lg-2 mt-3 mt-lg-0">
+        <li class="nav-item"><a class="nav-link" data-nav="home" href="/index.html">Discover</a></li>
+        <li class="nav-item"><a class="nav-link active" data-nav="events" href="/pages/events.html">Categories</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="bookings" href="/pages/my-bookings.html">My Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="/pages/organizer-dashboard.html">Organizer</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="about" href="/index.html#about">About</a></li>
+      </ul>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
+    </div>
+  </div>
+</nav>
+
+<header class="section-sm pb-0">
+  <div class="container-narrow text-center">
+    <p class="eyebrow">All events</p>
+    <h1 style="font-size:2.6rem;">Discover Events</h1>
+    <p class="sub mx-auto">Something wonderful might be happening nearby.</p>
+  </div>
+</header>
+
+<section class="section-sm pt-3">
+  <div class="container-narrow">
+    <div class="filter-bar mb-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Search</label>
+          <input type="text" class="form-control" id="fKeyword" placeholder="Search events...">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="fCategory"><option value="">All</option></select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-control" id="fDate">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Location</label>
+          <input type="text" class="form-control" id="fLocation" placeholder="City">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Price</label>
+          <select class="form-select" id="fPrice">
+            <option value="">Any</option>
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-primary" id="applyFilters">Apply Filters</button>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-muted-soft" id="resultCount">Loading events…</span>
+    </div>
+
+    <div class="row g-4" id="eventsGrid"></div>
+    <div class="es-pagination" id="pagination"></div>
+  </div>
+</section>
+
+<footer class="es-footer">
+  <div class="container-narrow footer-bottom d-flex justify-content-between flex-wrap gap-2">
+    <span>© 2026 EventSphere. All rights reserved.</span>
+    <a href="/index.html">Back to home</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/api/config.js"></script>
+<script src="../js/api/auth.js"></script>
+<script src="../js/api/events.js"></script>
+<script src="../js/api/bookings.js"></script>
+<script src="../js/api/payments.js"></script>
+<script src="../js/api/organizer.js"></script>
+<script src="../js/utils/icons.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/mock-data.js"></script>
+<script src="../js/utils/nav.js"></script>
+<script src="../js/utils/ai-widget.js"></script>
+<script>
+document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+
+const params = new URLSearchParams(window.location.search);
+let currentPage = 0;
+
+function availabilityLabel(a) {
+  return a === 'low' ? `<span class="availability-dot low">Few tickets left</span>` : `<span class="availability-dot">Tickets available</span>`;
+}
+function eventCard(ev) {
+  const priceText = ev.price === 0 ? 'Free' : `From LKR ${ev.price.toLocaleString()}`;
+  return `
+  <div class="col-md-6 col-lg-4">
+    <div class="event-card">
+      <div class="img-wrap">
+        <img src="${ev.img}" alt="${ev.title}">
+        <span class="pill-badge ${ev.pill}">${ev.category}</span>
+      </div>
+      <div class="body">
+        <div class="title">${ev.title}</div>
+        <div class="meta"><i class="bi bi-calendar3"></i> ${ev.date}, ${ev.time}</div>
+        <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venue}</div>
+        <div class="price-row">
+          <div><div class="price">${priceText}</div>${availabilityLabel(ev.availability)}</div>
+          <a href="/pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function emptyState() {
+  return `<div class="col-12 state-block">
+    <span class="sparkle d-inline-block">${EsIcons.sparkle}</span>
+    <h3>No events found</h3>
+    <p>Try a different keyword or clear your filters.</p>
+  </div>`;
+}
+
+async function loadCategories() {
+  const sel = document.getElementById('fCategory');
+  try {
+    const cats = await CategoriesAPI.getAll();
+    (cats && cats.length ? cats : EsMock.categories).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    EsMock.categories.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  }
+  if (params.get('categoryId')) sel.value = params.get('categoryId');
+}
+
+async function loadEvents(page = 0) {
+  const grid = document.getElementById('eventsGrid');
+  grid.innerHTML = Array(6).fill('<div class="col-md-6 col-lg-4"><div class="skeleton" style="height:320px;"></div></div>').join('');
+  const keyword = document.getElementById('fKeyword').value;
+  const categoryId = document.getElementById('fCategory').value;
+
+  try {
+    const res = await EventsAPI.searchPublished({ keyword, categoryId, page, size: 9 });
+    const list = res && res.content ? res.content : [];
+    document.getElementById('resultCount').textContent = `${res.totalElements ?? list.length} events found`;
+    grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
+  } catch (e) {
+    let list = EsMock.events;
+    if (keyword) list = list.filter(ev => ev.title.toLowerCase().includes(keyword.toLowerCase()));
+    if (categoryId) {
+      const catName = EsMock.categories.find(c => String(c.id) === String(categoryId))?.name;
+      list = list.filter(ev => ev.category === catName);
+    }
+    document.getElementById('resultCount').textContent = `${list.length} events found`;
+    grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
+  }
+}
+
+document.getElementById('applyFilters').addEventListener('click', () => loadEvents(0));
+document.getElementById('fKeyword').value = params.get('keyword') || '';
+
+loadCategories().then(() => loadEvents(0));
+</script>
+</body>
+</html>

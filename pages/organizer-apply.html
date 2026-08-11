@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Become an Organizer — EventSphere</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body data-page="organizer">
+
+<nav class="es-navbar">
+  <div class="container-narrow d-flex align-items-center justify-content-between">
+    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="container-narrow" style="max-width:640px;">
+    <p class="eyebrow text-center">Host with EventSphere</p>
+    <h2 class="text-center mb-2">Become an Organizer</h2>
+    <p class="text-center text-muted-soft mb-5">Tell us about your business — an admin will review your application shortly after submission.</p>
+
+    <form id="applyForm" class="filter-bar d-flex flex-column gap-3">
+      <div>
+        <label class="form-label">Business / brand name</label>
+        <input class="form-control" name="businessName" required placeholder="e.g. Lasandi Events Co.">
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">NIC / Passport number</label>
+          <input class="form-control" name="nicNumber" required placeholder="For verification only">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Business registration no.</label>
+          <input class="form-control" name="businessRegNumber" placeholder="If applicable">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">About your events</label>
+        <textarea class="form-control" name="description" rows="3" placeholder="What kind of events do you plan to host?"></textarea>
+      </div>
+      <button class="btn btn-primary btn-lg mt-2">Submit Application</button>
+    </form>
+
+    <div id="statusCard" class="filter-bar mt-4 d-none">
+      <div class="d-flex align-items-center gap-3">
+        <span class="status-badge status-pending">Pending</span>
+        <span class="text-muted-soft">Your application is under admin review.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/api/config.js"></script>
+<script src="../js/api/auth.js"></script>
+<script src="../js/api/organizer.js"></script>
+<script src="../js/utils/icons.js"></script>
+<script src="../js/utils/toast.js"></script>
+<script src="../js/utils/nav.js"></script>
+<script>
+document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+if (!EsAuthStore.isLoggedIn()) window.location.href = '/pages/login.html';
+
+document.getElementById('applyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = Object.fromEntries(new FormData(e.target).entries());
+  try { await OrganizerAPI.apply(payload); } catch (err) { /* demo mode */ }
+  esToast('Application submitted — pending admin review');
+  document.getElementById('applyForm').classList.add('d-none');
+  document.getElementById('statusCard').classList.remove('d-none');
+});
+</script>
+</body>
+</html>
