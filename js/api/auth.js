@@ -1,9 +1,9 @@
 /* Auth API — matches AuthController (/api/v1/auth/**) */
 const AuthAPI = {
-  async register({ fullName, email, password, confirmPassword, accountType }) {
+  async register({ fullName, email, password, confirmPassword }) {
     const data = await esFetch('/auth/register', {
       method: 'POST',
-      body: { fullName, email, password, confirmPassword, accountType }
+      body: { fullName, email, password, confirmPassword }
     });
     if (data && data.token) {
       EsAuthStore.setToken(data.token);

@@ -1,7 +1,7 @@
 /* Bookings API — matches BookingController (/api/v1/bookings/**) */
 const BookingsAPI = {
   create(payload) {
-    // payload: { eventId, items: [{ ticketTypeId, quantity, attendees:[{name,email}] }] }
+    // payload: { eventId, items: [{ ticketTypeId, attendees: [{ name, email }] }] }
     return esFetch('/bookings', { method: 'POST', body: payload });
   },
   getById(id) {

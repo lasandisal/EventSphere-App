@@ -10,8 +10,8 @@ const OrganizerAPI = {
 
 /* Check-in API — matches CheckInController (/api/v1/organizer/check-in/**) */
 const CheckInAPI = {
-  scan(qrPayload) {
-    return esFetch('/organizer/check-in/scan', { method: 'POST', body: { qrPayload } });
+  scan(signedPayload) {
+    return esFetch('/organizer/check-in/scan', { method: 'POST', body: { signedPayload } });
   }
 };
 
@@ -33,8 +33,8 @@ const AdminAPI = {
 
 /* Assistant API — matches AssistantController (/api/v1/assistant/chat) */
 const AssistantAPI = {
-  chat(message, context) {
-    return esFetch('/assistant/chat', { method: 'POST', body: { message, context } });
+  chat(message, history = []) {
+    return esFetch('/assistant/chat', { method: 'POST', body: { message, history } });
   }
 };
 

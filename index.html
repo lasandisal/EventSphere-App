@@ -17,7 +17,8 @@
 <!-- Navbar -->
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <!-- Fixed: href="index.html" -->
+    <a href="index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks">
       <i class="bi bi-list fs-3"></i>
     </button>
@@ -47,7 +48,8 @@
         <p class="eyebrow mb-3">Curated experiences, close to home</p>
         <h1 class="headline mb-3">Find something<br>worth remembering.</h1>
         <p class="sub mb-4">Discover events, book your tickets, and keep every experience in one place.</p>
-        <form class="hero-search mb-4" onsubmit="window.location.href='/pages/events.html?keyword='+encodeURIComponent(this.q.value); return false;">
+        <!-- Fixed: pages/events.html in form action -->
+        <form class="hero-search mb-4" onsubmit="window.location.href='pages/events.html?keyword='+encodeURIComponent(this.q.value); return false;">
           <i class="bi bi-search text-muted"></i>
           <input type="text" name="q" placeholder="Search concerts, workshops, sports, experiences...">
           <button type="submit" class="btn btn-primary btn-sm">Search</button>
@@ -145,9 +147,10 @@ document.querySelectorAll('.brand .sparkle').forEach(s => { if(!s.innerHTML.trim
 
 function renderCategories(list) {
   const grid = document.getElementById('categoryGrid');
+  /* Fixed: href="pages/events.html..." (removed leading slash) */
   grid.innerHTML = list.map(c => `
     <div class="col-6 col-md-3">
-      <a href="/pages/events.html?categoryId=${c.id}" class="category-card ${c.cls} d-block text-decoration-none">
+      <a href="pages/events.html?categoryId=${c.id}" class="category-card ${c.cls} d-block text-decoration-none">
         <div class="cat-icon">${c.icon}</div>
         <div class="cat-name">${c.name}</div>
       </a>
@@ -162,6 +165,7 @@ function availabilityLabel(a) {
 
 function eventCard(ev) {
   const priceText = ev.price === 0 ? 'Free' : `From LKR ${ev.price.toLocaleString()}`;
+  /* Fixed: href="pages/event-details.html..." (removed leading slash) */
   return `
   <div class="col-md-6 col-lg-3">
     <div class="event-card">
@@ -178,7 +182,7 @@ function eventCard(ev) {
             <div class="price">${priceText}</div>
             ${availabilityLabel(ev.availability)}
           </div>
-          <a href="/pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
+          <a href="pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
         </div>
       </div>
     </div>
