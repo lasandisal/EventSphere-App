@@ -1,6 +1,11 @@
 /* Renders the logged-in / logged-out state of the navbar's right side.
    Every page includes a <div id="navAuthSlot"></div> in its navbar markup. */
 (function () {
+  // Determine relative prefix based on whether the current path is inside /pages/
+  const isSubPage = window.location.pathname.includes('/pages/');
+  const prefix = isSubPage ? './' : 'pages/';
+  const rootPrefix = isSubPage ? '../' : './';
+
   function renderNavAuth() {
     const slot = document.getElementById('navAuthSlot');
     if (!slot) return;
@@ -8,8 +13,8 @@
 
     if (!EsAuthStore.isLoggedIn() || !user) {
       slot.innerHTML = `
-        <a href="/pages/login.html" class="btn btn-outline-soft btn-sm">Log in</a>
-        <a href="/pages/register.html" class="btn btn-primary btn-sm">Sign up</a>`;
+        <a href="${prefix}login.html" class="btn btn-outline-soft btn-sm">Log in</a>
+        <a href="${prefix}register.html" class="btn btn-primary btn-sm">Sign up</a>`;
       return;
     }
 
@@ -23,9 +28,9 @@
         <button class="avatar-circle border-0" data-bs-toggle="dropdown">${initials}</button>
         <ul class="dropdown-menu dropdown-menu-end mt-2" style="border-radius:16px; border-color:var(--line);">
           <li><h6 class="dropdown-header">${user.fullName || user.email}</h6></li>
-          <li><a class="dropdown-item" href="/pages/my-bookings.html">My Bookings</a></li>
-          ${isOrganizer ? '<li><a class="dropdown-item" href="/pages/organizer-dashboard.html">Organizer Dashboard</a></li>' : '<li><a class="dropdown-item" href="/pages/organizer-apply.html">Become an Organizer</a></li>'}
-          ${isAdmin ? '<li><a class="dropdown-item" href="/pages/admin-dashboard.html">Admin Dashboard</a></li>' : ''}
+          <li><a class="dropdown-item" href="${prefix}my-bookings.html">My Bookings</a></li>
+          ${isOrganizer ? `<li><a class="dropdown-item" href="${prefix}organizer-dashboard.html">Organizer Dashboard</a></li>` : `<li><a class="dropdown-item" href="${prefix}organizer-apply.html">Become an Organizer</a></li>`}
+          ${isAdmin ? `<li><a class="dropdown-item" href="${prefix}admin-dashboard.html">Admin Dashboard</a></li>` : ''}
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item text-danger" href="#" id="logoutLink">Log out</a></li>
         </ul>
