@@ -1,9 +1,9 @@
 /* Auth API — matches AuthController (/api/v1/auth/**) */
 const AuthAPI = {
-  async register({ fullName, email, password, confirmPassword }) {
+  async register({ fullName, email, password, confirmPassword, accountType }) {
     const data = await esFetch('/auth/register', {
       method: 'POST',
-      body: { fullName, email, password, confirmPassword }
+      body: { fullName, email, password, confirmPassword, accountType }
     });
     if (data && data.token) {
       EsAuthStore.setToken(data.token);
@@ -26,7 +26,7 @@ const AuthAPI = {
 
   logout() {
     EsAuthStore.clear();
-    window.location.href = '/index.html';
+    window.location.href = esPathPrefix().toRoot + 'index.html';
   }
 };
 window.AuthAPI = AuthAPI;

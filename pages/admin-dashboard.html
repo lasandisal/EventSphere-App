@@ -16,7 +16,7 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <span class="pill-badge pill-blue">Admin</span>
     <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
   </div>
@@ -123,7 +123,7 @@
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = '/pages/login.html';
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
 
 document.querySelectorAll('.side-link[data-section]').forEach(link => {
   link.addEventListener('click', () => {

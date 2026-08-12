@@ -33,8 +33,8 @@ const AdminAPI = {
 
 /* Assistant API — matches AssistantController (/api/v1/assistant/chat) */
 const AssistantAPI = {
-  chat(message, history = []) {
-    return esFetch('/assistant/chat', { method: 'POST', body: { message, history } });
+  chat(message, context) {
+    return esFetch('/assistant/chat', { method: 'POST', body: { message, context } });
   }
 };
 

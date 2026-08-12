@@ -1,15 +1,11 @@
 /* Renders the logged-in / logged-out state of the navbar's right side.
    Every page includes a <div id="navAuthSlot"></div> in its navbar markup. */
 (function () {
-  // Determine relative prefix based on whether the current path is inside /pages/
-  const isSubPage = window.location.pathname.includes('/pages/');
-  const prefix = isSubPage ? './' : 'pages/';
-  const rootPrefix = isSubPage ? '../' : './';
-
   function renderNavAuth() {
     const slot = document.getElementById('navAuthSlot');
     if (!slot) return;
     const user = EsAuthStore.getUser();
+    const prefix = esPathPrefix().toPages; // '' when already inside /pages/, 'pages/' from root
 
     if (!EsAuthStore.isLoggedIn() || !user) {
       slot.innerHTML = `

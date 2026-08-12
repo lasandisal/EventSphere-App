@@ -17,7 +17,7 @@
   <div class="auth-visual">
     <div class="hero-blob" style="width:220px;height:220px;background:rgba(255,255,255,0.35);top:8%;left:10%;"></div>
     <div>
-      <a href="/index.html" class="brand mb-4 d-inline-flex" style="color:var(--charcoal);"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+      <a href="../index.html" class="brand mb-4 d-inline-flex" style="color:var(--charcoal);"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
       <h2 style="max-width:360px;">Welcome back to your next favourite memory.</h2>
     </div>
   </div>
@@ -40,7 +40,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Log in</button>
       </form>
-      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Don't have an account? <a href="/pages/register.html">Sign up</a></p>
+      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Don't have an account? <a href="register.html">Sign up</a></p>
     </div>
   </div>
 </div>
@@ -59,13 +59,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   try {
     await AuthAPI.login({ email, password });
     esToast('Welcome back!');
-    setTimeout(() => window.location.href = '/index.html', 500);
+    setTimeout(() => window.location.href = '../index.html', 500);
   } catch (err) {
     // Demo-mode fallback so the flow is fully browsable without a backend
     EsAuthStore.setToken('demo-token');
     EsAuthStore.setUser({ fullName: email.split('@')[0], email, roles: ['USER'] });
     esToast('Logged in (demo mode)');
-    setTimeout(() => window.location.href = '/index.html', 500);
+    setTimeout(() => window.location.href = '../index.html', 500);
   }
 });
 </script>

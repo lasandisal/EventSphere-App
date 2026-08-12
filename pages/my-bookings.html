@@ -15,14 +15,14 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks"><i class="bi bi-list fs-3"></i></button>
     <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
       <ul class="navbar-nav gap-lg-2 mt-3 mt-lg-0">
-        <li class="nav-item"><a class="nav-link" data-nav="home" href="/index.html">Discover</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="events" href="/pages/events.html">Categories</a></li>
-        <li class="nav-item"><a class="nav-link active" data-nav="bookings" href="/pages/my-bookings.html">My Bookings</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="/pages/organizer-dashboard.html">Organizer</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="home" href="../index.html">Discover</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="events" href="events.html">Categories</a></li>
+        <li class="nav-item"><a class="nav-link active" data-nav="bookings" href="my-bookings.html">My Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="organizer-dashboard.html">Organizer</a></li>
       </ul>
     </div>
     <div class="d-flex align-items-center gap-2"><div id="navAuthSlot" class="d-flex align-items-center gap-2"></div></div>
@@ -96,7 +96,7 @@ function bookingCard(b) {
         <div class="meta">${b.tickets} ticket(s) · LKR ${b.total.toLocaleString()}</div>
       </div>
       <div class="d-flex flex-column gap-2">
-        <a href="/pages/ticket.html" class="btn btn-quiet btn-sm">View Ticket</a>
+        <a href="ticket.html" class="btn btn-quiet btn-sm">View Ticket</a>
         <a href="#" class="btn btn-outline-soft btn-sm">View Details</a>
         ${b.status === 'confirmed' || b.status === 'pending' ? `<button class="btn btn-danger-soft btn-sm" onclick="askCancel(${b.id})">Cancel Booking</button>` : ''}
       </div>
@@ -109,7 +109,7 @@ function emptyState(tab) {
     <span class="sparkle d-inline-block">${EsIcons.sparkle}</span>
     <h3>No ${tab} bookings</h3>
     <p>When you book an event, it'll show up here.</p>
-    <a href="/pages/events.html" class="btn btn-primary mt-2">Discover events</a>
+    <a href="events.html" class="btn btn-primary mt-2">Discover events</a>
   </div>`;
 }
 

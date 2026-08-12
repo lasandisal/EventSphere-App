@@ -15,15 +15,15 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks"><i class="bi bi-list fs-3"></i></button>
     <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
       <ul class="navbar-nav gap-lg-2 mt-3 mt-lg-0">
-        <li class="nav-item"><a class="nav-link" data-nav="home" href="/index.html">Discover</a></li>
-        <li class="nav-item"><a class="nav-link active" data-nav="events" href="/pages/events.html">Categories</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="bookings" href="/pages/my-bookings.html">My Bookings</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="/pages/organizer-dashboard.html">Organizer</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="about" href="/index.html#about">About</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="home" href="../index.html">Discover</a></li>
+        <li class="nav-item"><a class="nav-link active" data-nav="events" href="events.html">Categories</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="bookings" href="my-bookings.html">My Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="organizer-dashboard.html">Organizer</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="about" href="../index.html#about">About</a></li>
       </ul>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -86,7 +86,7 @@
 <footer class="es-footer">
   <div class="container-narrow footer-bottom d-flex justify-content-between flex-wrap gap-2">
     <span>© 2026 EventSphere. All rights reserved.</span>
-    <a href="/index.html">Back to home</a>
+    <a href="../index.html">Back to home</a>
   </div>
 </footer>
 
@@ -126,7 +126,7 @@ function eventCard(ev) {
         <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venue}</div>
         <div class="price-row">
           <div><div class="price">${priceText}</div>${availabilityLabel(ev.availability)}</div>
-          <a href="/pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
+          <a href="event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
         </div>
       </div>
     </div>

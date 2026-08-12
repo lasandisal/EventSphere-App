@@ -2,9 +2,6 @@
    Calls AssistantAPI.chat(); falls back to a canned response using
    EsMock so the widget is fully demoable without a backend. */
 (function () {
-
-  let conversationHistory = [];
-
   function injectMarkup() {
     if (document.getElementById('aiFab')) return;
     const wrap = document.createElement('div');
@@ -41,7 +38,7 @@
     return `<div class="mini-card">
       <div class="fw-semibold" style="font-family:var(--font-display);font-size:1rem;">${ev.title}</div>
       <div class="text-muted-soft" style="font-size:0.78rem;">${ev.date} · ${ev.venue}</div>
-      <a href="/pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm mt-2">View Event</a>
+      <a href="${esPathPrefix().toPages}event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm mt-2">View Event</a>
     </div>`;
   }
 
@@ -59,13 +56,9 @@
     document.getElementById('aiInput').value = '';
 
     try {
-      const res = await AssistantAPI.chat(prompt, conversationHistory);
+      const res = await AssistantAPI.chat(prompt);
       addMessage(res.reply || "Here's what I found ✨", 'bot');
       (res.events || []).forEach(ev => addMessage(eventMiniCard(ev), 'bot'));
-
-      conversationHistory.push({ role: 'user', content: prompt });
-      conversationHistory.push({ role: 'assistant', content: replyText });
-      
     } catch (err) {
       // Demo-mode fallback
       const lower = prompt.toLowerCase();

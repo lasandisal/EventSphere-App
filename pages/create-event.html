@@ -16,7 +16,7 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <span class="pill-badge pill-lavender">Organizer</span>
     <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
   </div>
@@ -24,7 +24,7 @@
 
 <section class="section-sm">
   <div class="container-narrow" style="max-width:760px;">
-    <a href="/pages/organizer-dashboard.html" class="text-muted-soft" style="font-size:0.85rem;"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
+    <a href="organizer-dashboard.html" class="text-muted-soft" style="font-size:0.85rem;"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
     <h2 class="mt-2 mb-4">Create a New Event</h2>
 
     <form id="createEventForm" class="d-flex flex-column gap-4">
@@ -50,14 +50,16 @@
       <div class="filter-bar">
         <h3 class="mb-3" style="font-size:1.2rem;">Date &amp; Location</h3>
         <div class="row g-3">
-          <div class="col-md-4"><label class="form-label">Date</label><input class="form-control" type="date" name="date" required></div>
-          <div class="col-md-4"><label class="form-label">Time</label><input class="form-control" type="time" name="time" required></div>
-          <div class="col-md-4">
+          <div class="col-md-3"><label class="form-label">Date</label><input class="form-control" type="date" name="date" required></div>
+          <div class="col-md-3"><label class="form-label">Start time</label><input class="form-control" type="time" name="time" required></div>
+          <div class="col-md-3"><label class="form-label">End time</label><input class="form-control" type="time" name="endTime" required></div>
+          <div class="col-md-3">
             <label class="form-label">Venue</label>
             <select class="form-select" name="venueId" id="venueSelect"></select>
           </div>
         </div>
       </div>
+
 
       <div class="filter-bar">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -85,7 +87,7 @@
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = '/pages/login.html';
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
 
 let ttCount = 0;
 function ticketTypeRow() {
@@ -125,15 +127,66 @@ document.getElementById('createEventForm').addEventListener('submit', async (e) 
   e.preventDefault();
   const mode = e.submitter?.getAttribute('data-mode') || 'draft';
   const fd = new FormData(e.target);
-  const payload = { title: fd.get('title'), description: fd.get('description'), categoryId: fd.get('categoryId'), venueId: fd.get('venueId'), date: fd.get('date'), time: fd.get('time') };
+
+  // EventCreateRequestDTO needs ISO LocalDateTime strings, not separate
+  // date/time fields — and BOTH start and end, or @NotNull rejects the
+  // request outright.
+  const date = fd.get('date');
+  const startDatetime = `${date}T${fd.get('time')}:00`;
+  const endDatetime = `${date}T${fd.get('endTime')}:00`;
+
+  const payload = {
+    title: fd.get('title'),
+    description: fd.get('description'),
+    categoryId: Number(fd.get('categoryId')),
+    venueId: Number(fd.get('venueId')),
+    startDatetime,
+    endDatetime
+  };
+
+  // Ticket types are built as DOM rows (tt-name-N / tt-price-N / tt-qty-N)
+  // but were never actually collected or sent — publishing always failed
+  // server-side with "no ticket types" as a result. Collect every row that
+  // has a name filled in; empty trailing rows (from the two default blanks) are skipped.
+  const ticketTypes = [];
+  document.querySelectorAll('#ticketTypeRows .ticket-type-card').forEach(card => {
+    const nameInput = card.querySelector('input[name^="tt-name-"]');
+    const priceInput = card.querySelector('input[name^="tt-price-"]');
+    const qtyInput = card.querySelector('input[name^="tt-qty-"]');
+    if (nameInput && nameInput.value.trim()) {
+      ticketTypes.push({
+        name: nameInput.value.trim(),
+        price: Number(priceInput.value || 0),
+        totalQuantity: Number(qtyInput.value || 0)
+      });
+    }
+  });
+
+  if (mode === 'publish' && ticketTypes.length === 0) {
+    esToast('Add at least one ticket type before publishing.', 'error');
+    return;
+  }
+
   try {
     const ev = await EventsAPI.createEvent(payload);
+    for (const tt of ticketTypes) {
+      await EventsAPI.addTicketType(ev.id, tt);
+    }
     if (mode === 'publish') await EventsAPI.publishEvent(ev.id);
     esToast(mode === 'publish' ? 'Event published successfully' : 'Event saved as draft');
+    setTimeout(() => window.location.href = 'organizer-dashboard.html', 700);
   } catch (err) {
-    esToast(mode === 'publish' ? 'Event published (demo mode)' : 'Event saved as draft (demo mode)');
+    if (err.status === 0) {
+      // Genuine network failure (no backend reachable) — demo mode is a
+      // reasonable fallback here.
+      esToast(mode === 'publish' ? 'Event published (demo mode)' : 'Event saved as draft (demo mode)');
+      setTimeout(() => window.location.href = 'organizer-dashboard.html', 700);
+    } else {
+      // A real backend response (400 validation, 403 not-yet-approved
+      // organizer, etc.) — show the ACTUAL reason, never fake success over it.
+      esToast(err.message || 'Could not create the event', 'error');
+    }
   }
-  setTimeout(() => window.location.href = '/pages/organizer-dashboard.html', 700);
 });
 </script>
 </body>

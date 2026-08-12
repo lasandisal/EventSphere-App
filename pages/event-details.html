@@ -15,14 +15,14 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks"><i class="bi bi-list fs-3"></i></button>
     <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
       <ul class="navbar-nav gap-lg-2 mt-3 mt-lg-0">
-        <li class="nav-item"><a class="nav-link" data-nav="home" href="/index.html">Discover</a></li>
-        <li class="nav-item"><a class="nav-link active" data-nav="events" href="/pages/events.html">Categories</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="bookings" href="/pages/my-bookings.html">My Bookings</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="/pages/organizer-dashboard.html">Organizer</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="home" href="../index.html">Discover</a></li>
+        <li class="nav-item"><a class="nav-link active" data-nav="events" href="events.html">Categories</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="bookings" href="my-bookings.html">My Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="organizer-dashboard.html">Organizer</a></li>
       </ul>
     </div>
     <div class="d-flex align-items-center gap-2"><div id="navAuthSlot" class="d-flex align-items-center gap-2"></div></div>
@@ -64,7 +64,7 @@
 <footer class="es-footer">
   <div class="container-narrow footer-bottom d-flex justify-content-between flex-wrap gap-2">
     <span>© 2026 EventSphere. All rights reserved.</span>
-    <a href="/pages/events.html">Back to Discover</a>
+    <a href="events.html">Back to Discover</a>
   </div>
 </footer>
 
@@ -128,12 +128,12 @@ document.getElementById('bookBtn').addEventListener('click', () => {
   if (!items.length) { esToast('Select at least one ticket to continue', 'error'); return; }
   if (!EsAuthStore.isLoggedIn()) {
     esToast('Please log in to book tickets', 'error');
-    setTimeout(() => window.location.href = '/pages/login.html', 900);
+    setTimeout(() => window.location.href = 'login.html', 900);
     return;
   }
   const payload = { eventId, items: items.map(([id, v]) => ({ ticketTypeId: id, quantity: v.qty, price: v.price, name: v.name })) };
   sessionStorage.setItem('es_pending_booking', JSON.stringify(payload));
-  window.location.href = '/pages/booking.html?eventId=' + eventId;
+  window.location.href = 'booking.html?eventId=' + eventId;
 });
 
 async function loadEvent() {

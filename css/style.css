@@ -94,6 +94,24 @@ a:hover{ color: var(--dusty-rose); }
   z-index: 0;
 }
 
+/* ---- Force Horizontal Navbar Layout ---- */
+.es-navbar .navbar-nav {
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.es-navbar .nav-item {
+  display: inline-block;
+  white-space: nowrap; /* Prevents text like 'My Bookings' from wrapping into two lines */
+}
+
+.es-navbar .nav-link {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--charcoal-soft);
+}
+
 /* ---- Buttons ---- */
 .btn{
   font-family: var(--font-body);
@@ -161,24 +179,6 @@ a:hover{ color: var(--dusty-rose); }
   font-weight: 600;
   color: var(--charcoal-soft);
   margin-bottom: 0.4rem;
-}
-
-/* ---- Force Horizontal Navbar Layout ---- */
-.es-navbar .navbar-nav {
-  flex-direction: row !important;
-  align-items: center;
-}
-
-.es-navbar .nav-item {
-  display: inline-block;
-  white-space: nowrap; /* Prevents text like 'My Bookings' from wrapping into two lines */
-}
-
-.es-navbar .nav-link {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: var(--charcoal-soft);
 }
 
 /* ---- Reduced motion ---- */

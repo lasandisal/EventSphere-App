@@ -1,8 +1,14 @@
 /* =========================================================
    EventSphere — API config & fetch wrapper
+   Talks to the Spring Boot backend under /api/v1/*.
    ========================================================= */
 
-// Updated to point directly to your live Render backend
+// Render is the default now that it's deployed — this is what every
+// GitHub Pages visitor actually needs to hit. For LOCAL development
+// against a backend running on your own machine, set
+// window.ES_API_BASE = 'http://localhost:8080/api/v1' in a small
+// <script> BEFORE this file loads (e.g. only on your local copy) —
+// don't flip the default below, or it breaks the deployed site again.
 const ES_API_BASE = window.ES_API_BASE || 'https://its-1114-eventsphere-booking-platform.onrender.com/api/v1';
 const ES_TOKEN_KEY = 'es_token';
 const ES_USER_KEY = 'es_user';
@@ -60,12 +66,20 @@ async function esFetch(path, { method = 'GET', body, params, isForm = false } = 
     return payload ? payload.data : null;
   } catch (networkErr) {
     if (networkErr.status) throw networkErr;
-    // Network/demo-mode fallback is handled by callers via mock data.
     const err = new Error('Could not reach EventSphere servers.');
     err.status = 0;
     throw err;
   }
 }
 
+// Shared helper so every page computes the SAME relative prefix the same
+// way — used by nav.js, auth.js, and any inline redirect. Root index.html
+// is depth 0; everything under /pages/ is depth 1.
+function esPathPrefix() {
+  const isSubPage = window.location.pathname.includes('/pages/');
+  return { toRoot: isSubPage ? '../' : './', toPages: isSubPage ? '' : 'pages/' };
+}
+
 window.EsAuthStore = EsAuthStore;
 window.esFetch = esFetch;
+window.esPathPrefix = esPathPrefix;

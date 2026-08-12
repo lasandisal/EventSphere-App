@@ -16,7 +16,7 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <span class="pill-badge pill-lavender">Organizer</span>
     <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
   </div>
@@ -26,10 +26,10 @@
   <aside class="es-sidebar">
     <div class="side-link active" data-section="dashboard"><i class="bi bi-grid"></i> Dashboard</div>
     <div class="side-link" data-section="myevents"><i class="bi bi-calendar-event"></i> My Events</div>
-    <a class="side-link" href="/pages/create-event.html"><i class="bi bi-plus-circle"></i> Create Event</a>
+    <a class="side-link" href="create-event.html"><i class="bi bi-plus-circle"></i> Create Event</a>
     <div class="side-link" data-section="bookings"><i class="bi bi-ticket-perforated"></i> Bookings</div>
     <div class="side-link" data-section="attendees"><i class="bi bi-people"></i> Attendees</div>
-    <a class="side-link" href="/pages/check-in.html"><i class="bi bi-qr-code-scan"></i> Check-in</a>
+    <a class="side-link" href="check-in.html"><i class="bi bi-qr-code-scan"></i> Check-in</a>
     <div class="side-link" data-section="profile"><i class="bi bi-person-circle"></i> Profile</div>
   </aside>
 
@@ -106,7 +106,7 @@
         <h2 class="mb-0">My Events</h2>
         <div class="d-flex gap-2">
           <input class="form-control" placeholder="Search events..." style="max-width:220px;">
-          <a href="/pages/create-event.html" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Create Event</a>
+          <a href="create-event.html" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Create Event</a>
         </div>
       </div>
       <div class="table-card">
@@ -166,7 +166,7 @@
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = '/pages/login.html';
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
 
 document.querySelectorAll('.side-link[data-section]').forEach(link => {
   link.addEventListener('click', () => {

@@ -17,7 +17,7 @@
   <div class="auth-visual" style="background: linear-gradient(160deg, var(--sage-soft) 0%, var(--blush) 100%);">
     <div class="hero-blob" style="width:200px;height:200px;background:rgba(255,255,255,0.4);bottom:12%;right:10%;"></div>
     <div>
-      <a href="/index.html" class="brand mb-4 d-inline-flex" style="color:var(--charcoal);"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+      <a href="../index.html" class="brand mb-4 d-inline-flex" style="color:var(--charcoal);"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
       <h2 style="max-width:360px;">Join a calmer way to discover events worth showing up for.</h2>
     </div>
   </div>
@@ -51,7 +51,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Create account</button>
       </form>
-      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Already have an account? <a href="/pages/login.html">Log in</a></p>
+      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Already have an account? <a href="login.html">Log in</a></p>
     </div>
   </div>
 </div>
@@ -71,12 +71,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   try {
     await AuthAPI.register(payload);
     esToast('Account created — welcome to EventSphere!');
-    setTimeout(() => window.location.href = '/index.html', 600);
+    setTimeout(() => window.location.href = '../index.html', 600);
   } catch (err) {
     EsAuthStore.setToken('demo-token');
     EsAuthStore.setUser({ fullName: payload.fullName, email: payload.email, roles: [payload.accountType === 'ORGANIZER' ? 'ORGANIZER' : 'USER'] });
     esToast('Account created (demo mode)');
-    setTimeout(() => window.location.href = '/index.html', 600);
+    setTimeout(() => window.location.href = '../index.html', 600);
   }
 });
 </script>

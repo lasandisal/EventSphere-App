@@ -11,12 +11,21 @@
 <link rel="stylesheet" href="../css/components.css">
 <link rel="stylesheet" href="../css/dashboard.css">
 <link rel="stylesheet" href="../css/responsive.css">
+<style>
+  /* Camera preview lives inside the existing .scanner-frame so the
+     corner-bracket/scan-line decoration you already built still frames it —
+     html5-qrcode injects a <video> we just need to size and round to match. */
+  #qr-reader { width: 100%; height: 100%; }
+  #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: inherit; }
+  .scanner-frame { position: relative; overflow: hidden; }
+  #cameraFallbackMsg { display: none; }
+</style>
 </head>
 <body data-page="organizer">
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="/index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
     <span class="pill-badge pill-lavender">Organizer</span>
     <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
   </div>
@@ -26,37 +35,33 @@
   <div class="container-narrow" style="max-width:520px;">
     <p class="eyebrow">Gate check-in</p>
     <h2 class="mb-2">Check In Attendees</h2>
-    <p class="text-muted-soft mb-4">Scan the attendee's EventSphere ticket QR code.</p>
+    <p class="text-muted-soft mb-4">Point the camera at the attendee's EventSphere ticket QR code.</p>
 
-    <div class="scanner-frame mb-4">
+    <div class="scanner-frame mb-2">
       <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-      <div class="scan-line"></div>
-      <i class="bi bi-qr-code-scan icon-camera"></i>
+      <div class="scan-line" id="scanLine"></div>
+      <div id="qr-reader"></div>
+      <i class="bi bi-qr-code-scan icon-camera" id="cameraPlaceholderIcon"></i>
     </div>
+    <p id="cameraFallbackMsg" class="text-muted-soft mb-4" style="font-size:0.85rem;"></p>
 
-    <button class="btn btn-primary btn-lg mb-4" id="simulateScan"><i class="bi bi-camera me-1"></i> Simulate Scan</button>
-
-    <div class="text-muted-soft mb-2" style="font-size:0.85rem;">or search manually</div>
+    <div class="text-muted-soft mb-2 mt-3" style="font-size:0.85rem;">or search manually</div>
     <div class="hero-search mx-auto mb-4">
       <i class="bi bi-search text-muted"></i>
-      <input type="text" id="manualCode" placeholder="Enter ticket code, e.g. ES-88123">
+      <input type="text" id="manualCode" placeholder="Paste the scanned ticket payload">
       <button class="btn btn-primary btn-sm" id="manualSearch">Search</button>
     </div>
 
     <div id="resultCard" class="d-none filter-bar text-start">
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <span class="status-badge status-confirmed">✓ Ticket verified</span>
-      </div>
-      <div class="tk-row"><span>Attendee</span><b id="rAttendee"></b></div>
-      <div class="tk-row"><span>Event</span><b id="rEvent"></b></div>
-      <div class="tk-row"><span>Ticket type</span><b id="rType"></b></div>
-      <div class="tk-row"><span>Ticket ID</span><b id="rId"></b></div>
-      <button class="btn btn-primary w-100 mt-3" id="confirmCheckin">Confirm Check-in</button>
+      <div class="d-flex align-items-center gap-2 mb-3" id="resultBadgeRow"></div>
+      <div id="resultDetails"></div>
+      <button class="btn btn-primary w-100 mt-3" id="scanNextBtn">Scan next attendee</button>
     </div>
   </div>
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="../js/api/config.js"></script>
 <script src="../js/api/auth.js"></script>
 <script src="../js/api/organizer.js"></script>
@@ -65,28 +70,108 @@
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = '/pages/login.html';
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
 
-async function showResult(code) {
-  let result;
-  try {
-    result = await CheckInAPI.scan(code);
-  } catch (e) {
-    result = { attendeeName: 'Amaya Perera', eventTitle: 'AI & Innovation Summit', ticketType: 'VIP', ticketId: code || 'ES-88123' };
-  }
-  document.getElementById('rAttendee').textContent = result.attendeeName;
-  document.getElementById('rEvent').textContent = result.eventTitle;
-  document.getElementById('rType').textContent = result.ticketType;
-  document.getElementById('rId').textContent = result.ticketId;
+let scanLocked = false;
+
+// ---------- Result rendering (single source of truth for both camera and manual paths) ----------
+
+function renderSuccess(data) {
+  document.getElementById('resultBadgeRow').innerHTML =
+    `<span class="status-badge status-confirmed">✓ Entry granted</span>`;
+  document.getElementById('resultDetails').innerHTML = `
+    <div class="tk-row"><span>Attendee</span><b>${escapeHtml(data.attendeeName)}</b></div>
+    <div class="tk-row"><span>Event</span><b>${escapeHtml(data.eventTitle)}</b></div>
+    ${data.seatNumber ? `<div class="tk-row"><span>Seat</span><b>${escapeHtml(data.seatNumber)}</b></div>` : ''}
+    <div class="tk-row"><span>Checked in</span><b>${new Date(data.checkedInAt).toLocaleTimeString()}</b></div>`;
   document.getElementById('resultCard').classList.remove('d-none');
+  esToast('Checked in: ' + data.attendeeName, 'success');
 }
 
-document.getElementById('simulateScan').addEventListener('click', () => showResult());
-document.getElementById('manualSearch').addEventListener('click', () => showResult(document.getElementById('manualCode').value));
-document.getElementById('confirmCheckin').addEventListener('click', () => {
-  esToast('Entry granted');
+function renderRejection(message) {
+  // Deliberately a DIFFERENT visual state from success — this ticket was
+  // NOT admitted, and that must never be ambiguous at a gate.
+  document.getElementById('resultBadgeRow').innerHTML =
+    `<span class="status-badge status-cancelled">✕ Entry not granted</span>`;
+  document.getElementById('resultDetails').innerHTML =
+    `<p class="mb-0">${escapeHtml(message)}</p>`;
+  document.getElementById('resultCard').classList.remove('d-none');
+  esToast(message, 'error');
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ---------- Real scan path — the call itself performs the check-in server-side ----------
+
+async function processTicket(signedPayload) {
+  if (scanLocked) return;
+  scanLocked = true;
   document.getElementById('resultCard').classList.add('d-none');
+
+  try {
+    // NOTE: field name must be signedPayload, matching ScanRequestDTO.
+    const data = await CheckInAPI.scan(signedPayload);
+    renderSuccess(data);
+  } catch (e) {
+    // No fallback to placeholder/mock data here — a request that fails
+    // means the ticket was NOT checked in, and the UI must say exactly that.
+    renderRejection(e.message || 'This ticket could not be verified.');
+  }
+}
+
+document.getElementById('scanNextBtn').addEventListener('click', () => {
+  document.getElementById('resultCard').classList.add('d-none');
+  scanLocked = false;
 });
+
+document.getElementById('manualSearch').addEventListener('click', () => {
+  const val = document.getElementById('manualCode').value.trim();
+  if (!val) return;
+  scanLocked = false;
+  processTicket(val);
+});
+
+// ---------- Camera ----------
+
+function initCamera() {
+  if (typeof Html5Qrcode === 'undefined') {
+    showCameraFallback('Camera scanner failed to load — use manual entry below.');
+    return;
+  }
+  const scanner = new Html5Qrcode("qr-reader");
+
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras || cameras.length === 0) {
+      showCameraFallback('No camera found on this device — use manual entry below.');
+      return;
+    }
+    document.getElementById('cameraPlaceholderIcon').style.display = 'none';
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 220, height: 220 } },
+      (decodedText) => {
+        if (scanLocked) return;
+        scanner.pause();
+        processTicket(decodedText).finally(() => {
+          setTimeout(() => { scanner.resume(); }, 2200);
+        });
+      },
+      () => { /* no QR in frame this tick — expected, not an error */ }
+    ).catch(() => showCameraFallback('Could not start the camera — use manual entry below.'));
+  }).catch(() => {
+    showCameraFallback('Camera access was blocked — allow camera permission for this site, or use manual entry below.');
+  });
+}
+
+function showCameraFallback(message) {
+  document.getElementById('cameraFallbackMsg').textContent = message;
+  document.getElementById('cameraFallbackMsg').style.display = 'block';
+  document.getElementById('scanLine').style.display = 'none';
+}
+
+initCamera();
 </script>
 </body>
 </html>
