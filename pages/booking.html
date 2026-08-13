@@ -278,23 +278,23 @@ async function startPayment() {
     form.action = actionUrl;
 
     const fields = {
-      merchant_id: data.merchantId || data.merchant_id,
-      return_url: data.returnUrl || data.return_url,
-      cancel_url: data.cancelUrl || data.cancel_url,
-      notify_url: data.notifyUrl || data.notify_url,
-      order_id: data.orderId || data.order_id || currentBookingId,
-      items: data.items || data.itemTitle || 'Event Tickets',
-      currency: data.currency || 'LKR',
-      amount: data.amount,
-      first_name: data.firstName || data.first_name || 'Customer',
-      last_name: data.lastName || data.last_name || 'User',
-      email: data.email || 'customer@example.com',
-      phone: data.phone || '0771234567',
-      address: data.address || 'Galle',
-      city: data.city || 'Galle',
-      country: data.country || 'Sri Lanka',
-      hash: data.hash
-    };
+    merchant_id: String(data.merchantId || data.merchant_id).trim(),
+    return_url: data.returnUrl,
+    cancel_url: data.cancelUrl,
+    notify_url: data.notifyUrl,
+    order_id: String(data.orderId || data.order_id).trim(),
+    items: data.itemsDescription || data.items || 'Event Tickets',
+    currency: data.currency || 'LKR',
+    amount: String(data.amount).trim(), // Must be "1500.00"
+    first_name: data.firstName || 'Customer',
+    last_name: data.lastName || 'User',
+    email: data.email || 'customer@example.com',
+    phone: data.phone || '0771234567',
+    address: data.address || 'N/A',
+    city: data.city || 'N/A',
+    country: data.country || 'Sri Lanka',
+    hash: data.hash
+};
 
     Object.entries(fields).forEach(([key, val]) => {
       if (val !== undefined && val !== null) {
