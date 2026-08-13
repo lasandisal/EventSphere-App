@@ -51,7 +51,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Create account</button>
       </form>
-      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Already have an account? <a href="login.html">Log in</a></p>
+      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Already have an account? <a href="login.html" id="loginLink">Log in</a></p>
     </div>
   </div>
 </div>
@@ -68,17 +68,29 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   const fd = new FormData(e.target);
   const payload = Object.fromEntries(fd.entries());
   if (payload.password !== payload.confirmPassword) { esToast('Passwords do not match', 'error'); return; }
+
+  // The backend has no accountType field — self-registration always grants
+  // USER only (RoleName.USER), never ORGANIZER. Organizer access is a
+  // separate application + admin-approval flow (organizer-apply.html), by
+  // design, so nobody can start publishing events unchecked. If this form
+  // still has an "account type" selector implying otherwise, that's worth
+  // removing or repointing at the apply flow — it's misleading as-is.
+  delete payload.accountType;
+  delete payload.confirmPassword;
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
+
   try {
     await AuthAPI.register(payload);
     esToast('Account created — welcome to EventSphere!');
     setTimeout(() => window.location.href = '../index.html', 600);
   } catch (err) {
-    EsAuthStore.setToken('demo-token');
-    EsAuthStore.setUser({ fullName: payload.fullName, email: payload.email, roles: [payload.accountType === 'ORGANIZER' ? 'ORGANIZER' : 'USER'] });
-    esToast('Account created (demo mode)');
-    setTimeout(() => window.location.href = '../index.html', 600);
+    esToast(err.message || 'Could not create your account.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign up'; }
   }
 });
 </script>
+
 </body>
 </html>

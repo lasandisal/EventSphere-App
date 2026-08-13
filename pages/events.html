@@ -99,7 +99,7 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script src="../js/utils/ai-widget.js"></script>
 <script>
@@ -108,24 +108,45 @@ document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
 const params = new URLSearchParams(window.location.search);
 let currentPage = 0;
 
-function availabilityLabel(a) {
-  return a === 'low' ? `<span class="availability-dot low">Few tickets left</span>` : `<span class="availability-dot">Tickets available</span>`;
+function availabilityLabel(totalAvailable) {
+  return totalAvailable > 0 && totalAvailable <= 10
+    ? `<span class="availability-dot low">Few tickets left</span>`
+    : `<span class="availability-dot">Tickets available</span>`;
 }
+
 function eventCard(ev) {
-  const priceText = ev.price === 0 ? 'Free' : `From LKR ${ev.price.toLocaleString()}`;
+  const title = ev.title || 'Untitled Event';
+  const categoryName = ev.categoryName || 'General';
+  const venueName = ev.venueName || 'TBA';
+  const bannerUrl = ev.bannerUrl || `https://placehold.co/500x300/F7D6DE/9B4A63?text=${encodeURIComponent(title)}`;
+
+  let dateText = 'Date TBA', timeText = '';
+  if (ev.startDatetime) {
+    const d = new Date(ev.startDatetime);
+    dateText = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    timeText = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Real availability/price come from summing ticketTypes — there is no
+  // flat ev.price or ev.availability field on the actual DTO.
+  const prices = (ev.ticketTypes || []).map(t => Number(t.price));
+  const priceText = prices.length === 0 ? 'Tickets TBA'
+    : (Math.min(...prices) === 0 ? 'Free' : `From LKR ${Math.min(...prices).toLocaleString()}`);
+  const totalAvailable = (ev.ticketTypes || []).reduce((s, t) => s + (t.availableQuantity || 0), 0);
+
   return `
   <div class="col-md-6 col-lg-4">
     <div class="event-card">
       <div class="img-wrap">
-        <img src="${ev.img}" alt="${ev.title}">
-        <span class="pill-badge ${ev.pill}">${ev.category}</span>
+        <img src="${bannerUrl}" alt="${title}">
+        <span class="pill-badge category">${categoryName}</span>
       </div>
       <div class="body">
-        <div class="title">${ev.title}</div>
-        <div class="meta"><i class="bi bi-calendar3"></i> ${ev.date}, ${ev.time}</div>
-        <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venue}</div>
+        <div class="title">${title}</div>
+        <div class="meta"><i class="bi bi-calendar3"></i> ${dateText}${timeText ? `, ${timeText}` : ''}</div>
+        <div class="meta"><i class="bi bi-geo-alt"></i> ${venueName}</div>
         <div class="price-row">
-          <div><div class="price">${priceText}</div>${availabilityLabel(ev.availability)}</div>
+          <div><div class="price">${priceText}</div>${availabilityLabel(totalAvailable)}</div>
           <a href="event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
         </div>
       </div>
@@ -145,17 +166,14 @@ async function loadCategories() {
   const sel = document.getElementById('fCategory');
   try {
     const cats = await CategoriesAPI.getAll();
-    (cats && cats.length ? cats : EsMock.categories).forEach(c => {
+    const list = Array.isArray(cats) ? cats : (cats?.content || []);
+    list.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id; opt.textContent = c.name;
       sel.appendChild(opt);
     });
   } catch (e) {
-    EsMock.categories.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id; opt.textContent = c.name;
-      sel.appendChild(opt);
-    });
+    esToast('Could not load categories.', 'error');
   }
   if (params.get('categoryId')) sel.value = params.get('categoryId');
 }
@@ -163,23 +181,20 @@ async function loadCategories() {
 async function loadEvents(page = 0) {
   const grid = document.getElementById('eventsGrid');
   grid.innerHTML = Array(6).fill('<div class="col-md-6 col-lg-4"><div class="skeleton" style="height:320px;"></div></div>').join('');
+
   const keyword = document.getElementById('fKeyword').value;
   const categoryId = document.getElementById('fCategory').value;
 
   try {
     const res = await EventsAPI.searchPublished({ keyword, categoryId, page, size: 9 });
-    const list = res && res.content ? res.content : [];
-    document.getElementById('resultCount').textContent = `${res.totalElements ?? list.length} events found`;
+    const list = Array.isArray(res) ? res : (res?.content || []);
+    const total = res?.totalElements ?? list.length;
+
+    document.getElementById('resultCount').textContent = `${total} event${total === 1 ? '' : 's'} found`;
     grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
   } catch (e) {
-    let list = EsMock.events;
-    if (keyword) list = list.filter(ev => ev.title.toLowerCase().includes(keyword.toLowerCase()));
-    if (categoryId) {
-      const catName = EsMock.categories.find(c => String(c.id) === String(categoryId))?.name;
-      list = list.filter(ev => ev.category === catName);
-    }
-    document.getElementById('resultCount').textContent = `${list.length} events found`;
-    grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
+    document.getElementById('resultCount').textContent = '0 events found';
+    grid.innerHTML = `<div class="col-12 state-block"><h3>Could not load events</h3><p>${e.message || 'Is the backend running?'}</p></div>`;
   }
 }
 
@@ -188,5 +203,6 @@ document.getElementById('fKeyword').value = params.get('keyword') || '';
 
 loadCategories().then(() => loadEvents(0));
 </script>
+
 </body>
 </html>

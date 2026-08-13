@@ -119,99 +119,146 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html?redirect=' + encodeURIComponent('admin-dashboard.html' + window.location.search);
 
+// Tab Section Switching
 document.querySelectorAll('.side-link[data-section]').forEach(link => {
   link.addEventListener('click', () => {
     document.querySelectorAll('.side-link[data-section]').forEach(l => l.classList.remove('active'));
     link.classList.add('active');
     document.querySelectorAll('main > section').forEach(s => s.classList.add('d-none'));
-    document.getElementById('sec-' + link.getAttribute('data-section')).classList.remove('d-none');
+    const target = document.getElementById('sec-' + link.getAttribute('data-section'));
+    if (target) target.classList.remove('d-none');
   });
 });
 
-const mockUsers = [
-  { name: 'Amaya Perera', email: 'amaya@example.com', role: 'USER', status: 'Active', registered: 'Feb 2026' },
-  { name: 'Lasandi Fernando', email: 'lasandi@example.com', role: 'ORGANIZER', status: 'Active', registered: 'Jan 2026' },
-  { name: 'Dinuka Jayasuriya', email: 'dinuka@example.com', role: 'USER', status: 'Disabled', registered: 'Mar 2026' }
-];
-document.getElementById('usersBody').innerHTML = mockUsers.map(u => `
-  <tr>
-    <td data-label="Name">${u.name}</td>
-    <td data-label="Email">${u.email}</td>
-    <td data-label="Role"><span class="pill-badge pill-lavender">${u.role}</span></td>
-    <td data-label="Status">${u.status === 'Active' ? '<span class="status-badge status-confirmed">Active</span>' : '<span class="status-badge status-cancelled">Disabled</span>'}</td>
-    <td data-label="Registered">${u.registered}</td>
-    <td data-label="Actions">
-      <button class="btn btn-quiet btn-sm">${u.status === 'Active' ? 'Disable' : 'Enable'}</button>
-      ${u.role !== 'ADMIN' ? `<button class="btn btn-outline-soft btn-sm promote-btn">Promote to Admin</button>` : ''}
-    </td>
-  </tr>`).join('');
-document.querySelectorAll('.promote-btn').forEach(btn => btn.addEventListener('click', async () => {
-  try { await AdminAPI.promoteToAdmin(1); } catch (e) {}
-  esToast('User promoted to Admin successfully');
-}));
-
+// Load Pending Organizers
 async function loadPendingOrganizers() {
-  let pending;
-  try { pending = await AdminAPI.getPendingOrganizers(); }
-  catch (e) {
-    pending = [
-      { businessName: 'Barefoot Events', applicant: 'Nadeesha Silva', nicNumber: '199012345V', submitted: 'Aug 5, 2026', id: 1 },
-      { businessName: 'Colombo Runners Club', applicant: 'Kasun Wijeratne', nicNumber: '198834567V', submitted: 'Aug 8, 2026', id: 2 }
-    ];
+  const tbody = document.getElementById('organizersBody');
+  try {
+    const pending = await AdminAPI.getPendingOrganizers();
+    const list = Array.isArray(pending) ? pending : (pending?.content || []);
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">No pending organizer applications</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(o => `
+      <tr>
+        <td data-label="Business">${o.businessName || '—'}</td>
+        <td data-label="Applicant">${o.applicantName || o.fullName || '—'}</td>
+        <td data-label="NIC / Reg No.">${o.nicNumber || o.regNumber || '—'}</td>
+        <td data-label="Submitted">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—'}</td>
+        <td data-label="Actions">
+          <button class="btn btn-primary btn-sm" onclick="approveOrganizer(${o.id})">Approve</button>
+          <button class="btn btn-danger-soft btn-sm" onclick="rejectOrganizer(${o.id})">Reject</button>
+        </td>
+      </tr>`).join('');
+  } catch (e) {
+    console.error('Failed to load pending organizers:', e);
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">Failed to load applications</td></tr>`;
   }
-  document.getElementById('organizersBody').innerHTML = pending.map(o => `
-    <tr>
-      <td data-label="Business">${o.businessName}</td>
-      <td data-label="Applicant">${o.applicant || '—'}</td>
-      <td data-label="NIC / Reg No.">${o.nicNumber || '—'}</td>
-      <td data-label="Submitted">${o.submitted || '—'}</td>
-      <td data-label="Actions">
-        <button class="btn btn-primary btn-sm" onclick="approveOrganizer(${o.id})">Approve</button>
-        <button class="btn btn-danger-soft btn-sm" onclick="rejectOrganizer(${o.id})">Reject</button>
-      </td>
-    </tr>`).join('');
 }
+
 async function approveOrganizer(id) {
-  try { await AdminAPI.verifyOrganizer(id); } catch (e) {}
-  esToast('Organizer approved — ORGANIZER role granted');
-  loadPendingOrganizers();
+  try {
+    await AdminAPI.verifyOrganizer(id);
+    esToast('Organizer approved — ORGANIZER role granted');
+    loadPendingOrganizers();
+  } catch (e) {
+    esToast(e.message || 'Failed to approve organizer', 'error');
+  }
 }
+
 async function rejectOrganizer(id) {
-  try { await AdminAPI.rejectOrganizer(id); } catch (e) {}
-  esToast('Application rejected');
-  loadPendingOrganizers();
+  try {
+    await AdminAPI.rejectOrganizer(id);
+    esToast('Application rejected');
+    loadPendingOrganizers();
+  } catch (e) {
+    esToast(e.message || 'Failed to reject application', 'error');
+  }
 }
-loadPendingOrganizers();
 
-document.getElementById('eventsBody').innerHTML = EsMock.events.slice(0, 6).map(e => `
-  <tr>
-    <td data-label="Event">${e.title}</td>
-    <td data-label="Organizer">Lasandi Events Co.</td>
-    <td data-label="Category">${e.category}</td>
-    <td data-label="Date">${e.date}</td>
-    <td data-label="Status"><span class="status-badge status-confirmed">Published</span></td>
-  </tr>`).join('');
-
+// Load System Categories
 async function loadCategories() {
-  let cats;
-  try { cats = await CategoriesAPI.getAll(); } catch (e) { cats = EsMock.categories; }
-  document.getElementById('categoriesGrid').innerHTML = (cats.length ? cats : EsMock.categories).map(c => `
-    <div class="col-6 col-md-3">
-      <div class="category-card ${c.cls || ''}">
-        <div class="cat-icon">${c.icon || '🏷️'}</div>
-        <div class="cat-name">${c.name}</div>
-        <button class="btn btn-quiet btn-sm mt-2 w-100">Edit</button>
-      </div>
-    </div>`).join('');
+  const grid = document.getElementById('categoriesGrid');
+  try {
+    const cats = await CategoriesAPI.getAll();
+    const list = Array.isArray(cats) ? cats : (cats?.content || []);
+
+    if (!list.length) {
+      grid.innerHTML = `<div class="col-12 text-center text-muted-soft">No categories found</div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(c => `
+      <div class="col-6 col-md-3">
+        <div class="category-card ${c.cls || ''}">
+          <div class="cat-icon">${c.icon || '🏷️'}</div>
+          <div class="cat-name">${c.name}</div>
+          <button class="btn btn-quiet btn-sm mt-2 w-100">Edit</button>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    console.error('Failed to load categories:', e);
+    grid.innerHTML = `<div class="col-12 text-center text-muted-soft">Error loading categories</div>`;
+  }
 }
+
+// Load All Published Events (Admin Overview)
+async function loadAllEvents() {
+  const tbody = document.getElementById('eventsBody');
+  try {
+    const res = await EventsAPI.searchPublished({ page: 0, size: 20 });
+    const list = Array.isArray(res) ? res : (res?.content || []);
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">No events found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(e => `
+      <tr>
+        <td data-label="Event">${e.title}</td>
+        <td data-label="Organizer">${e.organizerName || '—'}</td>
+        <td data-label="Category">${e.categoryName || 'General'}</td>
+        <td data-label="Date">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
+        <td data-label="Status"><span class="status-badge status-confirmed">${e.status || 'PUBLISHED'}</span></td>
+      </tr>`).join('');
+  } catch (e) {
+    console.error('Failed to load events:', e);
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">Failed to load events</td></tr>`;
+  }
+}
+
+// Promote User Event Delegation
+document.querySelectorAll('.promote-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    const userId = e.target.getAttribute('data-user-id');
+    if (!userId) return;
+    try {
+      await AdminAPI.promoteToAdmin(userId);
+      esToast('User promoted to Admin successfully');
+    } catch (err) {
+      esToast(err.message || 'Failed to promote user', 'error');
+    }
+  });
+});
+
+document.getElementById('addCategoryBtn')?.addEventListener('click', () => {
+  esToast('Open the "Add Category" form to create one');
+});
+
+// Initialize Admin Data
+loadPendingOrganizers();
 loadCategories();
-document.getElementById('addCategoryBtn').addEventListener('click', () => esToast('Open the "Add Category" form to create one'));
+loadAllEvents();
 </script>
 </body>
 </html>

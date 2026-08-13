@@ -9,7 +9,10 @@
 // window.ES_API_BASE = 'http://localhost:8080/api/v1' in a small
 // <script> BEFORE this file loads (e.g. only on your local copy) —
 // don't flip the default below, or it breaks the deployed site again.
+
+
 const ES_API_BASE = window.ES_API_BASE || 'https://its-1114-eventsphere-booking-platform.onrender.com/api/v1';
+// const ES_API_BASE = window.ES_API_BASE || 'http://localhost:8080/api/v1';
 const ES_TOKEN_KEY = 'es_token';
 const ES_USER_KEY = 'es_user';
 

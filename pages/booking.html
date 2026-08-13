@@ -116,25 +116,38 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
 
-if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
+if (!EsAuthStore.isLoggedIn()) {
+  esToast('Please log in to continue booking', 'error');
+  const returnTo = 'booking.html' + window.location.search;
+  setTimeout(() => window.location.href = 'login.html?redirect=' + encodeURIComponent(returnTo), 800);
+}
 
 const pending = JSON.parse(sessionStorage.getItem('es_pending_booking') || 'null');
 const eventId = new URLSearchParams(window.location.search).get('eventId');
-const items = pending ? pending.items : [{ ticketTypeId: '1', name: 'General', price: 2500, quantity: 2 }];
-const eventTitle = (EsMock.events.find(e => String(e.id) === String(eventId)) || EsMock.events[0]).title;
+const items = pending ? pending.items : [];
+let eventTitle = 'Event Booking';
 
-function money(n){ return 'LKR ' + n.toLocaleString(); }
+// Redirect back if no pending booking items exist
+if (!items.length) {
+  esToast('No tickets selected. Redirecting to discovery...', 'error');
+  setTimeout(() => window.location.href = 'events.html', 1200);
+}
+
+function money(n) { return 'LKR ' + (n ? n.toLocaleString() : '0'); }
 
 function renderTicketsRecap() {
   document.getElementById('ticketsRecap').innerHTML = items.map(i => `
     <div class="ticket-type-card">
       <div class="d-flex justify-content-between">
-        <div><div class="tt-name">${i.name}</div><div class="text-muted-soft" style="font-size:0.85rem;">Qty ${i.quantity}</div></div>
+        <div>
+          <div class="tt-name">${i.name}</div>
+          <div class="text-muted-soft" style="font-size:0.85rem;">Qty ${i.quantity}</div>
+        </div>
         <div class="tt-price">${money(i.price * i.quantity)}</div>
       </div>
     </div>`).join('');
@@ -143,7 +156,7 @@ function renderTicketsRecap() {
 function renderSummary() {
   const lines = document.getElementById('summaryLines');
   lines.innerHTML = items.map(i => `<div class="line-item"><span>${i.quantity} × ${i.name}</span><span>${money(i.price * i.quantity)}</span></div>`).join('');
-  const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
   document.getElementById('summaryTotal').textContent = money(total);
 }
 
@@ -153,7 +166,7 @@ function renderAttendeeForm() {
   items.forEach(i => {
     for (let q = 0; q < i.quantity; q++) {
       html += `
-      <div class="filter-bar">
+      <div class="filter-bar mb-3">
         <div class="fw-semibold mb-2" style="font-size:0.85rem;">Attendee ${n} — ${i.name}</div>
         <div class="row g-2">
           <div class="col-md-6"><input required class="form-control" name="name-${n}" placeholder="Full name"></div>
@@ -175,7 +188,12 @@ function collectAttendees() {
   let n = 1;
   items.forEach(i => {
     for (let q = 0; q < i.quantity; q++) {
-      attendees.push({ ticket: i.name, name: fd.get(`name-${n}`), email: fd.get(`email-${n}`) });
+      attendees.push({ 
+        ticketTypeId: i.ticketTypeId, 
+        ticket: i.name, 
+        name: fd.get(`name-${n}`), 
+        email: fd.get(`email-${n}`) 
+      });
       n++;
     }
   });
@@ -185,7 +203,7 @@ function collectAttendees() {
 
 function renderReview() {
   document.getElementById('reviewList').innerHTML = attendees.map(a => `
-    <div class="d-flex justify-content-between border-bottom pb-2" style="border-color:var(--line) !important;">
+    <div class="d-flex justify-content-between border-bottom pb-2 mb-2" style="border-color:var(--line) !important;">
       <span>${a.name} <span class="text-muted-soft">(${a.ticket})</span></span>
       <span class="text-muted-soft">${a.email}</span>
     </div>`).join('');
@@ -193,7 +211,9 @@ function renderReview() {
 
 function goStep(step) {
   document.querySelectorAll('.booking-step').forEach(p => p.classList.add('d-none'));
-  document.querySelector(`[data-step-panel="${step}"]`).classList.remove('d-none');
+  const targetStep = document.querySelector(`[data-step-panel="${step}"]`);
+  if (targetStep) targetStep.classList.remove('d-none');
+  
   document.querySelectorAll('.step-indicator .step').forEach(s => {
     const n = Number(s.getAttribute('data-step'));
     s.classList.toggle('active', n === step);
@@ -204,32 +224,116 @@ function goStep(step) {
 
 let currentBookingId = null;
 async function submitBooking() {
-  const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
   document.getElementById('paySummaryEvent').textContent = eventTitle;
   document.getElementById('paySummaryCount').textContent = items.reduce((s, i) => s + i.quantity, 0) + ' tickets';
   document.getElementById('paySummaryTotal').textContent = money(total);
+
   try {
-    const booking = await BookingsAPI.create({ eventId, items: items.map((i, idx) => ({ ticketTypeId: i.ticketTypeId, quantity: i.quantity, attendees: attendees.filter(a => a.ticket === i.name) })) });
-    currentBookingId = booking.id;
+    const payload = {
+      eventId: Number(eventId),
+      items: items.map(i => ({
+        ticketTypeId: Number(i.ticketTypeId),
+        quantity: i.quantity,
+        attendees: attendees.filter(a => String(a.ticketTypeId) === String(i.ticketTypeId)).map(a => ({ name: a.name, email: a.email }))
+      }))
+    };
+
+    const booking = await BookingsAPI.create(payload);
+    currentBookingId = booking?.id || booking?.bookingId;
+    goStep(4);
   } catch (e) {
-    currentBookingId = 'DEMO-' + Math.floor(Math.random() * 90000 + 10000);
+    console.error('Booking failed:', e);
+    esToast(e.message || 'Failed to create booking', 'error');
   }
-  goStep(4);
 }
 
 async function startPayment() {
+  if (!currentBookingId) {
+    esToast('Invalid booking reference', 'error');
+    return;
+  }
+
   try {
-    const res = await PaymentsAPI.initiate(currentBookingId);
-    if (res && res.redirectUrl) { window.location.href = res.redirectUrl; return; }
-  } catch (e) { /* demo mode — simulate success */ }
-  esToast('Payment successful');
-  localStorage.setItem('es_last_ticket', JSON.stringify({ event: eventTitle, items, attendees, bookingId: currentBookingId }));
-  setTimeout(() => goStep(5), 600);
+    esToast('Initiating payment gateway...');
+    const data = await PaymentsAPI.initiate(currentBookingId);
+
+    if (!data) {
+      throw new Error('No response data received from payment service');
+    }
+
+    // Case 1: If backend provides a direct redirect URL
+    if (data.redirectUrl || data.checkoutUrl) {
+      window.location.href = data.redirectUrl || data.checkoutUrl;
+      return;
+    }
+
+    // Case 2: PayHere Form POST submission (Standard PayHere Redirect)
+    // Works with actionUrl or default Sandbox URL
+    const actionUrl = data.actionUrl || data.payhereUrl || 'https://sandbox.payhere.lk/pay/checkout';
+    
+    // Dynamically build and submit hidden PayHere form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = actionUrl;
+
+    const fields = {
+      merchant_id: data.merchantId || data.merchant_id,
+      return_url: data.returnUrl || data.return_url,
+      cancel_url: data.cancelUrl || data.cancel_url,
+      notify_url: data.notifyUrl || data.notify_url,
+      order_id: data.orderId || data.order_id || currentBookingId,
+      items: data.items || data.itemTitle || 'Event Tickets',
+      currency: data.currency || 'LKR',
+      amount: data.amount,
+      first_name: data.firstName || data.first_name || 'Customer',
+      last_name: data.lastName || data.last_name || 'User',
+      email: data.email || 'customer@example.com',
+      phone: data.phone || '0771234567',
+      address: data.address || 'Galle',
+      city: data.city || 'Galle',
+      country: data.country || 'Sri Lanka',
+      hash: data.hash
+    };
+
+    Object.entries(fields).forEach(([key, val]) => {
+      if (val !== undefined && val !== null) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = val;
+        form.appendChild(input);
+      }
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+  } catch (e) {
+    console.error('Payment Initiation Failed:', e);
+    esToast(e.message || 'Could not initiate payment', 'error');
+  }
 }
 
-renderTicketsRecap();
-renderSummary();
-renderAttendeeForm();
+// Fetch real event title from backend
+async function initBookingPage() {
+  renderTicketsRecap();
+  renderSummary();
+  renderAttendeeForm();
+
+  if (eventId) {
+    try {
+      const ev = await EventsAPI.getById(eventId);
+      if (ev && ev.title) {
+        eventTitle = ev.title;
+      }
+    } catch (e) {
+      console.warn('Could not load event title from server:', e);
+    }
+  }
+}
+
+initBookingPage();
 </script>
 </body>
 </html>

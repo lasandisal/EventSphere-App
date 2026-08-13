@@ -66,7 +66,7 @@
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html?redirect=' + encodeURIComponent('organizer-apply.html' + window.location.search);
 
 document.getElementById('applyForm').addEventListener('submit', async (e) => {
   e.preventDefault();

@@ -77,22 +77,25 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script src="../js/utils/ai-widget.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-const eventId = new URLSearchParams(window.location.search).get('id') || '101';
+
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get('id');
 const selectedTickets = {}; // ticketTypeId -> {qty, price, name}
 
 function ticketTypeCard(tt) {
+  const availableQty = tt.availableQuantity ?? tt.available ?? 0;
   return `
   <div class="ticket-type-card" data-tt="${tt.id}">
     <div class="d-flex justify-content-between align-items-start">
       <div>
         <div class="tt-name">${tt.name}</div>
-        <div class="tt-price">LKR ${tt.price.toLocaleString()}</div>
-        <div class="text-muted-soft" style="font-size:0.8rem;">Available: ${tt.available}</div>
+        <div class="tt-price">LKR ${tt.price ? tt.price.toLocaleString() : '0'}</div>
+        <div class="text-muted-soft" style="font-size:0.8rem;">Available: ${availableQty}</div>
       </div>
       <div class="qty-stepper">
         <button type="button" class="qty-minus">−</button>
@@ -107,13 +110,18 @@ function wireTicketCards(types) {
   document.querySelectorAll('.ticket-type-card').forEach(card => {
     const id = card.getAttribute('data-tt');
     const tt = types.find(t => String(t.id) === id);
+    if (!tt) return;
+
+    const availableQty = tt.availableQuantity ?? tt.available ?? 0;
     const valEl = card.querySelector('.qty-val');
+
     card.querySelector('.qty-plus').addEventListener('click', () => {
-      const qty = Math.min((selectedTickets[id]?.qty || 0) + 1, tt.available);
+      const qty = Math.min((selectedTickets[id]?.qty || 0) + 1, availableQty);
       selectedTickets[id] = { qty, price: tt.price, name: tt.name };
       valEl.textContent = qty;
       card.classList.toggle('selected', qty > 0);
     });
+
     card.querySelector('.qty-minus').addEventListener('click', () => {
       const qty = Math.max((selectedTickets[id]?.qty || 0) - 1, 0);
       selectedTickets[id] = { qty, price: tt.price, name: tt.name };
@@ -126,45 +134,63 @@ function wireTicketCards(types) {
 document.getElementById('bookBtn').addEventListener('click', () => {
   const items = Object.entries(selectedTickets).filter(([, v]) => v.qty > 0);
   if (!items.length) { esToast('Select at least one ticket to continue', 'error'); return; }
-  if (!EsAuthStore.isLoggedIn()) {
-    esToast('Please log in to book tickets', 'error');
-    setTimeout(() => window.location.href = 'login.html', 900);
-    return;
-  }
   const payload = { eventId, items: items.map(([id, v]) => ({ ticketTypeId: id, quantity: v.qty, price: v.price, name: v.name })) };
   sessionStorage.setItem('es_pending_booking', JSON.stringify(payload));
-  window.location.href = 'booking.html?eventId=' + eventId;
+  const returnTo = 'booking.html?eventId=' + eventId;
+  if (!EsAuthStore.isLoggedIn()) {
+    esToast('Please log in to book tickets', 'error');
+    setTimeout(() => window.location.href = 'login.html?redirect=' + encodeURIComponent(returnTo), 900);
+    return;
+  }
+  window.location.href = returnTo;
 });
 
 async function loadEvent() {
+  if (!eventId) {
+    window.location.href = 'events.html';
+    return;
+  }
+
   try {
     const ev = await EventsAPI.getById(eventId);
-    document.getElementById('heroImg').src = ev.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80';
+    if (!ev) throw new Error('Event not found');
+
+    // Format start datetime into Date and Time strings
+    let dateText = 'TBA';
+    let timeText = 'TBA';
+    if (ev.startDatetime) {
+      const d = new Date(ev.startDatetime);
+      dateText = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      timeText = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    document.getElementById('heroImg').src = ev.bannerUrl || ev.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80';
     document.getElementById('evCategory').textContent = ev.categoryName || 'Event';
-    document.getElementById('evTitle').textContent = ev.title;
-    document.getElementById('evDate').textContent = ev.date;
-    document.getElementById('evTime').textContent = ev.time;
-    document.getElementById('evVenue').textContent = ev.venueName;
-    document.getElementById('evOrganizer').textContent = ev.organizerName || '—';
-    document.getElementById('evDescription').textContent = ev.description || '';
+    document.getElementById('evTitle').textContent = ev.title || 'Untitled Event';
+    document.getElementById('evDate').textContent = dateText;
+    document.getElementById('evTime').textContent = timeText;
+    document.getElementById('evVenue').textContent = ev.venueName || 'TBA';
+    document.getElementById('evOrganizer').textContent = ev.organizerName || 'Organizer';
+    document.getElementById('evDescription').textContent = ev.description || 'No description provided.';
+
+    const ticketTypes = ev.ticketTypes || [];
     const wrap = document.getElementById('ticketTypesWrap');
-    wrap.innerHTML = ev.ticketTypes.map(ticketTypeCard).join('');
-    wireTicketCards(ev.ticketTypes);
+    
+    if (ticketTypes.length) {
+      wrap.innerHTML = ticketTypes.map(ticketTypeCard).join('');
+      wireTicketCards(ticketTypes);
+    } else {
+      wrap.innerHTML = '<p class="text-muted-soft">No tickets currently available for this event.</p>';
+    }
+
   } catch (e) {
-    const ev = EsMock.events.find(x => String(x.id) === String(eventId)) || EsMock.events[0];
-    document.getElementById('heroImg').src = ev.img;
-    document.getElementById('evCategory').textContent = ev.category;
-    document.getElementById('evTitle').textContent = ev.title;
-    document.getElementById('evDate').textContent = ev.date;
-    document.getElementById('evTime').textContent = ev.time;
-    document.getElementById('evVenue').textContent = ev.venue;
-    document.getElementById('evOrganizer').textContent = 'Lasandi Events Co.';
-    document.getElementById('evDescription').textContent = `Join us for ${ev.title.toLowerCase()} — an evening curated for people who love ${ev.category.toLowerCase()}. Expect good company, thoughtful details, and an experience worth remembering.`;
-    const wrap = document.getElementById('ticketTypesWrap');
-    wrap.innerHTML = EsMock.ticketTypes.map(ticketTypeCard).join('');
-    wireTicketCards(EsMock.ticketTypes);
+    console.error('Error loading event:', e);
+    esToast('Could not load event details', 'error');
+    document.getElementById('evTitle').textContent = 'Event Not Found';
+    document.getElementById('evDescription').textContent = 'The event you requested could not be retrieved from the server.';
   }
 }
+
 loadEvent();
 </script>
 </body>

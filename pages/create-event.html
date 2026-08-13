@@ -83,7 +83,7 @@
 <script src="../js/api/events.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
@@ -107,18 +107,65 @@ function ticketTypeRow() {
 document.getElementById('addTicketType').addEventListener('click', ticketTypeRow);
 ticketTypeRow(); ticketTypeRow();
 
+// ---- Cloudinary unsigned upload — no backend involvement at all. ----
+// Fill these in from your Cloudinary dashboard (Settings > Upload).
+const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';
+const CLOUDINARY_UPLOAD_PRESET = 'YOUR_UNSIGNED_PRESET';
+
+async function uploadEventImage(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: fd
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'Image upload failed');
+  }
+  const data = await res.json();
+  return data.secure_url; // this is what goes into bannerUrl — a real, permanent, direct image URL
+}
+
+// Live preview + upload-on-select, so the organizer sees the real hosted
+// image (not just a local file picker) before they even submit the form.
+let uploadedBannerUrl = null;
+let uploadInProgress = false;
+document.getElementById('eventImageInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  const preview = document.getElementById('imagePreview');
+  if (!file) { uploadedBannerUrl = null; preview.innerHTML = ''; return; }
+
+  preview.innerHTML = `<div class="text-muted-soft">Uploading image...</div>`;
+  uploadInProgress = true;
+  try {
+    uploadedBannerUrl = await uploadEventImage(file);
+    preview.innerHTML = `<img src="${uploadedBannerUrl}" style="max-width:220px;border-radius:12px;" alt="Event banner preview">`;
+  } catch (err) {
+    uploadedBannerUrl = null;
+    preview.innerHTML = `<div class="text-danger">${err.message || 'Upload failed'} — the event can still be created without a banner image.</div>`;
+  } finally {
+    uploadInProgress = false;
+  }
+});
+
 async function loadOptions() {
   const catSel = document.getElementById('categorySelect');
   const venSel = document.getElementById('venueSelect');
   try {
     const cats = await CategoriesAPI.getAll();
-    (cats && cats.length ? cats : EsMock.categories).forEach(c => catSel.add(new Option(c.name, c.id)));
-  } catch (e) { EsMock.categories.forEach(c => catSel.add(new Option(c.name, c.id))); }
+    (cats || []).forEach(c => catSel.add(new Option(c.name, c.id)));
+    if (!cats || !cats.length) catSel.add(new Option('No categories yet — ask an admin to add one', ''));
+  } catch (e) {
+    esToast('Could not load categories.', 'error');
+  }
   try {
     const vens = await VenuesAPI.getAll();
     (vens || []).forEach(v => venSel.add(new Option(v.name, v.id)));
+    if (!vens || !vens.length) venSel.add(new Option('No venues yet — ask an admin to add one', ''));
   } catch (e) {
-    ['Colombo', 'Galle Face Green', 'Barefoot Garden Cafe', 'WeWork Colombo'].forEach((v, i) => venSel.add(new Option(v, i + 1)));
+    esToast('Could not load venues.', 'error');
   }
 }
 loadOptions();
@@ -126,11 +173,13 @@ loadOptions();
 document.getElementById('createEventForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const mode = e.submitter?.getAttribute('data-mode') || 'draft';
-  const fd = new FormData(e.target);
 
-  // EventCreateRequestDTO needs ISO LocalDateTime strings, not separate
-  // date/time fields — and BOTH start and end, or @NotNull rejects the
-  // request outright.
+  if (uploadInProgress) {
+    esToast('Still uploading the image — wait a moment and try again.', 'error');
+    return;
+  }
+
+  const fd = new FormData(e.target);
   const date = fd.get('date');
   const startDatetime = `${date}T${fd.get('time')}:00`;
   const endDatetime = `${date}T${fd.get('endTime')}:00`;
@@ -141,13 +190,10 @@ document.getElementById('createEventForm').addEventListener('submit', async (e) 
     categoryId: Number(fd.get('categoryId')),
     venueId: Number(fd.get('venueId')),
     startDatetime,
-    endDatetime
+    endDatetime,
+    bannerUrl: uploadedBannerUrl || null // null is fine — EventCreateRequestDTO.bannerUrl is optional
   };
 
-  // Ticket types are built as DOM rows (tt-name-N / tt-price-N / tt-qty-N)
-  // but were never actually collected or sent — publishing always failed
-  // server-side with "no ticket types" as a result. Collect every row that
-  // has a name filled in; empty trailing rows (from the two default blanks) are skipped.
   const ticketTypes = [];
   document.querySelectorAll('#ticketTypeRows .ticket-type-card').forEach(card => {
     const nameInput = card.querySelector('input[name^="tt-name-"]');
@@ -176,18 +222,11 @@ document.getElementById('createEventForm').addEventListener('submit', async (e) 
     esToast(mode === 'publish' ? 'Event published successfully' : 'Event saved as draft');
     setTimeout(() => window.location.href = 'organizer-dashboard.html', 700);
   } catch (err) {
-    if (err.status === 0) {
-      // Genuine network failure (no backend reachable) — demo mode is a
-      // reasonable fallback here.
-      esToast(mode === 'publish' ? 'Event published (demo mode)' : 'Event saved as draft (demo mode)');
-      setTimeout(() => window.location.href = 'organizer-dashboard.html', 700);
-    } else {
-      // A real backend response (400 validation, 403 not-yet-approved
-      // organizer, etc.) — show the ACTUAL reason, never fake success over it.
-      esToast(err.message || 'Could not create the event', 'error');
-    }
+    // Real error, always — no demo-mode fallback of any kind anymore.
+    esToast(err.message || 'Could not create the event', 'error');
   }
 });
 </script>
+
 </body>
 </html>

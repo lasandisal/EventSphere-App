@@ -40,7 +40,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Log in</button>
       </form>
-      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Don't have an account? <a href="register.html">Sign up</a></p>
+      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Don't have an account? <a href="register.html" id="registerLink">Sign up</a></p>
     </div>
   </div>
 </div>
@@ -56,18 +56,21 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const email = fd.get('email'), password = fd.get('password');
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
+
   try {
     await AuthAPI.login({ email, password });
     esToast('Welcome back!');
     setTimeout(() => window.location.href = '../index.html', 500);
   } catch (err) {
-    // Demo-mode fallback so the flow is fully browsable without a backend
-    EsAuthStore.setToken('demo-token');
-    EsAuthStore.setUser({ fullName: email.split('@')[0], email, roles: ['USER'] });
-    esToast('Logged in (demo mode)');
-    setTimeout(() => window.location.href = '../index.html', 500);
+    // No demo-mode fallback — a login failure is always shown for what it
+    // is (wrong password, backend unreachable, etc.), never faked as success.
+    esToast(err.message || 'Login failed. Check your email and password.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Log in'; }
   }
 });
 </script>
+
 </body>
 </html>

@@ -52,28 +52,17 @@
   }
 
   async function handlePrompt(prompt) {
-    addMessage(prompt, 'user');
-    document.getElementById('aiInput').value = '';
+  addMessage(prompt, 'user');
+  document.getElementById('aiInput').value = '';
 
-    try {
-      const res = await AssistantAPI.chat(prompt);
-      addMessage(res.reply || "Here's what I found ✨", 'bot');
-      (res.events || []).forEach(ev => addMessage(eventMiniCard(ev), 'bot'));
-    } catch (err) {
-      // Demo-mode fallback
-      const lower = prompt.toLowerCase();
-      if (lower.includes('book')) {
-        addMessage("Here's a quick look at your bookings — you can see the full list on My Bookings.", 'bot');
-      } else {
-        const matches = EsMock.events.filter(e =>
-          lower.includes('music') ? e.category === 'Music' :
-          lower.includes('tech') ? e.category === 'Technology' : true
-        ).slice(0, 2);
-        addMessage('I found a few events that might be your thing ✨', 'bot');
-        matches.forEach(ev => addMessage(eventMiniCard(ev), 'bot'));
-      }
-    }
+  try {
+    const res = await AssistantAPI.chat(prompt);
+    addMessage(res.reply || "Here's what I found ✨", 'bot');
+    (res.events || []).forEach(ev => addMessage(eventMiniCard(ev), 'bot'));
+  } catch (err) {
+    addMessage("Sorry, I couldn't process your request right now. Please try again later.", 'bot');
   }
+}
 
   document.addEventListener('DOMContentLoaded', () => {
     injectMarkup();

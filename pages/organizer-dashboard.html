@@ -162,80 +162,104 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
 if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
+if (!EsAuthStore.hasRole('ORGANIZER')) window.location.href = 'organizer-apply.html';
 
 document.querySelectorAll('.side-link[data-section]').forEach(link => {
   link.addEventListener('click', () => {
     document.querySelectorAll('.side-link[data-section]').forEach(l => l.classList.remove('active'));
     link.classList.add('active');
     document.querySelectorAll('main > section').forEach(s => s.classList.add('d-none'));
-    document.getElementById('sec-' + link.getAttribute('data-section')).classList.remove('d-none');
+    const target = document.getElementById('sec-' + link.getAttribute('data-section'));
+    if (target) target.classList.remove('d-none');
   });
 });
 
-const mockMyEvents = [
-  { title: 'AI & Innovation Summit', date: 'Sep 12, 2026', category: 'Technology', sold: 214, available: 86, status: 'published' },
-  { title: 'Golden Hour Acoustic Night', date: 'Sep 18, 2026', category: 'Music', sold: 340, available: 10, status: 'published' },
-  { title: 'Founders Breakfast', date: 'Aug 2, 2026', category: 'Community', sold: 40, available: 0, status: 'draft' },
-  { title: 'Summer Jazz Series', date: 'Jul 4, 2026', category: 'Music', sold: 120, available: 0, status: 'cancelled' }
-];
 function statusBadge(s) {
-  const map = { published: ['status-confirmed','Published'], draft: ['status-pending','Draft'], cancelled: ['status-cancelled','Cancelled'] };
-  const [cls, label] = map[s] || map.draft;
+  const map = { PUBLISHED: ['status-confirmed', 'Published'], DRAFT: ['status-pending', 'Draft'], CANCELLED: ['status-cancelled', 'Cancelled'] };
+  const key = String(s).toUpperCase();
+  const [cls, label] = map[key] || ['status-pending', key];
   return `<span class="status-badge ${cls}">${label}</span>`;
 }
-document.getElementById('myEventsBody').innerHTML = mockMyEvents.map(e => `
-  <tr>
-    <td data-label="Event">${e.title}</td>
-    <td data-label="Date">${e.date}</td>
-    <td data-label="Category">${e.category}</td>
-    <td data-label="Sold">${e.sold}</td>
-    <td data-label="Available">${e.available}</td>
-    <td data-label="Status">${statusBadge(e.status)}</td>
-    <td data-label="Actions"><a href="#" class="btn btn-quiet btn-sm">View</a> <a href="#" class="btn btn-quiet btn-sm">Edit</a></td>
-  </tr>`).join('');
-
-document.getElementById('bookingsBody').innerHTML = EsMock.bookings.map(b => `
-  <tr>
-    <td data-label="Booking">#${b.id}</td>
-    <td data-label="Event">${b.event}</td>
-    <td data-label="Attendee">Guest</td>
-    <td data-label="Tickets">${b.tickets}</td>
-    <td data-label="Total">LKR ${b.total.toLocaleString()}</td>
-    <td data-label="Status"><span class="status-badge status-${b.status}">${b.status[0].toUpperCase()+b.status.slice(1)}</span></td>
-  </tr>`).join('');
-
-const mockAttendees = [
-  { name: 'Amaya Perera', email: 'amaya@example.com', event: 'AI & Innovation Summit', type: 'VIP', id: 'ES-88123', booking: 'confirmed', checkin: true },
-  { name: 'Nadeesha Silva', email: 'nadeesha@example.com', event: 'Golden Hour Acoustic Night', type: 'General', id: 'ES-88124', booking: 'confirmed', checkin: false }
-];
-document.getElementById('attendeesBody').innerHTML = mockAttendees.map(a => `
-  <tr>
-    <td data-label="Name">${a.name}</td>
-    <td data-label="Email">${a.email}</td>
-    <td data-label="Event">${a.event}</td>
-    <td data-label="Ticket Type">${a.type}</td>
-    <td data-label="Ticket ID">${a.id}</td>
-    <td data-label="Booking"><span class="status-badge status-confirmed">Confirmed</span></td>
-    <td data-label="Check-in">${a.checkin ? '<span class="status-badge status-confirmed">Checked in</span>' : '<button class="btn btn-quiet btn-sm">Check in</button>'}</td>
-  </tr>`).join('');
 
 async function loadProfile() {
+  // OrganizerResponseDTO has NO email field — it's the authenticated
+  // account's own email, already sitting in local storage from login.
+  const u = EsAuthStore.getUser() || {};
+  document.getElementById('profEmail').textContent = u.email || '—';
   try {
     const p = await OrganizerAPI.getMyProfile();
-    document.getElementById('profBusiness').textContent = p.businessName;
-    document.getElementById('profEmail').textContent = p.email || '—';
+    document.getElementById('profBusiness').textContent = p.businessName || '—';
   } catch (e) {
-    const u = EsAuthStore.getUser() || {};
-    document.getElementById('profBusiness').textContent = (u.fullName || 'Your') + ' Events Co.';
-    document.getElementById('profEmail').textContent = u.email || '—';
+    document.getElementById('profBusiness').textContent = '—';
+    esToast('Could not load your organizer profile.', 'error');
   }
 }
+
+async function loadMyEvents() {
+  const tbody = document.getElementById('myEventsBody');
+  try {
+    const res = await EventsAPI.myEvents({ page: 0, size: 20 });
+    const list = Array.isArray(res) ? res : (res?.content || []);
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft">No events created yet — <a href="create-event.html">create your first one</a>.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(e => {
+      // sold/available are NOT top-level Event fields — they're derived by
+      // summing across ticketTypes, which the response does include.
+      const sold = (e.ticketTypes || []).reduce((s, t) => s + (t.totalQuantity - t.availableQuantity), 0);
+      const available = (e.ticketTypes || []).reduce((s, t) => s + t.availableQuantity, 0);
+      return `
+      <tr>
+        <td data-label="Event">${e.title}</td>
+        <td data-label="Date">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
+        <td data-label="Category">${e.categoryName || 'General'}</td>
+        <td data-label="Sold">${sold}</td>
+        <td data-label="Available">${available}</td>
+        <td data-label="Status">${statusBadge(e.status)}</td>
+        <td data-label="Actions">
+          <a href="event-details.html?id=${e.id}" class="btn btn-quiet btn-sm">View</a>
+          ${e.status === 'DRAFT' ? `<button class="btn btn-quiet btn-sm" onclick="publishEvent(${e.id})">Publish</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft">Could not load your events: ${e.message || 'unknown error'}</td></tr>`;
+  }
+}
+
+async function publishEvent(id) {
+  try {
+    await EventsAPI.publishEvent(id);
+    esToast('Event published');
+    loadMyEvents();
+  } catch (e) {
+    esToast(e.message || 'Could not publish (does it have at least one ticket type?)', 'error');
+  }
+}
+
+// NOTE: BookingsAPI.myBookings() returns the CURRENT USER's own bookings as
+// an attendee — not sales/bookings for the events this organizer runs.
+// There's no backend endpoint for that yet (would need something like
+// GET /api/v1/organizer/events/{id}/bookings). Calling myBookings() here
+// and relabeling it as "sales" would be real data answering the wrong
+// question, which is worse than an honest placeholder — so it stays honest.
+document.getElementById('bookingsBody').innerHTML =
+  `<tr><td colspan="6" class="text-center text-muted-soft py-4">
+     Per-event booking/sales lists aren't available yet — this needs a new backend endpoint
+     (e.g. GET /api/v1/organizer/events/{id}/bookings).
+   </td></tr>`;
+
 loadProfile();
+loadMyEvents();
 </script>
+
 </body>
 </html>

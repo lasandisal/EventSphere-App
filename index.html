@@ -145,38 +145,54 @@ document.querySelectorAll('.brand .sparkle').forEach(s => { if(!s.innerHTML.trim
 
 function renderCategories(list) {
   const grid = document.getElementById('categoryGrid');
-  grid.innerHTML = list.map(c => `
+  if (!list.length) {
+    grid.innerHTML = `<p class="text-muted-soft">No categories yet.</p>`;
+    return;
+  }
+  grid.innerHTML = list.map(c => {
+    const v = esCategoryVisual(c.name); // deterministic icon/color — real CategoryResponseDTO has neither field
+    return `
     <div class="col-6 col-md-3">
-      <a href="pages/events.html?categoryId=${c.id}" class="category-card ${c.cls} d-block text-decoration-none">
-        <div class="cat-icon">${c.icon}</div>
+      <a href="pages/events.html?categoryId=${c.id}" class="category-card ${v.cls} d-block text-decoration-none">
+        <div class="cat-icon">${v.icon}</div>
         <div class="cat-name">${c.name}</div>
       </a>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-function availabilityLabel(a) {
-  return a === 'low'
+function availabilityLabel(totalAvailable) {
+  return totalAvailable > 0 && totalAvailable <= 10
     ? `<span class="availability-dot low">Few tickets left</span>`
     : `<span class="availability-dot">Tickets available</span>`;
 }
 
 function eventCard(ev) {
-  const priceText = ev.price === 0 ? 'Free' : `From LKR ${ev.price.toLocaleString()}`;
+  const prices = (ev.ticketTypes || []).map(t => Number(t.price));
+  const priceText = prices.length === 0 ? 'Tickets TBA'
+    : (Math.min(...prices) === 0 ? 'Free' : `From LKR ${Math.min(...prices).toLocaleString()}`);
+  const totalAvailable = (ev.ticketTypes || []).reduce((s, t) => s + (t.availableQuantity || 0), 0);
+  const v = esCategoryVisual(ev.categoryName);
+  const dt = new Date(ev.startDatetime);
+  const dateText = dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  const timeText = dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  const img = ev.bannerUrl || `https://placehold.co/500x300/F7D6DE/9B4A63?text=${encodeURIComponent(ev.title)}`;
+
   return `
   <div class="col-md-6 col-lg-3">
     <div class="event-card">
       <div class="img-wrap">
-        <img src="${ev.img}" alt="${ev.title}">
-        <span class="pill-badge ${ev.pill}">${ev.category}</span>
+        <img src="${img}" alt="${ev.title}">
+        <span class="pill-badge ${v.cls}">${ev.categoryName}</span>
       </div>
       <div class="body">
         <div class="title">${ev.title}</div>
-        <div class="meta"><i class="bi bi-calendar3"></i> ${ev.date}, ${ev.time}</div>
-        <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venue}</div>
+        <div class="meta"><i class="bi bi-calendar3"></i> ${dateText}, ${timeText}</div>
+        <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venueName}</div>
         <div class="price-row">
           <div>
             <div class="price">${priceText}</div>
-            ${availabilityLabel(ev.availability)}
+            ${availabilityLabel(totalAvailable)}
           </div>
           <a href="pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
         </div>
@@ -188,18 +204,23 @@ function eventCard(ev) {
 async function loadHome() {
   try {
     const cats = await CategoriesAPI.getAll();
-    renderCategories(cats && cats.length ? cats : EsMock.categories);
-  } catch (e) { renderCategories(EsMock.categories); }
+    renderCategories(cats || []);
+  } catch (e) {
+    document.getElementById('categoryGrid').innerHTML = `<p class="text-muted-soft">Could not load categories.</p>`;
+  }
 
   try {
     const events = await EventsAPI.searchPublished({ size: 4 });
-    const list = (events && events.content) ? events.content : EsMock.events.slice(0, 4);
-    document.getElementById('featuredGrid').innerHTML = list.map(eventCard).join('');
+    const list = (events && events.content) || [];
+    document.getElementById('featuredGrid').innerHTML = list.length
+      ? list.map(eventCard).join('')
+      : `<p class="text-muted-soft">No published events yet — check back soon.</p>`;
   } catch (e) {
-    document.getElementById('featuredGrid').innerHTML = EsMock.events.slice(0, 4).map(eventCard).join('');
+    document.getElementById('featuredGrid').innerHTML = `<p class="text-muted-soft">Could not load events. Is the backend running?</p>`;
   }
 }
 loadHome();
 </script>
+
 </body>
 </html>

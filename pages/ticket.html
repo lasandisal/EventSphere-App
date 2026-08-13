@@ -57,32 +57,58 @@
 <script src="../js/api/auth.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
 document.getElementById('tkSparkle').innerHTML = EsIcons.sparkle;
+if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
 
-let data = null;
-try { data = JSON.parse(localStorage.getItem('es_last_ticket')); } catch(e){}
+// There is no backend endpoint that returns a ticket's QR image — QR codes
+// are only ever generated once, server-side, and emailed at payment
+// confirmation (see EmailServiceImpl). This page shows the real BOOKING
+// record instead (attendee, ticket type, status) via a real API call, and
+// is honest that the scannable QR itself lives in the confirmation email,
+// not on this page — it was never faked here, and it isn't now either.
+const bookingId = new URLSearchParams(window.location.search).get('bookingId');
 
-if (!data) {
-  data = {
-    event: 'AI & Innovation Summit',
-    bookingId: 'DEMO-58231',
-    items: [{ name: 'VIP', quantity: 1 }],
-    attendees: [{ name: 'Amaya Perera', email: 'amaya@example.com', ticket: 'VIP' }]
-  };
+async function loadTicket() {
+  if (!bookingId) {
+    document.getElementById('tkEvent').textContent = 'No booking specified';
+    document.getElementById('tkAttendee').textContent = '—';
+    return;
+  }
+
+  try {
+    const b = await BookingsAPI.getById(bookingId);
+
+    document.getElementById('tkEvent').textContent = b.eventTitle;
+    document.getElementById('tkDate').textContent = b.confirmedAt
+      ? new Date(b.confirmedAt).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+      : '—';
+    document.getElementById('tkTime').textContent = '';
+    document.getElementById('tkVenue').textContent = '';
+
+    const firstTicket = b.items?.[0]?.tickets?.[0];
+    document.getElementById('tkAttendee').textContent = firstTicket?.attendeeName || '—';
+    document.getElementById('tkType').textContent = b.items?.[0]?.ticketTypeName || '—';
+    document.getElementById('tkId').textContent = 'Booking · ' + b.bookingReference;
+
+    if (b.status !== 'CONFIRMED') {
+      document.querySelector('.container-narrow')?.insertAdjacentHTML('afterbegin',
+        `<div class="state-block"><p>This booking is <b>${b.status}</b> — a QR ticket only exists for confirmed, paid bookings.</p></div>`);
+    } else {
+      document.querySelector('.container-narrow')?.insertAdjacentHTML('beforeend',
+        `<p class="text-muted-soft text-center mt-3">Your scannable QR code was emailed to you when payment was confirmed — this page shows your booking details, not the QR itself.</p>`);
+    }
+  } catch (e) {
+    document.getElementById('tkEvent').textContent = 'Could not load this booking';
+    document.getElementById('tkAttendee').textContent = e.message || 'Unknown error';
+  }
 }
 
-const first = (data.attendees && data.attendees[0]) || { name: 'Guest', ticket: (data.items[0] && data.items[0].name) || 'General' };
-document.getElementById('tkEvent').textContent = data.event;
-document.getElementById('tkDate').textContent = 'Saturday, September 12, 2026';
-document.getElementById('tkTime').textContent = '9:00 AM';
-document.getElementById('tkVenue').textContent = 'Colombo';
-document.getElementById('tkAttendee').textContent = first.name;
-document.getElementById('tkType').textContent = first.ticket;
-document.getElementById('tkId').textContent = 'TICKET · ' + (data.bookingId || 'ES-00000');
+loadTicket();
 </script>
+
 </body>
 </html>

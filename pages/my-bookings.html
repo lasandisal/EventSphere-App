@@ -73,32 +73,49 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<script src="../js/utils/mock-data.js"></script>
+<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script src="../js/utils/ai-widget.js"></script>
+
+
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
 
-const statusMap = { confirmed: ['status-confirmed','Confirmed'], pending: ['status-pending','Pending'], cancelled: ['status-cancelled','Cancelled'], completed: ['status-completed','Completed'] };
+// Real BookingStatus is PENDING/CONFIRMED/CANCELLED/EXPIRED (uppercase) —
+// there is no "completed" status on the backend.
+const statusMap = {
+  PENDING:   ['status-pending',   'Pending payment'],
+  CONFIRMED: ['status-confirmed', 'Confirmed'],
+  CANCELLED: ['status-cancelled', 'Cancelled'],
+  EXPIRED:   ['status-cancelled', 'Expired']
+};
 let toCancel = null;
-let cache = null;
+let cache = [];
+let eventCache = {}; // eventId -> EventResponseDTO, for venue/date/image not present on BookingResponseDTO
 
 function bookingCard(b) {
-  const [cls, label] = statusMap[b.status];
+  const [cls, label] = statusMap[b.status] || ['status-pending', b.status];
+  const ev = eventCache[b.eventId];
+  const ticketCount = (b.items || []).reduce((s, i) => s + i.quantity, 0);
+  const img = ev?.bannerUrl || `https://placehold.co/300x200/D6E4F5/3E6C9E?text=${encodeURIComponent(b.eventTitle)}`;
+  const dateLine = ev ? new Date(ev.startDatetime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  const venueLine = ev?.venueName || '';
+
   return `
   <div class="event-card flex-row" style="flex-direction:row; align-items:stretch;">
-    <div style="width:160px; min-width:160px;" class="img-wrap"><img src="${b.img}" alt="${b.event}"></div>
+    <div style="width:160px; min-width:160px;" class="img-wrap"><img src="${img}" alt="${b.eventTitle}"></div>
     <div class="body w-100" style="flex-direction:row; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
       <div>
         <span class="status-badge ${cls} mb-2 d-inline-flex">${label}</span>
-        <div class="title" style="font-size:1.15rem;">${b.event}</div>
-        <div class="meta"><i class="bi bi-calendar3"></i> ${b.date} · <i class="bi bi-geo-alt"></i> ${b.venue}</div>
-        <div class="meta">${b.tickets} ticket(s) · LKR ${b.total.toLocaleString()}</div>
+        <div class="title" style="font-size:1.15rem;">${b.eventTitle}</div>
+        <div class="meta"><i class="bi bi-calendar3"></i> ${dateLine} ${venueLine ? '· <i class="bi bi-geo-alt"></i> ' + venueLine : ''}</div>
+        <div class="meta">${ticketCount} ticket(s) · LKR ${Number(b.totalAmount).toLocaleString()}</div>
+        <div class="text-muted-soft" style="font-size:0.78rem;">Ref: ${b.bookingReference}</div>
       </div>
       <div class="d-flex flex-column gap-2">
-        <a href="ticket.html" class="btn btn-quiet btn-sm">View Ticket</a>
-        <a href="#" class="btn btn-outline-soft btn-sm">View Details</a>
-        ${b.status === 'confirmed' || b.status === 'pending' ? `<button class="btn btn-danger-soft btn-sm" onclick="askCancel(${b.id})">Cancel Booking</button>` : ''}
+        ${b.status === 'CONFIRMED' ? `<a href="ticket.html?bookingId=${b.id}" class="btn btn-quiet btn-sm">View Ticket</a>` : ''}
+        ${b.status === 'PENDING' ? `<a href="booking.html?eventId=${b.eventId}" class="btn btn-primary btn-sm">Complete payment</a>` : ''}
+        ${b.status === 'PENDING' ? `<button class="btn btn-danger-soft btn-sm" onclick="askCancel(${b.id})">Cancel Booking</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -115,10 +132,18 @@ function emptyState(tab) {
 
 function renderTab(tab) {
   const list = document.getElementById('bookingsList');
+  if (!list) return;
+  const now = new Date();
   let filtered;
-  if (tab === 'upcoming') filtered = cache.filter(b => b.status === 'confirmed' || b.status === 'pending');
-  else if (tab === 'past') filtered = cache.filter(b => b.status === 'completed');
-  else filtered = cache.filter(b => b.status === 'cancelled');
+  if (tab === 'upcoming') {
+    filtered = cache.filter(b => (b.status === 'CONFIRMED' || b.status === 'PENDING')
+      && (!eventCache[b.eventId] || new Date(eventCache[b.eventId].startDatetime) >= now));
+  } else if (tab === 'past') {
+    filtered = cache.filter(b => b.status === 'CONFIRMED'
+      && eventCache[b.eventId] && new Date(eventCache[b.eventId].startDatetime) < now);
+  } else {
+    filtered = cache.filter(b => b.status === 'CANCELLED' || b.status === 'EXPIRED');
+  }
   list.innerHTML = filtered.length ? filtered.map(bookingCard).join('') : emptyState(tab);
 }
 
@@ -134,26 +159,42 @@ function askCancel(id) {
   toCancel = id;
   new bootstrap.Modal(document.getElementById('cancelModal')).show();
 }
+
 document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
-  try { await BookingsAPI.cancel(toCancel); } catch (e) { /* demo mode */ }
-  const b = cache.find(x => x.id === toCancel);
-  if (b) b.status = 'cancelled';
+  try {
+    await BookingsAPI.cancel(toCancel);
+    const b = cache.find(x => x.id === toCancel);
+    if (b) b.status = 'CANCELLED';
+    esToast('Booking cancelled');
+  } catch (e) {
+    // No silent swallow — if cancellation actually failed (e.g. it already
+    // expired, or isn't PENDING anymore), say so instead of pretending it worked.
+    esToast(e.message || 'Could not cancel this booking', 'error');
+  }
   bootstrap.Modal.getInstance(document.getElementById('cancelModal')).hide();
-  esToast('Booking cancelled');
   renderTab(document.querySelector('#bookingTabs button.active').getAttribute('data-tab'));
 });
 
 async function loadBookings() {
+  const list = document.getElementById('bookingsList');
   try {
-    const res = await BookingsAPI.myBookings();
-    cache = (res && res.content) || [];
-    if (!cache.length) cache = EsMock.bookings;
+    const res = await BookingsAPI.myBookings({ size: 50 });
+    cache = Array.isArray(res) ? res : (res?.content || []);
   } catch (e) {
-    cache = EsMock.bookings;
+    list.innerHTML = `<div class="state-block"><h3>Could not load your bookings</h3><p>${e.message || 'Is the backend running?'}</p></div>`;
+    return;
   }
+
+  const uniqueEventIds = [...new Set(cache.map(b => b.eventId))];
+  await Promise.all(uniqueEventIds.map(async id => {
+    try { eventCache[id] = await EventsAPI.getById(id); } catch (e) { /* card degrades gracefully without it */ }
+  }));
+
   renderTab('upcoming');
 }
+
 loadBookings();
 </script>
+
 </body>
 </html>
