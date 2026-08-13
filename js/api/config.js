@@ -3,16 +3,14 @@
    Talks to the Spring Boot backend under /api/v1/*.
    ========================================================= */
 
-// Render is the default now that it's deployed — this is what every
-// GitHub Pages visitor actually needs to hit. For LOCAL development
-// against a backend running on your own machine, set
-// window.ES_API_BASE = 'http://localhost:8080/api/v1' in a small
-// <script> BEFORE this file loads (e.g. only on your local copy) —
-// don't flip the default below, or it breaks the deployed site again.
+if (!window.ES_CONFIG || !window.ES_CONFIG.API_BASE) {
+  const errMsg = 'EventSphere frontend configuration is missing. Run ./dev.sh to generate js/env.js from .env.';
+  console.error(errMsg);
+  if (typeof esToast === 'function') esToast(errMsg, 'error');
+  throw new Error(errMsg);
+}
 
-
-const ES_API_BASE = window.ES_API_BASE || 'https://its-1114-eventsphere-booking-platform.onrender.com/api/v1';
-// const ES_API_BASE = window.ES_API_BASE || 'http://localhost:8080/api/v1';
+const ES_API_BASE = window.ES_CONFIG.API_BASE;
 const ES_TOKEN_KEY = 'es_token';
 const ES_USER_KEY = 'es_user';
 

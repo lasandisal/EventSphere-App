@@ -78,6 +78,7 @@
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
 <script src="../js/api/auth.js"></script>
 <script src="../js/api/events.js"></script>
@@ -107,16 +108,19 @@ function ticketTypeRow() {
 document.getElementById('addTicketType').addEventListener('click', ticketTypeRow);
 ticketTypeRow(); ticketTypeRow();
 
-// ---- Cloudinary unsigned upload — no backend involvement at all. ----
-// Fill these in from your Cloudinary dashboard (Settings > Upload).
-const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME';
-const CLOUDINARY_UPLOAD_PRESET = 'YOUR_UNSIGNED_PRESET';
-
+// ---- Cloudinary unsigned upload — reads from window.ES_CONFIG ----
 async function uploadEventImage(file) {
+  const cloudName = window.ES_CONFIG?.CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = window.ES_CONFIG?.CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Cloudinary configuration missing. Set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET in js/env.js.');
+  }
+
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+  fd.append('upload_preset', uploadPreset);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: 'POST',
     body: fd
   });

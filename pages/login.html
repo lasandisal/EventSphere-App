@@ -25,14 +25,19 @@
     <div class="auth-card">
       <p class="eyebrow">Log in</p>
       <h2 class="mb-4">Good to see you again</h2>
-      <form id="loginForm" class="d-flex flex-column gap-3">
+      <form id="loginForm" class="d-flex flex-column gap-3" novalidate>
         <div>
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+          <label class="form-label" for="loginEmail">Email</label>
+          <input type="email" class="form-control" id="loginEmail" name="email" required placeholder="you@example.com">
+          <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" name="password" required placeholder="••••••••">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="password-toggle-group">
+            <input type="password" class="form-control" id="loginPassword" name="password" required placeholder="••••••••">
+            <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
+          </div>
+          <div class="invalid-feedback"></div>
         </div>
         <div class="d-flex justify-content-between align-items-center" style="font-size:0.85rem;">
           <label class="d-flex align-items-center gap-2"><input type="checkbox" checked> Remember me</label>
@@ -45,18 +50,37 @@
   </div>
 </div>
 
+<script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
 <script src="../js/api/auth.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
+<script src="../js/utils/validation.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+EsValidation.initPasswordToggles(document.getElementById('loginForm'));
+EsValidation.attachLiveValidation(document.getElementById('loginForm'));
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const email = fd.get('email'), password = fd.get('password');
-  const btn = e.target.querySelector('button[type="submit"]');
+  const form = e.target;
+  EsValidation.clearFormErrors(form);
+
+  const emailInput = form.querySelector('[name="email"]');
+  const passwordInput = form.querySelector('[name="password"]');
+
+  let isValid = true;
+  if (!EsValidation.validateEmailField(emailInput)) isValid = false;
+  if (!EsValidation.validatePasswordField(passwordInput, 'Password')) isValid = false;
+
+  if (!isValid) {
+    esToast('Please fix the errors in the form.', 'error');
+    return;
+  }
+
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  const btn = form.querySelector('button[type="submit"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
 
   try {

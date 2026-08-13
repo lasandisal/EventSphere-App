@@ -25,22 +25,32 @@
     <div class="auth-card">
       <p class="eyebrow">Create account</p>
       <h2 class="mb-4">Let's get you set up</h2>
-      <form id="registerForm" class="d-flex flex-column gap-3">
+      <form id="registerForm" class="d-flex flex-column gap-3" novalidate>
         <div>
-          <label class="form-label">Full name</label>
-          <input type="text" class="form-control" name="fullName" required placeholder="Your name">
+          <label class="form-label" for="regFullName">Full name</label>
+          <input type="text" class="form-control" id="regFullName" name="fullName" required placeholder="Your name">
+          <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+          <label class="form-label" for="regEmail">Email</label>
+          <input type="email" class="form-control" id="regEmail" name="email" required placeholder="you@example.com">
+          <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control" name="password" required placeholder="••••••••">
+          <label class="form-label" for="regPassword">Password</label>
+          <div class="password-toggle-group">
+            <input type="password" class="form-control" id="regPassword" name="password" required placeholder="••••••••">
+            <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
+          </div>
+          <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label">Confirm password</label>
-          <input type="password" class="form-control" name="confirmPassword" required placeholder="••••••••">
+          <label class="form-label" for="regConfirmPassword">Confirm password</label>
+          <div class="password-toggle-group">
+            <input type="password" class="form-control" id="regConfirmPassword" name="confirmPassword" required placeholder="••••••••">
+            <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
+          </div>
+          <div class="invalid-feedback"></div>
         </div>
         <div>
           <label class="form-label">Account type</label>
@@ -56,18 +66,40 @@
   </div>
 </div>
 
+<script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
 <script src="../js/api/auth.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
+<script src="../js/utils/validation.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+EsValidation.initPasswordToggles(document.getElementById('registerForm'));
+EsValidation.attachLiveValidation(document.getElementById('registerForm'));
 
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const fd = new FormData(e.target);
+  const form = e.target;
+  EsValidation.clearFormErrors(form);
+
+  const fullNameInput = form.querySelector('[name="fullName"]');
+  const emailInput = form.querySelector('[name="email"]');
+  const passwordInput = form.querySelector('[name="password"]');
+  const confirmPasswordInput = form.querySelector('[name="confirmPassword"]');
+
+  let isValid = true;
+  if (!EsValidation.validateRequiredField(fullNameInput, 'Full name')) isValid = false;
+  if (!EsValidation.validateEmailField(emailInput)) isValid = false;
+  if (!EsValidation.validatePasswordField(passwordInput, 'Password')) isValid = false;
+  if (!EsValidation.validatePasswordConfirmation(passwordInput, confirmPasswordInput)) isValid = false;
+
+  if (!isValid) {
+    esToast('Please fix the errors in the form.', 'error');
+    return;
+  }
+
+  const fd = new FormData(form);
   const payload = Object.fromEntries(fd.entries());
-  if (payload.password !== payload.confirmPassword) { esToast('Passwords do not match', 'error'); return; }
 
   // The backend has no accountType field — self-registration always grants
   // USER only (RoleName.USER), never ORGANIZER. Organizer access is a
@@ -78,7 +110,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   delete payload.accountType;
   delete payload.confirmPassword;
 
-  const btn = e.target.querySelector('button[type="submit"]');
+  const btn = form.querySelector('button[type="submit"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
 
   try {

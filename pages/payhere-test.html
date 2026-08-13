@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PayHere Sandbox Isolated Test — EventSphere</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #0f172a; color: #f8fafc; }
+    .card { background: #1e293b; border-radius: 12px; padding: 24px; border: 1px solid #334155; }
+    h1 { font-size: 1.5rem; margin-top: 0; color: #38bdf8; }
+    button { background: #0284c7; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #0369a1; }
+    pre { background: #090d16; padding: 12px; border-radius: 6px; font-size: 0.85rem; overflow-x: auto; color: #a5f3fc; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>PayHere Sandbox Isolated Test</h1>
+    <p>This page tests the PayHere Checkout API submission directly with synthetic data, bypassing all booking database logic.</p>
+    <button id="testBtn" onclick="runIsolatedTest()">Run PayHere Sandbox Checkout Test</button>
+    <div id="status" style="margin-top: 16px;"></div>
+    <pre id="logOutput" style="display:none;"></pre>
+  </div>
+
+  <script>
+    async function runIsolatedTest() {
+      const statusEl = document.getElementById('status');
+      const logEl = document.getElementById('logOutput');
+      statusEl.textContent = 'Fetching test checkout DTO from backend...';
+      
+      try {
+        const res = await fetch('http://localhost:7080/api/v1/payments/test-checkout');
+        const json = await res.json();
+        
+        if (!json.data) {
+          throw new Error('Malformed backend response: ' + JSON.stringify(json));
+        }
+
+        const data = json.data;
+        logEl.style.display = 'block';
+        logEl.textContent = JSON.stringify({
+          merchant_id: data.merchantId,
+          order_id: data.orderId,
+          amount: data.amount,
+          currency: data.currency,
+          hash_length: data.hash ? data.hash.length : 0,
+          actionUrl: data.actionUrl,
+          return_url: data.returnUrl,
+          cancel_url: data.cancelUrl,
+          notify_url: data.notifyUrl
+        }, null, 2);
+
+        statusEl.textContent = 'Submitting form to PayHere Sandbox...';
+
+        const actionUrl = data.actionUrl || 'https://sandbox.payhere.lk/pay/checkout';
+
+        const fields = {
+          merchant_id: data.merchantId,
+          return_url: data.returnUrl,
+          cancel_url: data.cancelUrl,
+          notify_url: data.notifyUrl,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          country: data.country,
+          order_id: data.orderId,
+          items: data.itemsDescription,
+          currency: data.currency,
+          amount: data.amount,
+          hash: data.hash
+        };
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = actionUrl;
+
+        Object.entries(fields).forEach(([key, val]) => {
+          if (val !== undefined && val !== null) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = val;
+            form.appendChild(input);
+          }
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

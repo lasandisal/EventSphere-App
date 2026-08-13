@@ -407,3 +407,58 @@
 /* ---------- Misc ---------- */
 .divider-dot{ width:4px;height:4px;border-radius:50%; background: var(--charcoal-faint); display:inline-block; }
 .section-head{ margin-bottom: 2.6rem; }
+
+/* ---------- Password Toggle & Form Validation ---------- */
+.password-toggle-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-toggle-group .form-control {
+  padding-right: 2.75rem;
+}
+.password-toggle-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0.35rem;
+  color: var(--charcoal-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.2s, background-color 0.2s;
+  line-height: 1;
+  z-index: 5;
+}
+.password-toggle-btn:hover, .password-toggle-btn:focus-visible {
+  color: var(--dusty-rose-dark);
+  background-color: var(--blush-soft);
+  outline: none;
+}
+.password-toggle-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: block;
+}
+.form-control.is-invalid, .form-select.is-invalid {
+  border-color: var(--error) !important;
+  background-image: none !important;
+  box-shadow: 0 0 0 3px rgba(181, 97, 95, 0.15) !important;
+}
+.invalid-feedback {
+  color: var(--error);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.35rem;
+  display: none;
+}
+.form-control.is-invalid + .invalid-feedback,
+.password-toggle-group + .invalid-feedback,
+.is-invalid ~ .invalid-feedback {
+  display: block;
+}

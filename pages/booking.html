@@ -108,6 +108,7 @@
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
 <script src="../js/api/auth.js"></script>
 <script src="../js/api/events.js"></script>
@@ -223,6 +224,11 @@ function goStep(step) {
 }
 
 let currentBookingId = null;
+
+function logPaymentDebug(stage, data) {
+  console.log(`[PAYMENT DEBUG] Stage ${stage}:`, data);
+}
+
 async function submitBooking() {
   const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
   document.getElementById('paySummaryEvent').textContent = eventTitle;
@@ -239,62 +245,173 @@ async function submitBooking() {
       }))
     };
 
+    logPaymentDebug('0: BOOKING CREATION REQUEST', {
+      eventId: Number(eventId),
+      itemCount: items.length,
+      calculatedTotal: total,
+      payload
+    });
+
     const booking = await BookingsAPI.create(payload);
     currentBookingId = booking?.id || booking?.bookingId;
+
+    logPaymentDebug('0: BOOKING CREATION RESPONSE', {
+      receivedBooking: !!booking,
+      bookingId: currentBookingId,
+      bookingReference: booking?.bookingReference,
+      totalAmount: booking?.totalAmount,
+      status: booking?.status
+    });
+
     goStep(4);
   } catch (e) {
+    logPaymentDebug('ERROR: BOOKING CREATION FAILURE', {
+      message: e.message,
+      status: e.status,
+      payload: e.payload
+    });
     console.error('Booking failed:', e);
     esToast(e.message || 'Failed to create booking', 'error');
   }
 }
 
 async function startPayment() {
+  const timestamp = new Date().toISOString();
+
+  logPaymentDebug('1: PAYMENT BUTTON CLICK', {
+    timestamp,
+    eventId: eventId,
+    currentBookingId: currentBookingId,
+    ticketItems: items.map(i => ({ ticketTypeId: i.ticketTypeId, name: i.name, quantity: i.quantity, price: i.price })),
+    totalQuantity: items.reduce((s, i) => s + i.quantity, 0),
+    displayedTotalAmount: items.reduce((s, i) => s + (i.price * i.quantity), 0)
+  });
+
   if (!currentBookingId) {
+    logPaymentDebug('ERROR: MISSING BOOKING REFERENCE', { currentBookingId });
     esToast('Invalid booking reference', 'error');
     return;
   }
+
+  const tokenPresent = EsAuthStore.isLoggedIn();
+  const apiPath = `/payments/initiate/${currentBookingId}`;
+  const fullApiUrl = `${window.ES_CONFIG?.API_BASE}${apiPath}`;
+
+  logPaymentDebug('2: PAYMENT API REQUEST', {
+    httpMethod: 'POST',
+    path: apiPath,
+    fullUrl: fullApiUrl,
+    hasAuthToken: tokenPresent,
+    bookingId: currentBookingId,
+    requestBody: null
+  });
 
   try {
     esToast('Initiating payment gateway...');
     const data = await PaymentsAPI.initiate(currentBookingId);
 
+    logPaymentDebug('3: PAYMENT API RESPONSE', {
+      dataReceived: !!data,
+      responseKeys: data ? Object.keys(data) : [],
+      orderId: data?.orderId || data?.order_id,
+      amount: data?.amount,
+      currency: data?.currency,
+      merchantIdPresent: !!(data?.merchantId || data?.merchant_id),
+      merchantIdValue: (data?.merchantId || data?.merchant_id) || 'MISSING',
+      actionUrlFromBackend: data?.actionUrl || data?.payhereUrl || null,
+      redirectUrlFromBackend: data?.redirectUrl || data?.checkoutUrl || null,
+      hashPresent: !!data?.hash,
+      hashLength: data?.hash ? String(data.hash).length : 0
+    });
+
     if (!data) {
+      logPaymentDebug('ERROR: MALFORMED PAYMENT RESPONSE', { data });
       throw new Error('No response data received from payment service');
     }
 
     // Case 1: If backend provides a direct redirect URL
     if (data.redirectUrl || data.checkoutUrl) {
-      window.location.href = data.redirectUrl || data.checkoutUrl;
+      const redirectTarget = data.redirectUrl || data.checkoutUrl;
+      logPaymentDebug('5: PAYHERE DESTINATION (DIRECT REDIRECT)', {
+        redirectTarget,
+        isSandbox: redirectTarget.includes('sandbox.payhere.lk'),
+        isProduction: redirectTarget.includes('payhere.lk') && !redirectTarget.includes('sandbox.payhere.lk')
+      });
+      logPaymentDebug('6: OPENING IN NEW TAB NOW', { redirectTarget });
+      window.open(redirectTarget, '_blank');
       return;
     }
 
     // Case 2: PayHere Form POST submission (Standard PayHere Redirect)
-    // Works with actionUrl or default Sandbox URL
-    const actionUrl = data.actionUrl || data.payhereUrl || 'https://sandbox.payhere.lk/pay/checkout';
-    
-    // Dynamically build and submit hidden PayHere form
+    const defaultPayhereUrl = window.ES_CONFIG?.PAYHERE_GATEWAY_URL || '';
+    const actionUrl = data.actionUrl || data.payhereUrl || defaultPayhereUrl;
+
+    if (!actionUrl) {
+      logPaymentDebug('ERROR: MISSING PAYHERE ACTION URL', { actionUrl, defaultPayhereUrl });
+      throw new Error('Payment gateway URL is missing.');
+    }
+
+    const fields = {
+      merchant_id: data.merchantId || data.merchant_id,
+      return_url: data.returnUrl || data.return_url,
+      cancel_url: data.cancelUrl || data.cancel_url,
+      notify_url: data.notifyUrl || data.notify_url,
+      order_id: data.orderId || data.order_id || currentBookingId,
+      items: data.itemsDescription || data.items || data.itemTitle || 'Event Tickets',
+      currency: data.currency || 'LKR',
+      amount: data.amount,
+      first_name: data.firstName || data.first_name || 'Customer',
+      last_name: data.lastName || data.last_name || 'User',
+      email: data.email || 'customer@example.com',
+      phone: data.phone || '0771234567',
+      address: data.address || 'No. 1, Main Street',
+      city: data.city || 'Colombo',
+      country: data.country || 'Sri Lanka',
+      hash: data.hash
+    };
+
+    const submittedParamNames = Object.keys(fields).filter(k => fields[k] !== undefined && fields[k] !== null);
+
+    logPaymentDebug('4: PAYHERE FORM CONSTRUCTION', {
+      submittedParamNames,
+      allSubmittedFieldValues: {
+        merchant_id: fields.merchant_id,
+        order_id: fields.order_id,
+        amount: fields.amount,
+        currency: fields.currency,
+        items: fields.items,
+        return_url: fields.return_url,
+        cancel_url: fields.cancel_url,
+        notify_url: fields.notify_url,
+        first_name: fields.first_name,
+        last_name: fields.last_name,
+        email: fields.email,
+        phone: fields.phone,
+        address: fields.address,
+        city: fields.city,
+        country: fields.country,
+        hash: fields.hash
+      },
+      hashMetadata: {
+        exists: !!fields.hash,
+        length: fields.hash ? String(fields.hash).length : 0,
+        algorithmPath: 'MD5(merchant_id + order_id + amount + currency + uppercase(MD5(merchant_secret)))'
+      }
+    });
+
+    logPaymentDebug('5: PAYHERE DESTINATION', {
+      actionUrl,
+      httpMethod: 'POST',
+      fieldCount: submittedParamNames.length,
+      isSandbox: actionUrl.includes('sandbox.payhere.lk'),
+      isProduction: actionUrl.includes('payhere.lk') && !actionUrl.includes('sandbox.payhere.lk')
+    });
+
+    // Dynamically build and submit hidden PayHere form targeting a new tab
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = actionUrl;
-
-    const fields = {
-    merchant_id: String(data.merchantId || data.merchant_id).trim(),
-    return_url: data.returnUrl,
-    cancel_url: data.cancelUrl,
-    notify_url: data.notifyUrl,
-    order_id: String(data.orderId || data.order_id).trim(),
-    items: data.itemsDescription || data.items || 'Event Tickets',
-    currency: data.currency || 'LKR',
-    amount: String(data.amount).trim(), // Must be "1500.00"
-    first_name: data.firstName || 'Customer',
-    last_name: data.lastName || 'User',
-    email: data.email || 'customer@example.com',
-    phone: data.phone || '0771234567',
-    address: data.address || 'N/A',
-    city: data.city || 'N/A',
-    country: data.country || 'Sri Lanka',
-    hash: data.hash
-};
+    form.target = '_blank';
 
     Object.entries(fields).forEach(([key, val]) => {
       if (val !== undefined && val !== null) {
@@ -307,10 +424,21 @@ async function startPayment() {
     });
 
     document.body.appendChild(form);
+
+    logPaymentDebug('6: SUBMITTING FORM NOW TO PAYHERE', {
+      actionUrl,
+      formFieldCount: form.children.length
+    });
+
     form.submit();
 
   } catch (e) {
-    console.error('Payment Initiation Failed:', e);
+    logPaymentDebug('ERROR: PAYMENT PIPELINE FAILURE', {
+      errorMessage: e.message,
+      errorStatus: e.status,
+      errorPayload: e.payload
+    });
+    console.error('[PAYMENT DEBUG] Payment Initiation Failed:', e);
     esToast(e.message || 'Could not initiate payment', 'error');
   }
 }
