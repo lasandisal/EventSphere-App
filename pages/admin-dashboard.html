@@ -14,11 +14,29 @@
 </head>
 <body data-page="admin">
 
+<!-- Navbar -->
 <nav class="es-navbar">
-  <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
-    <span class="pill-badge pill-blue">Admin</span>
-    <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
+  <div class="container-fluid px-4 d-flex align-items-center justify-content-between">
+    
+    <!-- LEFT CORNER: Brand & Organizer Badge -->
+    <div class="d-flex align-items-center gap-2">
+      <a href="../index.html" class="brand text-decoration-none d-flex align-items-center">
+        <span class="sparkle" id="brandSparkle"></span>EventSphere
+      </a>
+      <span class="pill-badge pill-lavender ms-1">Admin</span>
+    </div>
+
+    <!-- RIGHT CORNER: Search & Dynamic Auth Slot (Profile + Notifications) -->
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <!-- Search Button -->
+      <button class="icon-btn d-none d-sm-inline-flex" title="Search">
+        <i class="bi bi-search"></i>
+      </button>
+
+      <!-- Dynamic Slot: nav.js renders Notification Bell & Profile Avatar here -->
+      <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
+    </div>
+
   </div>
 </nav>
 
@@ -59,15 +77,35 @@
       </div>
     </section>
 
-    <section id="sec-organizers" class="d-none">
-      <h2 class="mb-3">Organizer Applications</h2>
-      <div class="table-card">
-        <table class="es-table">
-          <thead><tr><th>Business</th><th>Applicant</th><th>NIC / Reg No.</th><th>Submitted</th><th>Actions</th></tr></thead>
-          <tbody id="organizersBody"></tbody>
-        </table>
-      </div>
-    </section>
+    <!-- Organizers Section (Admin Verification & KYC) -->
+<section id="sec-organizers" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0">Organizer Verification (KYC)</h2>
+      <p class="text-muted-soft small mb-0">Review identity documents and approve organizer applications</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-quiet btn-sm" onclick="loadPendingOrganizers()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="es-table">
+      <thead>
+        <tr>
+          <th>Business Entity</th>
+          <th>Applicant</th>
+          <th>Verification ID (NIC / Reg)</th>
+          <th>Submitted On</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="organizersBody"></tbody>
+    </table>
+  </div>
+</section>
 
     <section id="sec-events" class="d-none">
       <h2 class="mb-3">All Events</h2>
@@ -112,6 +150,95 @@
   </main>
 </div>
 
+<!-- Models -->
+
+<!-- Category Add / Edit Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="categoryModalLabel">Add New Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="categoryForm">
+        <div class="modal-body">
+          <input type="hidden" id="categoryId">
+          <div class="mb-3">
+            <label for="categoryName" class="form-label">Category Name</label>
+            <input type="text" class="form-control" id="categoryName" placeholder="e.g., Music, Tech, Sports" required>
+          </div>
+          <div class="mb-3">
+            <label for="categoryIcon" class="form-label">Icon / Emoji</label>
+            <input type="text" class="form-control" id="categoryIcon" placeholder="e.g., 🎵, 💻, ⚽">
+          </div>
+          <div class="mb-3">
+            <label for="categoryDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Brief description of the category"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Organizer KYC Review Modal -->
+<div class="modal fade" id="reviewOrganizerModal" tabindex="-1" aria-labelledby="reviewOrganizerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-bottom pb-3">
+        <div>
+          <h5 class="modal-title fw-bold" id="reviewOrganizerModalLabel">Review Organizer Application</h5>
+          <span class="status-badge status-pending" id="reviewOrgBadge">Pending Review</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body py-4">
+        <input type="hidden" id="reviewOrgId">
+
+        <div class="mb-3">
+          <label class="text-muted-soft small text-uppercase fw-semibold">Business / Brand Name</label>
+          <div class="fs-5 fw-bold text-dark" id="reviewOrgBusiness">—</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="text-muted-soft small text-uppercase fw-semibold">Legal Applicant</label>
+            <div class="fw-semibold" id="reviewOrgApplicant">—</div>
+          </div>
+          <div class="col-6">
+            <label class="text-muted-soft small text-uppercase fw-semibold">NIC / Reg Number</label>
+            <div class="fw-mono fw-semibold text-break" id="reviewOrgNic">—</div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2 bg-light border mb-2">
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="text-muted-soft small">Submission Timestamp</span>
+            <span class="small fw-semibold" id="reviewOrgDate">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-danger btn-sm" id="modalRejectOrgBtn">
+          <i class="bi bi-x-circle me-1"></i> Reject Application
+        </button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary btn-sm" id="modalApproveOrgBtn">
+            <i class="bi bi-check2-circle me-1"></i> Approve Organizer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
@@ -120,11 +247,12 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
 if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html?redirect=' + encodeURIComponent('admin-dashboard.html' + window.location.search);
+
+let categoriesMap = {};
 
 // Tab Section Switching
 document.querySelectorAll('.side-link[data-section]').forEach(link => {
@@ -137,49 +265,108 @@ document.querySelectorAll('.side-link[data-section]').forEach(link => {
   });
 });
 
-// Load Pending Organizers
+
+
+let pendingOrganizersMap = {};
+
+// Load Pending Organizers from /api/v1/admin/organizers/pending
 async function loadPendingOrganizers() {
   const tbody = document.getElementById('organizersBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading applications...</td></tr>`;
+
   try {
-    const pending = await AdminAPI.getPendingOrganizers();
-    const list = Array.isArray(pending) ? pending : (pending?.content || []);
+    const response = await AdminAPI.getPendingOrganizers();
+    const list = Array.isArray(response) ? response : (response?.data || response?.content || []);
 
     if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">No pending organizer applications</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-muted-soft py-5">
+            <i class="bi bi-shield-check fs-2 text-success d-block mb-2"></i>
+            No pending organizer applications. All caught up!
+          </td>
+        </tr>`;
       return;
     }
 
+    pendingOrganizersMap = {};
+    list.forEach(org => pendingOrganizersMap[org.id] = org);
+
     tbody.innerHTML = list.map(o => `
-      <tr>
-        <td data-label="Business">${o.businessName || '—'}</td>
-        <td data-label="Applicant">${o.applicantName || o.fullName || '—'}</td>
-        <td data-label="NIC / Reg No.">${o.nicNumber || o.regNumber || '—'}</td>
-        <td data-label="Submitted">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—'}</td>
-        <td data-label="Actions">
-          <button class="btn btn-primary btn-sm" onclick="approveOrganizer(${o.id})">Approve</button>
-          <button class="btn btn-danger-soft btn-sm" onclick="rejectOrganizer(${o.id})">Reject</button>
+      <tr style="cursor: pointer;" onclick="openReviewModal(${o.id})" title="Click row to inspect KYC details">
+        <td data-label="Business Entity">
+          <span class="fw-bold text-dark">${o.businessName || '—'}</span>
         </td>
-      </tr>`).join('');
+        <td data-label="Applicant">${o.applicantName || o.fullName || '—'}</td>
+        <td data-label="Verification ID">
+          <code class="fw-bold">${o.nicNumber || o.regNumber || '—'}</code>
+        </td>
+        <td data-label="Submitted">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—'}</td>
+        <td data-label="Actions" class="text-end" onclick="event.stopPropagation();">
+          <button class="btn btn-primary btn-sm me-1" onclick="approveOrganizer(${o.id})">
+            <i class="bi bi-check2"></i> Approve
+          </button>
+          <button class="btn btn-danger-soft btn-sm" onclick="rejectOrganizer(${o.id})">
+            <i class="bi bi-x"></i> Reject
+          </button>
+        </td>
+      </tr>
+    `).join('');
   } catch (e) {
     console.error('Failed to load pending organizers:', e);
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">Failed to load applications</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Failed to load applications: ${e.message || 'Server error'}</td></tr>`;
   }
 }
 
+// Open Review Modal
+function openReviewModal(id) {
+  const o = pendingOrganizersMap[id];
+  if (!o) return;
+
+  document.getElementById('reviewOrgId').value = o.id;
+  document.getElementById('reviewOrgBusiness').textContent = o.businessName || '—';
+  document.getElementById('reviewOrgApplicant').textContent = o.applicantName || o.fullName || '—';
+  document.getElementById('reviewOrgNic').textContent = o.nicNumber || o.regNumber || '—';
+  document.getElementById('reviewOrgDate').textContent = o.createdAt ? new Date(o.createdAt).toLocaleString() : '—';
+
+  const modalEl = document.getElementById('reviewOrganizerModal');
+  if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+// Modal Action Listeners
+document.getElementById('modalApproveOrgBtn')?.addEventListener('click', async () => {
+  const id = document.getElementById('reviewOrgId').value;
+  if (!id) return;
+  bootstrap.Modal.getInstance(document.getElementById('reviewOrganizerModal'))?.hide();
+  await approveOrganizer(id);
+});
+
+document.getElementById('modalRejectOrgBtn')?.addEventListener('click', async () => {
+  const id = document.getElementById('reviewOrgId').value;
+  if (!id) return;
+  bootstrap.Modal.getInstance(document.getElementById('reviewOrganizerModal'))?.hide();
+  await rejectOrganizer(id);
+});
+
+// Approve via PATCH /api/v1/admin/organizers/{id}/verify
 async function approveOrganizer(id) {
   try {
     await AdminAPI.verifyOrganizer(id);
-    esToast('Organizer approved — ORGANIZER role granted');
+    esToast('Organizer verified and ORGANIZER role granted!', 'success');
     loadPendingOrganizers();
   } catch (e) {
-    esToast(e.message || 'Failed to approve organizer', 'error');
+    esToast(e.message || 'Failed to approve application', 'error');
   }
 }
 
+// Reject via DELETE /api/v1/admin/organizers/{id}/reject
 async function rejectOrganizer(id) {
+  if (!confirm('Reject this organizer application? The applicant will be notified.')) return;
   try {
     await AdminAPI.rejectOrganizer(id);
-    esToast('Application rejected');
+    esToast('Application rejected', 'info');
     loadPendingOrganizers();
   } catch (e) {
     esToast(e.message || 'Failed to reject application', 'error');
@@ -190,25 +377,58 @@ async function rejectOrganizer(id) {
 async function loadCategories() {
   const grid = document.getElementById('categoriesGrid');
   try {
-    const cats = await CategoriesAPI.getAll();
-    const list = Array.isArray(cats) ? cats : (cats?.content || []);
+    const response = await CategoriesAPI.getAll();
+    const list = Array.isArray(response) ? response : (response?.data || response?.content || []);
 
     if (!list.length) {
-      grid.innerHTML = `<div class="col-12 text-center text-muted-soft">No categories found</div>`;
+      grid.innerHTML = `<div class="col-12 text-center text-muted-soft py-4">No categories found</div>`;
       return;
     }
 
-    grid.innerHTML = list.map(c => `
-      <div class="col-6 col-md-3">
-        <div class="category-card ${c.cls || ''}">
-          <div class="cat-icon">${c.icon || '🏷️'}</div>
-          <div class="cat-name">${c.name}</div>
-          <button class="btn btn-quiet btn-sm mt-2 w-100">Edit</button>
-        </div>
-      </div>`).join('');
+    // Cache categories locally for easy modal editing retrieval
+    categoriesMap = {};
+    list.forEach(c => categoriesMap[c.id] = c);
+
+    grid.innerHTML = list.map(c => {
+  const displayIcon = c.icon || c.emoji || '🏷️';
+  const displayDesc = c.description || 'No description provided';
+  
+  return `
+  <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+    <div class="category-card p-3 rounded-3 shadow-sm h-100 d-flex flex-column justify-content-between text-start ${c.cls || ''}" 
+         style="cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;"
+         ondblclick="editCategory(${c.id})"
+         title="Double-click to edit">
+      
+      <div>
+       
+        <div class="text-center mb-2">
+          <div class="cat-icon fs-3 mb-1">${displayIcon}</div>
+          <h6 class="cat-name fw-bold mb-0 text-break">${c.name}</h6>
+          </div>
+        
+        <!-- Multi-line description -->
+        <p class="text-muted-soft small mb-3 text-start" 
+           style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.45; min-height: 3.2em;">
+          ${displayDesc}
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 pt-2 border-top">
+        <button type="button" class="btn btn-quiet btn-sm flex-grow-1" onclick="event.stopPropagation(); editCategory(${c.id})">
+          <i class="bi bi-pencil me-1"></i>Edit
+        </button>
+        <button type="button" class="btn btn-danger-soft btn-sm" onclick="event.stopPropagation(); deleteCategory(${c.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}).join('');
   } catch (e) {
     console.error('Failed to load categories:', e);
-    grid.innerHTML = `<div class="col-12 text-center text-muted-soft">Error loading categories</div>`;
+    grid.innerHTML = `<div class="col-12 text-center text-muted-soft py-4">Error loading categories</div>`;
   }
 }
 
@@ -217,7 +437,7 @@ async function loadAllEvents() {
   const tbody = document.getElementById('eventsBody');
   try {
     const res = await EventsAPI.searchPublished({ page: 0, size: 20 });
-    const list = Array.isArray(res) ? res : (res?.content || []);
+    const list = Array.isArray(res) ? res : (res?.data || res?.content || []);
 
     if (!list.length) {
       tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">No events found</td></tr>`;
@@ -238,22 +458,90 @@ async function loadAllEvents() {
   }
 }
 
-// Promote User Event Delegation
-document.querySelectorAll('.promote-btn').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    const userId = e.target.getAttribute('data-user-id');
-    if (!userId) return;
-    try {
-      await AdminAPI.promoteToAdmin(userId);
-      esToast('User promoted to Admin successfully');
-    } catch (err) {
-      esToast(err.message || 'Failed to promote user', 'error');
-    }
-  });
+async function deleteCategory(id) {
+  const category = categoriesMap[id];
+  const name = category ? `"${category.name}"` : 'this category';
+
+  if (!confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    await CategoriesAPI.remove(id);
+    esToast('Category deleted successfully');
+    loadCategories();
+  } catch (err) {
+    esToast(err.message || 'Failed to delete category', 'error');
+  }
+}
+
+// Open modal for ADD Category
+document.getElementById('addCategoryBtn')?.addEventListener('click', () => {
+  document.getElementById('categoryForm')?.reset();
+  document.getElementById('categoryId').value = '';
+  document.getElementById('categoryModalLabel').innerText = 'Add New Category';
+  document.getElementById('saveCategoryBtn').innerText = 'Save Category';
+
+  const modalEl = document.getElementById('categoryModal');
+  if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
 });
 
-document.getElementById('addCategoryBtn')?.addEventListener('click', () => {
-  esToast('Open the "Add Category" form to create one');
+// Open modal for EDIT Category
+function editCategory(id) {
+  const category = categoriesMap[id];
+  if (!category) return;
+
+  document.getElementById('categoryId').value = category.id;
+  document.getElementById('categoryName').value = category.name || '';
+  document.getElementById('categoryIcon').value = category.icon || category.emoji || '';
+  document.getElementById('categoryDescription').value = category.description || '';
+
+  document.getElementById('categoryModalLabel').innerText = 'Edit Category';
+  document.getElementById('saveCategoryBtn').innerText = 'Update Category';
+
+  const modalEl = document.getElementById('categoryModal');
+  if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+// Submit Form (Create or Update)
+document.getElementById('categoryForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const id = document.getElementById('categoryId').value;
+  const saveBtn = document.getElementById('saveCategoryBtn');
+  const originalText = saveBtn.innerText;
+
+  const rawIcon = document.getElementById('categoryIcon').value.trim();
+
+  const payload = {
+    name: document.getElementById('categoryName').value.trim(),
+    icon: rawIcon || '🏷️',
+    emoji: rawIcon || '🏷️',
+    description: document.getElementById('categoryDescription').value.trim()
+  };
+
+  try {
+    saveBtn.disabled = true;
+    saveBtn.innerText = 'Saving...';
+
+    if (id) {
+      await CategoriesAPI.update(id, payload);
+      esToast('Category updated successfully');
+    } else {
+      await CategoriesAPI.create(payload);
+      esToast('Category added successfully');
+    }
+
+    const modalEl = document.getElementById('categoryModal');
+    if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+
+    loadCategories();
+  } catch (err) {
+    esToast(err.message || 'Failed to save category', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = originalText;
+  }
 });
 
 // Initialize Admin Data

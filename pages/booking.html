@@ -46,8 +46,10 @@
 
         <!-- Step 2: Attendees -->
         <div class="booking-step d-none" data-step-panel="2">
-          <h3 class="mb-3">Attendee details</h3>
-          <p class="text-muted-soft mb-4">Tell us who's coming so we can prepare their digital ticket.</p>
+          <h3 class="mb-2">Attendee Details</h3>
+          <p class="text-muted-soft mb-4" style="font-size: 0.9rem;">
+            The primary booker will receive the full order receipt and all QR tickets. Individual guest passes will be sent directly to each guest's email.
+          </p>
           <form id="attendeeForm" class="d-flex flex-column gap-3"></form>
           <div class="d-flex gap-2 mt-4">
             <button class="btn btn-outline-soft" onclick="goStep(1)">Back</button>
@@ -57,8 +59,9 @@
 
         <!-- Step 3: Review -->
         <div class="booking-step d-none" data-step-panel="3">
-          <h3 class="mb-3">Review your booking</h3>
-          <div id="reviewList" class="d-flex flex-column gap-2 mb-4"></div>
+          <h3 class="mb-2">Review Your Booking</h3>
+          <p class="text-muted-soft mb-4" style="font-size: 0.9rem;">Please confirm attendee and ticket dispatch details before continuing to secure payment.</p>
+          <div id="reviewList" class="d-flex flex-column gap-3 mb-4"></div>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-soft" onclick="goStep(2)">Back</button>
             <button class="btn btn-primary" onclick="submitBooking()">Confirm &amp; Continue to Payment</button>
@@ -90,8 +93,7 @@
           <div style="font-size:3.2rem; color:var(--sage);">✓</div>
           <h2 class="mb-2">You're all set!</h2>
           <p class="text-muted-soft mb-4">Your booking has been confirmed.</p>
-          <a href="ticket.html" class="btn btn-primary btn-lg">View Digital Ticket</a>
-          <div class="mt-3"><a href="my-bookings.html">Go to My Bookings</a></div>
+          <a href="my-bookings.html" class="btn btn-primary btn-lg">Go to My Bookings</a>
         </div>
 
       </div>
@@ -114,10 +116,8 @@
 <script src="../js/api/events.js"></script>
 <script src="../js/api/bookings.js"></script>
 <script src="../js/api/payments.js"></script>
-<script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
@@ -162,16 +162,36 @@ function renderSummary() {
 }
 
 function renderAttendeeForm() {
+  const currentUser = EsAuthStore.getUser() || {};
   let html = '';
   let n = 1;
+
   items.forEach(i => {
     for (let q = 0; q < i.quantity; q++) {
+      const isPrimary = (n === 1);
+      const defaultName = isPrimary ? (currentUser.fullName || '') : '';
+      const defaultEmail = isPrimary ? (currentUser.email || '') : '';
+
       html += `
-      <div class="filter-bar mb-3">
-        <div class="fw-semibold mb-2" style="font-size:0.85rem;">Attendee ${n} — ${i.name}</div>
+      <div class="filter-bar mb-3 p-3 border rounded-3 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-semibold" style="font-size:0.9rem;">
+            Attendee ${n} — <span class="text-muted-soft">${i.name}</span>
+          </div>
+          ${isPrimary 
+            ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size:0.75rem;">Primary Booker &amp; Billing</span>' 
+            : '<span class="badge bg-light text-muted border px-2 py-1" style="font-size:0.75rem;">Guest Ticket</span>'}
+        </div>
         <div class="row g-2">
-          <div class="col-md-6"><input required class="form-control" name="name-${n}" placeholder="Full name"></div>
-          <div class="col-md-6"><input required type="email" class="form-control" name="email-${n}" placeholder="Email address"></div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small mb-1">Full Name</label>
+            <input required class="form-control" name="name-${n}" value="${defaultName}" placeholder="Attendee name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small mb-1">Email Address</label>
+            <input required type="email" class="form-control" name="email-${n}" value="${defaultEmail}" 
+                   placeholder="Ticket pass delivery email">
+          </div>
         </div>
       </div>`;
       n++;
@@ -192,8 +212,9 @@ function collectAttendees() {
       attendees.push({ 
         ticketTypeId: i.ticketTypeId, 
         ticket: i.name, 
-        name: fd.get(`name-${n}`), 
-        email: fd.get(`email-${n}`) 
+        name: fd.get(`name-${n}`).trim(), 
+        email: fd.get(`email-${n}`).trim(),
+        isPrimary: (n === 1)
       });
       n++;
     }
@@ -203,10 +224,16 @@ function collectAttendees() {
 }
 
 function renderReview() {
-  document.getElementById('reviewList').innerHTML = attendees.map(a => `
-    <div class="d-flex justify-content-between border-bottom pb-2 mb-2" style="border-color:var(--line) !important;">
-      <span>${a.name} <span class="text-muted-soft">(${a.ticket})</span></span>
-      <span class="text-muted-soft">${a.email}</span>
+  const currentUser = EsAuthStore.getUser() || {};
+  document.getElementById('reviewList').innerHTML = attendees.map((a, idx) => `
+    <div class="p-3 border rounded-3 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="fw-bold">${a.name} <span class="badge bg-light text-muted border ms-1">${a.ticket}</span></span>
+        ${a.isPrimary 
+          ? '<span class="badge bg-success-subtle text-success border border-success-subtle">Receives Master Receipt &amp; Passes</span>' 
+          : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Receives Guest Pass</span>'}
+      </div>
+      <div class="text-muted small"><i class="bi bi-envelope me-1"></i>${a.email}</div>
     </div>`).join('');
 }
 
@@ -225,10 +252,6 @@ function goStep(step) {
 
 let currentBookingId = null;
 
-function logPaymentDebug(stage, data) {
-  console.log(`[PAYMENT DEBUG] Stage ${stage}:`, data);
-}
-
 async function submitBooking() {
   const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
   document.getElementById('paySummaryEvent').textContent = eventTitle;
@@ -245,109 +268,38 @@ async function submitBooking() {
       }))
     };
 
-    logPaymentDebug('0: BOOKING CREATION REQUEST', {
-      eventId: Number(eventId),
-      itemCount: items.length,
-      calculatedTotal: total,
-      payload
-    });
-
     const booking = await BookingsAPI.create(payload);
     currentBookingId = booking?.id || booking?.bookingId;
-
-    logPaymentDebug('0: BOOKING CREATION RESPONSE', {
-      receivedBooking: !!booking,
-      bookingId: currentBookingId,
-      bookingReference: booking?.bookingReference,
-      totalAmount: booking?.totalAmount,
-      status: booking?.status
-    });
-
     goStep(4);
   } catch (e) {
-    logPaymentDebug('ERROR: BOOKING CREATION FAILURE', {
-      message: e.message,
-      status: e.status,
-      payload: e.payload
-    });
     console.error('Booking failed:', e);
     esToast(e.message || 'Failed to create booking', 'error');
   }
 }
 
 async function startPayment() {
-  const timestamp = new Date().toISOString();
-
-  logPaymentDebug('1: PAYMENT BUTTON CLICK', {
-    timestamp,
-    eventId: eventId,
-    currentBookingId: currentBookingId,
-    ticketItems: items.map(i => ({ ticketTypeId: i.ticketTypeId, name: i.name, quantity: i.quantity, price: i.price })),
-    totalQuantity: items.reduce((s, i) => s + i.quantity, 0),
-    displayedTotalAmount: items.reduce((s, i) => s + (i.price * i.quantity), 0)
-  });
-
   if (!currentBookingId) {
-    logPaymentDebug('ERROR: MISSING BOOKING REFERENCE', { currentBookingId });
     esToast('Invalid booking reference', 'error');
     return;
   }
-
-  const tokenPresent = EsAuthStore.isLoggedIn();
-  const apiPath = `/payments/initiate/${currentBookingId}`;
-  const fullApiUrl = `${window.ES_CONFIG?.API_BASE}${apiPath}`;
-
-  logPaymentDebug('2: PAYMENT API REQUEST', {
-    httpMethod: 'POST',
-    path: apiPath,
-    fullUrl: fullApiUrl,
-    hasAuthToken: tokenPresent,
-    bookingId: currentBookingId,
-    requestBody: null
-  });
 
   try {
     esToast('Initiating payment gateway...');
     const data = await PaymentsAPI.initiate(currentBookingId);
 
-    logPaymentDebug('3: PAYMENT API RESPONSE', {
-      dataReceived: !!data,
-      responseKeys: data ? Object.keys(data) : [],
-      orderId: data?.orderId || data?.order_id,
-      amount: data?.amount,
-      currency: data?.currency,
-      merchantIdPresent: !!(data?.merchantId || data?.merchant_id),
-      merchantIdValue: (data?.merchantId || data?.merchant_id) || 'MISSING',
-      actionUrlFromBackend: data?.actionUrl || data?.payhereUrl || null,
-      redirectUrlFromBackend: data?.redirectUrl || data?.checkoutUrl || null,
-      hashPresent: !!data?.hash,
-      hashLength: data?.hash ? String(data.hash).length : 0
-    });
-
     if (!data) {
-      logPaymentDebug('ERROR: MALFORMED PAYMENT RESPONSE', { data });
       throw new Error('No response data received from payment service');
     }
 
-    // Case 1: If backend provides a direct redirect URL
     if (data.redirectUrl || data.checkoutUrl) {
-      const redirectTarget = data.redirectUrl || data.checkoutUrl;
-      logPaymentDebug('5: PAYHERE DESTINATION (DIRECT REDIRECT)', {
-        redirectTarget,
-        isSandbox: redirectTarget.includes('sandbox.payhere.lk'),
-        isProduction: redirectTarget.includes('payhere.lk') && !redirectTarget.includes('sandbox.payhere.lk')
-      });
-      logPaymentDebug('6: OPENING IN NEW TAB NOW', { redirectTarget });
-      window.open(redirectTarget, '_blank');
+      window.open(data.redirectUrl || data.checkoutUrl, '_blank');
       return;
     }
 
-    // Case 2: PayHere Form POST submission (Standard PayHere Redirect)
     const defaultPayhereUrl = window.ES_CONFIG?.PAYHERE_GATEWAY_URL || '';
     const actionUrl = data.actionUrl || data.payhereUrl || defaultPayhereUrl;
 
     if (!actionUrl) {
-      logPaymentDebug('ERROR: MISSING PAYHERE ACTION URL', { actionUrl, defaultPayhereUrl });
       throw new Error('Payment gateway URL is missing.');
     }
 
@@ -370,44 +322,6 @@ async function startPayment() {
       hash: data.hash
     };
 
-    const submittedParamNames = Object.keys(fields).filter(k => fields[k] !== undefined && fields[k] !== null);
-
-    logPaymentDebug('4: PAYHERE FORM CONSTRUCTION', {
-      submittedParamNames,
-      allSubmittedFieldValues: {
-        merchant_id: fields.merchant_id,
-        order_id: fields.order_id,
-        amount: fields.amount,
-        currency: fields.currency,
-        items: fields.items,
-        return_url: fields.return_url,
-        cancel_url: fields.cancel_url,
-        notify_url: fields.notify_url,
-        first_name: fields.first_name,
-        last_name: fields.last_name,
-        email: fields.email,
-        phone: fields.phone,
-        address: fields.address,
-        city: fields.city,
-        country: fields.country,
-        hash: fields.hash
-      },
-      hashMetadata: {
-        exists: !!fields.hash,
-        length: fields.hash ? String(fields.hash).length : 0,
-        algorithmPath: 'MD5(merchant_id + order_id + amount + currency + uppercase(MD5(merchant_secret)))'
-      }
-    });
-
-    logPaymentDebug('5: PAYHERE DESTINATION', {
-      actionUrl,
-      httpMethod: 'POST',
-      fieldCount: submittedParamNames.length,
-      isSandbox: actionUrl.includes('sandbox.payhere.lk'),
-      isProduction: actionUrl.includes('payhere.lk') && !actionUrl.includes('sandbox.payhere.lk')
-    });
-
-    // Dynamically build and submit hidden PayHere form targeting a new tab
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = actionUrl;
@@ -424,26 +338,14 @@ async function startPayment() {
     });
 
     document.body.appendChild(form);
-
-    logPaymentDebug('6: SUBMITTING FORM NOW TO PAYHERE', {
-      actionUrl,
-      formFieldCount: form.children.length
-    });
-
     form.submit();
 
   } catch (e) {
-    logPaymentDebug('ERROR: PAYMENT PIPELINE FAILURE', {
-      errorMessage: e.message,
-      errorStatus: e.status,
-      errorPayload: e.payload
-    });
-    console.error('[PAYMENT DEBUG] Payment Initiation Failed:', e);
+    console.error('Payment Initiation Failed:', e);
     esToast(e.message || 'Could not initiate payment', 'error');
   }
 }
 
-// Fetch real event title from backend
 async function initBookingPage() {
   renderTicketsRecap();
   renderSummary();

@@ -4,7 +4,7 @@
    ========================================================= */
 
 if (!window.ES_CONFIG || !window.ES_CONFIG.API_BASE) {
-  const errMsg = 'EventSphere frontend configuration is missing. Run ./dev.sh to generate js/env.js from .env.';
+  const errMsg = 'EventSphere frontend configuration is missing. Please check js/env.js.';
   console.error(errMsg);
   if (typeof esToast === 'function') esToast(errMsg, 'error');
   throw new Error(errMsg);
@@ -15,19 +15,17 @@ const ES_TOKEN_KEY = 'es_token';
 const ES_USER_KEY = 'es_user';
 
 const EsAuthStore = {
-  getToken(){ return localStorage.getItem(ES_TOKEN_KEY); },
-  setToken(t){ localStorage.setItem(ES_TOKEN_KEY, t); },
-  clear(){ localStorage.removeItem(ES_TOKEN_KEY); localStorage.removeItem(ES_USER_KEY); },
-  getUser(){ try{ return JSON.parse(localStorage.getItem(ES_USER_KEY)); }catch(e){ return null; } },
-  setUser(u){ localStorage.setItem(ES_USER_KEY, JSON.stringify(u)); },
-  isLoggedIn(){ return !!this.getToken(); },
-  hasRole(role){ const u = this.getUser(); return !!(u && u.roles && u.roles.includes(role)); }
+  getToken() { return localStorage.getItem(ES_TOKEN_KEY); },
+  setToken(t) { localStorage.setItem(ES_TOKEN_KEY, t); },
+  clear() { localStorage.removeItem(ES_TOKEN_KEY); localStorage.removeItem(ES_USER_KEY); },
+  getUser() { try { return JSON.parse(localStorage.getItem(ES_USER_KEY)); } catch (e) { return null; } },
+  setUser(u) { localStorage.setItem(ES_USER_KEY, JSON.stringify(u)); },
+  isLoggedIn() { return !!this.getToken(); },
+  hasRole(role) { const u = this.getUser(); return !!(u && u.roles && u.roles.includes(role)); }
 };
 
 /**
  * esFetch — thin wrapper around fetch() for the EventSphere API.
- * Unwraps the backend's CommonResponse{status,message,data} envelope,
- * attaches the JWT if present, and normalizes errors.
  */
 async function esFetch(path, { method = 'GET', body, params, isForm = false } = {}) {
   let url = `${ES_API_BASE}${path}`;
@@ -73,9 +71,6 @@ async function esFetch(path, { method = 'GET', body, params, isForm = false } = 
   }
 }
 
-// Shared helper so every page computes the SAME relative prefix the same
-// way — used by nav.js, auth.js, and any inline redirect. Root index.html
-// is depth 0; everything under /pages/ is depth 1.
 function esPathPrefix() {
   const isSubPage = window.location.pathname.includes('/pages/');
   return { toRoot: isSubPage ? '../' : './', toPages: isSubPage ? '' : 'pages/' };

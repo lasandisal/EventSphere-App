@@ -16,111 +16,118 @@
 
 <!-- Navbar -->
 <nav class="es-navbar">
-  <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
-    <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks">
-      <i class="bi bi-list fs-3"></i>
-    </button>
+  <div class="container-narrow">
+    <!-- LEFT: Brand & Logo -->
+    <div class="d-flex align-items-center gap-2">
+      <a href="index.html" class="brand text-decoration-none d-flex align-items-center">
+        <span class="sparkle me-1" id="brandSparkle"></span>EventSphere
+      </a>
+    </div>
+
+    <!-- CENTER: Public Attendee Links -->
     <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
-      <ul class="navbar-nav d-flex flex-row align-items-center gap-3 my-0">
+      <ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link active" data-nav="home" href="index.html">Discover</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="events" href="pages/events.html">Categories</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="events" href="pages/events.html">All Events</a></li>
         <li class="nav-item"><a class="nav-link" data-nav="bookings" href="pages/my-bookings.html">My Bookings</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="pages/organizer-dashboard.html">Organizer</a></li>
         <li class="nav-item"><a class="nav-link" data-nav="about" href="#about">About</a></li>
       </ul>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button class="icon-btn d-none d-sm-inline-flex" title="Search"><i class="bi bi-search"></i></button>
+
+    <!-- RIGHT: Search, Notifications + Dynamic Profile Slot -->
+    <div class="d-flex align-items-center gap-2 ms-auto">
       <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
+      <button class="navbar-toggler d-lg-none border-0 p-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks">
+        <i class="bi bi-list fs-3"></i>
+      </button>
     </div>
   </div>
 </nav>
 
-<!-- Hero -->
+<!-- Hero Section -->
 <header class="hero">
   <div class="hero-blob" style="width:260px;height:260px;background:var(--blush);top:-60px;right:8%;opacity:0.6;"></div>
   <div class="hero-blob" style="width:180px;height:180px;background:var(--lavender-soft);bottom:-40px;left:6%;opacity:0.7;"></div>
+  
   <div class="container-narrow position-relative">
     <div class="row align-items-center g-5">
+      
+      <!-- LEFT COLUMN (Text & Search) -->
       <div class="col-lg-6">
         <p class="eyebrow mb-3">Curated experiences, close to home</p>
         <h1 class="headline mb-3">Find something<br>worth remembering.</h1>
         <p class="sub mb-4">Discover events, book your tickets, and keep every experience in one place.</p>
-        <form class="hero-search mb-4" onsubmit="window.location.href='/pages/events.html?keyword='+encodeURIComponent(this.q.value); return false;">
+        
+        <!-- Search form filters locally on current page -->
+        <form class="hero-search mb-4" id="homeSearchForm">
           <i class="bi bi-search text-muted"></i>
-          <input type="text" name="q" placeholder="Search concerts, workshops, sports, experiences...">
+          <input type="text" id="searchInput" placeholder="Search concerts, workshops, tech, sports...">
           <button type="submit" class="btn btn-primary btn-sm">Search</button>
         </form>
-        <div class="d-flex gap-2 flex-wrap">
-          <a href="pages/events.html?categoryId=1" class="pill-badge pill-blush">Music</a>
-          <a href="pages/events.html?categoryId=2" class="pill-badge pill-blue">Technology</a>
-          <a href="pages/events.html?categoryId=4" class="pill-badge pill-sage">Sports</a>
-          <a href="pages/events.html?categoryId=6" class="pill-badge pill-beige">Food &amp; Lifestyle</a>
-        </div>
-      </div>
+      </div> <!-- ✨ THIS IS THE CLOSING TAG THAT WAS MISSING ✨ -->
+
+      <!-- RIGHT COLUMN (Image) -->
       <div class="col-lg-6">
         <div class="ratio ratio-4x3 rounded-4 overflow-hidden shadow-lg" style="border-radius: var(--radius-lg);">
-          <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&q=80" alt="People enjoying a live outdoor event" style="object-fit:cover;">
+          <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&q=80" alt="People enjoying an event" style="object-fit:cover;">
         </div>
       </div>
+      
     </div>
   </div>
 </header>
 
-<!-- Popular categories -->
-<section class="section-sm" id="about">
+<!-- Events Section with Live Category Filter Bar -->
+<section class="section-sm" id="eventsContainer">
   <div class="container-narrow">
-    <div class="section-head text-center">
-      <p class="eyebrow">Browse by mood</p>
-      <h2>Popular Categories</h2>
-    </div>
-    <div class="row g-3" id="categoryGrid"></div>
-  </div>
-</section>
-
-<!-- Featured events -->
-<section class="section-sm">
-  <div class="container-narrow">
-    <div class="section-head d-flex align-items-end justify-content-between flex-wrap gap-2">
+    <div class="section-head d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
       <div>
-        <p class="eyebrow">Handpicked for this week</p>
-        <h2>Something wonderful, nearby</h2>
+        <p class="eyebrow">Handpicked for you</p>
+        <h2 id="sectionTitle" class="mb-0">Something wonderful, nearby</h2>
       </div>
-      <a href="pages/events.html" class="btn btn-outline-soft">View all events</a>
+      <a href="pages/events.html" class="btn btn-outline-soft btn-sm">View full directory <i class="bi bi-arrow-right ms-1"></i></a>
     </div>
+
+    <!-- Category Filter Bar -->
+    <div class="d-flex gap-2 flex-wrap align-items-center mb-4 pb-2 border-bottom" id="categoryFilterBar">
+      <button class="filter-pill active" data-category-id="">
+        <i class="bi bi-grid-fill"></i> All Events
+      </button>
+      <!-- Dynamic category filter buttons will be injected here -->
+    </div>
+
+    <!-- Live Event Grid -->
     <div class="row g-4" id="featuredGrid"></div>
   </div>
 </section>
 
 <!-- Footer -->
-<footer class="es-footer">
+<footer class="es-footer" id="about">
   <div class="container-narrow">
     <div class="row g-4">
       <div class="col-6 col-lg-3">
-        <a href="index.html" class="brand mb-2 d-inline-flex"><span class="sparkle" style="width:1.1em;height:1.1em;color:var(--dusty-rose);"></span>EventSphere</a>
+        <a href="index.html" class="brand mb-2 d-inline-flex align-items-center">
+          <span class="sparkle me-1" style="width:1.1em;height:1.1em;color:var(--dusty-rose);"></span>EventSphere
+        </a>
         <p class="text-muted-soft" style="font-size:0.85rem;">A calmer way to find, book, and keep your favourite experiences.</p>
       </div>
       <div class="col-6 col-lg-3">
         <h6>Explore</h6>
-        <a href="pages/events.html">Discover Events</a>
-        <a href="pages/events.html">Categories</a>
-        <a href="pages/my-bookings.html">My Bookings</a>
+        <a href="pages/events.html" class="d-block mb-1">Discover Events</a>
+        <a href="pages/my-bookings.html" class="d-block mb-1">My Bookings</a>
       </div>
       <div class="col-6 col-lg-3">
         <h6>Organizers</h6>
-        <a href="pages/organizer-apply.html">Become an Organizer</a>
-        <a href="pages/organizer-dashboard.html">Organizer Dashboard</a>
-        <a href="pages/create-event.html">Create an Event</a>
+        <a href="pages/organizer-apply.html" class="d-block mb-1">Become an Organizer</a>
+        <a href="pages/create-event.html" class="d-block mb-1">Create an Event</a>
       </div>
       <div class="col-6 col-lg-3">
         <h6>Company</h6>
-        <a href="#">About EventSphere</a>
-        <a href="#">Contact</a>
-        <a href="#">Privacy</a>
+        <a href="#about" class="d-block mb-1">About EventSphere</a>
+        <a href="#" class="d-block mb-1">Privacy</a>
       </div>
     </div>
-    <div class="footer-bottom d-flex justify-content-between flex-wrap gap-2">
+    <div class="footer-bottom d-flex justify-content-between flex-wrap gap-2 mt-4 pt-3 border-top">
       <span>© 2026 EventSphere. All rights reserved.</span>
       <span>Made for people who love a good gathering.</span>
     </div>
@@ -140,26 +147,51 @@
 <script src="js/utils/mock-data.js"></script>
 <script src="js/utils/nav.js"></script>
 <script src="js/utils/ai-widget.js"></script>
+
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-document.querySelectorAll('.brand .sparkle').forEach(s => { if(!s.innerHTML.trim()) s.innerHTML = EsIcons.sparkle; });
+document.querySelectorAll('.brand .sparkle').forEach(s => { if (!s.innerHTML.trim()) s.innerHTML = EsIcons.sparkle; });
 
-function renderCategories(list) {
-  const grid = document.getElementById('categoryGrid');
-  if (!list.length) {
-    grid.innerHTML = `<p class="text-muted-soft">No categories yet.</p>`;
-    return;
+let currentCategoryId = null;
+let currentKeyword = '';
+
+function unwrapResponse(res) {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.content)) return res.content;
+  if (res.data && Array.isArray(res.data.content)) return res.data.content;
+  return [];
+}
+
+// Render dynamic filter pills in Hero and Filter Bar
+function renderCategoryFilters(list) {
+  const heroPills = document.getElementById('heroCategoryPills');
+  const filterBar = document.getElementById('categoryFilterBar');
+
+  if (!list.length) return;
+
+  // 1. Hero Pills (Top 4-5)
+  if (heroPills) {
+    heroPills.innerHTML = list.slice(0, 5).map(c => `
+      <button type="button" class="filter-pill" onclick="applyCategoryFilter(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
+        ${c.icon || c.emoji || '🏷️'} ${c.name}
+      </button>
+    `).join('');
   }
-  grid.innerHTML = list.map(c => {
-    const v = esCategoryVisual(c.name); // deterministic icon/color — real CategoryResponseDTO has neither field
-    return `
-    <div class="col-6 col-md-3">
-      <a href="pages/events.html?categoryId=${c.id}" class="category-card ${v.cls} d-block text-decoration-none">
-        <div class="cat-icon">${v.icon}</div>
-        <div class="cat-name">${c.name}</div>
-      </a>
-    </div>`;
-  }).join('');
+
+  // 2. Main Filter Bar above Events Grid
+  if (filterBar) {
+    filterBar.innerHTML = `
+      <button class="filter-pill ${!currentCategoryId ? 'active' : ''}" onclick="applyCategoryFilter(null, 'All Events')">
+        <i class="bi bi-grid-fill me-1"></i> All Events
+      </button>
+      ` + list.map(c => `
+      <button class="filter-pill ${currentCategoryId === c.id ? 'active' : ''}" onclick="applyCategoryFilter(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
+        <span>${c.icon || c.emoji || '🏷️'}</span> ${c.name}
+      </button>
+    `).join('');
+  }
 }
 
 function availabilityLabel(totalAvailable) {
@@ -168,31 +200,41 @@ function availabilityLabel(totalAvailable) {
     : `<span class="availability-dot">Tickets available</span>`;
 }
 
+// Resilient Event Card with placeholder image support
 function eventCard(ev) {
   const prices = (ev.ticketTypes || []).map(t => Number(t.price));
-  const priceText = prices.length === 0 ? 'Tickets TBA'
+  const priceText = prices.length === 0 
+    ? 'Tickets TBA'
     : (Math.min(...prices) === 0 ? 'Free' : `From LKR ${Math.min(...prices).toLocaleString()}`);
+  
   const totalAvailable = (ev.ticketTypes || []).reduce((s, t) => s + (t.availableQuantity || 0), 0);
-  const v = esCategoryVisual(ev.categoryName);
-  const dt = new Date(ev.startDatetime);
-  const dateText = dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-  const timeText = dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  const img = ev.bannerUrl || `https://placehold.co/500x300/F7D6DE/9B4A63?text=${encodeURIComponent(ev.title)}`;
+  const v = typeof esCategoryVisual === 'function' ? esCategoryVisual(ev.categoryName) : { cls: 'pill-lavender' };
+  const dt = ev.startDatetime ? new Date(ev.startDatetime) : null;
+  const dateText = dt ? dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBA';
+  const timeText = dt ? dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
+  
+  // Safe image handling with fallback
+  const fallbackSvg = `data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect fill='%23F8E9E6' width='500' height='300'/%3E%3Ctext fill='%23C68B8F' font-family='sans-serif' font-size='20' font-weight='bold' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E${encodeURIComponent(ev.title || 'EventSphere')}%3C/text%3E%3C/svg%3E`;
+  const banner = ev.bannerUrl && ev.bannerUrl.trim() !== '' ? ev.bannerUrl : fallbackSvg;
 
   return `
   <div class="col-md-6 col-lg-3">
-    <div class="event-card">
-      <div class="img-wrap">
-        <img src="${img}" alt="${ev.title}">
-        <span class="pill-badge ${v.cls}">${ev.categoryName}</span>
+    <div class="event-card h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="img-wrap">
+          <span class="pill-badge ${v.cls}">${ev.categoryName || 'General'}</span>
+          <img src="${banner}" alt="${ev.title}" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+        </div>
+        <div class="body p-3">
+          <h5 class="title fw-bold mb-2 text-truncate" title="${ev.title}">${ev.title}</h5>
+          <div class="meta text-muted small mb-1"><i class="bi bi-calendar3 me-1"></i> ${dateText}${timeText ? ', ' + timeText : ''}</div>
+          <div class="meta text-muted small mb-3 text-truncate"><i class="bi bi-geo-alt me-1"></i> ${ev.venueName || 'Online / TBA'}</div>
+        </div>
       </div>
-      <div class="body">
-        <div class="title">${ev.title}</div>
-        <div class="meta"><i class="bi bi-calendar3"></i> ${dateText}, ${timeText}</div>
-        <div class="meta"><i class="bi bi-geo-alt"></i> ${ev.venueName}</div>
-        <div class="price-row">
+      <div class="body px-3 pb-3 pt-0">
+        <div class="price-row d-flex align-items-center justify-content-between pt-2 border-top">
           <div>
-            <div class="price">${priceText}</div>
+            <div class="price fw-bold">${priceText}</div>
             ${availabilityLabel(totalAvailable)}
           </div>
           <a href="pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
@@ -202,26 +244,78 @@ function eventCard(ev) {
   </div>`;
 }
 
-async function loadHome() {
-  try {
-    const cats = await CategoriesAPI.getAll();
-    renderCategories(cats || []);
-  } catch (e) {
-    document.getElementById('categoryGrid').innerHTML = `<p class="text-muted-soft">Could not load categories.</p>`;
-  }
+// Fetch and filter events via API on the current page
+async function loadEvents() {
+  const grid = document.getElementById('featuredGrid');
+  if (grid) grid.innerHTML = `<div class="col-12 text-center text-muted-soft py-5"><i class="bi bi-arrow-repeat spin"></i> Loading events...</div>`;
 
   try {
-    const events = await EventsAPI.searchPublished({ size: 4 });
-    const list = (events && events.content) || [];
-    document.getElementById('featuredGrid').innerHTML = list.length
-      ? list.map(eventCard).join('')
-      : `<p class="text-muted-soft">No published events yet — check back soon.</p>`;
+    const params = { size: 8 };
+    if (currentCategoryId) params.categoryId = currentCategoryId;
+    if (currentKeyword) params.keyword = currentKeyword;
+
+    const rawEvents = await EventsAPI.searchPublished(params);
+    const events = unwrapResponse(rawEvents);
+
+    if (grid) {
+      grid.innerHTML = events.length
+        ? events.map(eventCard).join('')
+        : `<div class="col-12 text-center text-muted-soft py-5">
+             <i class="bi bi-calendar-x fs-2 d-block mb-2 text-muted"></i>
+             No events found in this category.
+           </div>`;
+    }
   } catch (e) {
-    document.getElementById('featuredGrid').innerHTML = `<p class="text-muted-soft">Could not load events. Is the backend running?</p>`;
+    console.error('Failed to load events:', e);
+    if (grid) grid.innerHTML = `<div class="col-12 text-center text-danger py-4">Could not load events from the server.</div>`;
   }
 }
-loadHome();
-</script>
 
+// Category filter button click handler
+function applyCategoryFilter(categoryId, categoryName) {
+  currentCategoryId = categoryId;
+  
+  // Update section headline
+  const title = document.getElementById('sectionTitle');
+  if (title) title.innerText = categoryId ? `${categoryName} Events` : 'Something wonderful, nearby';
+
+  // Update active pill state
+  document.querySelectorAll('#categoryFilterBar .filter-pill').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  const activeBtn = Array.from(document.querySelectorAll('#categoryFilterBar .filter-pill')).find(btn => {
+    const match = btn.getAttribute('onclick') || '';
+    return categoryId ? match.includes(`applyCategoryFilter(${categoryId}`) : match.includes('applyCategoryFilter(null');
+  });
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Smooth scroll to events area
+  document.getElementById('eventsContainer')?.scrollIntoView({ behavior: 'smooth' });
+
+  loadEvents();
+}
+
+// Hero Search form submission (Live in-page filter)
+document.getElementById('homeSearchForm')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  currentKeyword = document.getElementById('searchInput').value.trim();
+  document.getElementById('eventsContainer')?.scrollIntoView({ behavior: 'smooth' });
+  loadEvents();
+});
+
+// Initialization
+async function init() {
+  try {
+    const rawCats = await CategoriesAPI.getAll();
+    renderCategoryFilters(unwrapResponse(rawCats));
+  } catch (e) {
+    console.error('Failed to load categories:', e);
+  }
+  loadEvents();
+}
+
+init();
+</script>
 </body>
 </html>
