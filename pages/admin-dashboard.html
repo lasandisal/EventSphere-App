@@ -66,12 +66,15 @@
 
     <section id="sec-users" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 class="mb-0">Users</h2>
-        <input class="form-control" placeholder="Search users..." style="max-width:240px;">
+        <div>
+          <h2 class="mb-0">Users</h2>
+          <p class="text-muted-soft small mb-0">Manage registered platform accounts and role permissions</p>
+        </div>
+        <input class="form-control" id="adminUserSearch" placeholder="Search users by name or email..." style="max-width:260px;">
       </div>
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Registered</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Registered</th><th class="text-end">Actions</th></tr></thead>
           <tbody id="usersBody"></tbody>
         </table>
       </div>
@@ -107,11 +110,29 @@
   </div>
 </section>
 
+    <!-- All Events Section (Admin Overview & Moderation) -->
     <section id="sec-events" class="d-none">
-      <h2 class="mb-3">All Events</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="mb-0">All Events</h2>
+          <p class="text-muted-soft small mb-0">Browse, moderate, and edit events from all organizers.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <input class="form-control" id="adminEventSearch" placeholder="Search events by title..." style="max-width:240px;">
+        </div>
+      </div>
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Event</th><th>Organizer</th><th>Category</th><th>Date</th><th>Status</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Organizer</th>
+              <th>Category</th>
+              <th>Date & Time</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
           <tbody id="eventsBody"></tbody>
         </table>
       </div>
@@ -239,6 +260,93 @@
   </div>
 </div>
 
+<!-- Admin Edit Event Modal -->
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-bottom">
+        <div>
+          <h5 class="modal-title fw-bold" id="editEventModalLabel">Edit Event</h5>
+          <span class="text-muted-soft small">Update event details and schedule</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editEventForm">
+        <div class="modal-body p-4">
+          <input type="hidden" id="adminEditEventId">
+          
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="adminEditEventTitle" class="form-label fw-semibold small">Event Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="adminEditEventTitle" required placeholder="e.g. Golden Hour Acoustic Night">
+            </div>
+
+            <div class="col-md-6">
+              <label for="adminEditEventCategory" class="form-label fw-semibold small">Category <span class="text-danger">*</span></label>
+              <select class="form-select" id="adminEditEventCategory" required>
+                <option value="">Select Category</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="adminEditEventVenue" class="form-label fw-semibold small">Venue <span class="text-danger">*</span></label>
+              <select class="form-select" id="adminEditEventVenue" required>
+                <option value="">Select Venue</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="adminEditEventDate" class="form-label fw-semibold small">Date <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="adminEditEventDate" required>
+            </div>
+
+            <div class="col-md-4">
+              <label for="adminEditEventStartTime" class="form-label fw-semibold small">Start Time <span class="text-danger">*</span></label>
+              <input type="time" class="form-control" id="adminEditEventStartTime" required>
+            </div>
+
+            <div class="col-md-4">
+              <label for="adminEditEventEndTime" class="form-label fw-semibold small">End Time <span class="text-danger">*</span></label>
+              <input type="time" class="form-control" id="adminEditEventEndTime" required>
+            </div>
+
+            <div class="col-12">
+              <label for="adminEditEventDescription" class="form-label fw-semibold small">Description</label>
+              <textarea class="form-control" id="adminEditEventDescription" rows="3" placeholder="What should attendees expect?"></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Banner Image</label>
+              <div class="input-group mb-2">
+                <input type="url" class="form-control" id="adminEditEventBanner" placeholder="Paste image URL (https://...)">
+                <button class="btn btn-outline-soft" type="button" id="adminPreviewBannerBtn">Preview</button>
+              </div>
+              <div class="mb-2">
+                <label for="adminEditEventFileInput" class="form-label text-muted-soft small mb-1">Or choose photo from device to upload:</label>
+                <input class="form-control" type="file" id="adminEditEventFileInput" accept="image/*">
+              </div>
+              <div id="adminBannerPreviewWrap" class="mt-2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top d-flex justify-content-between">
+          <div>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="adminCancelEventBtn" title="Cancel this event">
+              <i class="bi bi-x-circle me-1"></i> Cancel Event
+            </button>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="adminSaveEventBtn">
+              <i class="bi bi-check2 me-1"></i> Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
@@ -266,6 +374,96 @@ document.querySelectorAll('.side-link[data-section]').forEach(link => {
 });
 
 
+
+// Load Platform Users from /api/v1/admin/users
+async function loadUsers(keyword = '') {
+  const tbody = document.getElementById('usersBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading platform users...</td></tr>`;
+
+  try {
+    const params = { page: 0, size: 50 };
+    if (keyword) params.keyword = keyword;
+
+    const response = await AdminAPI.getUsers(params);
+    let list = Array.isArray(response) ? response : (response?.data || response?.content || []);
+
+    if (keyword) {
+      const lower = keyword.toLowerCase();
+      list = list.filter(u => 
+        (u.name && u.name.toLowerCase().includes(lower)) ||
+        (u.fullName && u.fullName.toLowerCase().includes(lower)) ||
+        (u.email && u.email.toLowerCase().includes(lower))
+      );
+    }
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4">No users found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(u => {
+      const name = u.fullName || u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
+      const email = u.email || '—';
+      const roles = Array.isArray(u.roles) ? u.roles : (u.role ? [u.role] : ['USER']);
+      const isAdminUser = roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
+      const isOrganizerUser = roles.includes('ORGANIZER') || roles.includes('ROLE_ORGANIZER');
+
+      let roleBadge = '<span class="badge bg-light text-dark border">User</span>';
+      if (isAdminUser) {
+        roleBadge = '<span class="pill-badge pill-lavender">Admin</span>';
+      } else if (isOrganizerUser) {
+        roleBadge = '<span class="pill-badge pill-sage">Organizer</span>';
+      }
+
+      const statusBadge = (u.enabled === false || u.status === 'INACTIVE')
+        ? '<span class="status-badge status-cancelled">Inactive</span>'
+        : '<span class="status-badge status-confirmed">Active</span>';
+
+      const regDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—';
+
+      return `
+        <tr>
+          <td data-label="Name">
+            <span class="fw-bold text-dark">${name}</span>
+          </td>
+          <td data-label="Email">${email}</td>
+          <td data-label="Role">${roleBadge}</td>
+          <td data-label="Status">${statusBadge}</td>
+          <td data-label="Registered">${regDate}</td>
+          <td data-label="Actions" class="text-end">
+            ${!isAdminUser ? `
+              <button class="btn btn-quiet btn-sm" onclick="promoteUserToAdmin(${u.id}, '${name.replace(/'/g, "\\'")}')" title="Promote to Administrator">
+                <i class="bi bi-shield-plus me-1"></i> Make Admin
+              </button>
+            ` : `<span class="text-muted-soft small"><i class="bi bi-shield-check text-primary"></i> Superuser</span>`}
+          </td>
+        </tr>`;
+    }).join('');
+  } catch (e) {
+    console.error('Failed to load users:', e);
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load users: ${e.message || 'Server error'}</td></tr>`;
+  }
+}
+
+// Promote user to admin
+async function promoteUserToAdmin(userId, userName) {
+  if (!confirm(`Promote "${userName}" to Administrator? They will receive full administrative access.`)) return;
+
+  try {
+    await AdminAPI.promoteToAdmin(userId);
+    esToast(`"${userName}" has been promoted to Admin!`, 'success');
+    loadUsers();
+  } catch (err) {
+    esToast(err.message || 'Failed to promote user', 'error');
+  }
+}
+
+// Live search on Users table
+document.getElementById('adminUserSearch')?.addEventListener('input', (e) => {
+  loadUsers(e.target.value.trim());
+});
 
 let pendingOrganizersMap = {};
 
@@ -432,31 +630,295 @@ async function loadCategories() {
   }
 }
 
-// Load All Published Events (Admin Overview)
-async function loadAllEvents() {
-  const tbody = document.getElementById('eventsBody');
+let allEventsMap = {};
+let venuesMap = {};
+
+// Load Venues for Event Editing
+async function loadVenues() {
   try {
-    const res = await EventsAPI.searchPublished({ page: 0, size: 20 });
+    const res = await VenuesAPI.getAll();
+    const list = Array.isArray(res) ? res : (res?.data || res?.content || []);
+    venuesMap = {};
+    list.forEach(v => venuesMap[v.id] = v);
+  } catch (e) {
+    console.error('Failed to load venues:', e);
+  }
+}
+
+// Load All Events with search & edit actions
+async function loadAllEvents(keyword = '') {
+  const tbody = document.getElementById('eventsBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading platform events...</td></tr>`;
+
+  try {
+    const params = { page: 0, size: 50 };
+    if (keyword) params.keyword = keyword;
+
+    const res = await EventsAPI.searchPublished(params);
     const list = Array.isArray(res) ? res : (res?.data || res?.content || []);
 
     if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">No events found</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4">No events found</td></tr>`;
       return;
     }
 
+    allEventsMap = {};
+    list.forEach(e => allEventsMap[e.id] = e);
+
     tbody.innerHTML = list.map(e => `
       <tr>
-        <td data-label="Event">${e.title}</td>
+        <td data-label="Event Title">
+          <span class="fw-bold text-dark">${e.title}</span>
+        </td>
         <td data-label="Organizer">${e.organizerName || '—'}</td>
-        <td data-label="Category">${e.categoryName || 'General'}</td>
-        <td data-label="Date">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
-        <td data-label="Status"><span class="status-badge status-confirmed">${e.status || 'PUBLISHED'}</span></td>
+        <td data-label="Category"><span class="badge bg-light text-dark border">${e.categoryName || 'General'}</span></td>
+        <td data-label="Date">${e.startDatetime ? new Date(e.startDatetime).toLocaleString() : 'TBA'}</td>
+        <td data-label="Status"><span class="status-badge status-${(e.status || 'PUBLISHED').toLowerCase()}">${e.status || 'PUBLISHED'}</span></td>
+        <td data-label="Actions" class="text-end">
+          <button type="button" class="btn btn-quiet btn-sm me-1" onclick="openEditEventModal(${e.id})" title="Edit Event Details">
+            <i class="bi bi-pencil"></i> Edit
+          </button>
+          <a href="event-details.html?id=${e.id}" class="btn btn-outline-soft btn-sm" title="View Public Page">
+            <i class="bi bi-eye"></i>
+          </a>
+        </td>
       </tr>`).join('');
   } catch (e) {
     console.error('Failed to load events:', e);
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted-soft">Failed to load events</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load events</td></tr>`;
   }
 }
+
+// Live search on All Events table
+document.getElementById('adminEventSearch')?.addEventListener('input', (e) => {
+  loadAllEvents(e.target.value.trim());
+});
+
+// Open Edit Event Modal
+async function openEditEventModal(id) {
+  // Populate category options
+  const catSelect = document.getElementById('adminEditEventCategory');
+  catSelect.innerHTML = '<option value="">Select Category</option>' +
+    Object.values(categoriesMap).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  // Populate venue options
+  if (Object.keys(venuesMap).length === 0) {
+    await loadVenues();
+  }
+  const venSelect = document.getElementById('adminEditEventVenue');
+  venSelect.innerHTML = '<option value="">Select Venue</option>' +
+    Object.values(venuesMap).map(v => `<option value="${v.id}">${v.name}${v.city ? ` (${v.city})` : ''}</option>`).join('');
+
+  document.getElementById('editEventForm').reset();
+  document.getElementById('adminBannerPreviewWrap').innerHTML = '';
+  document.getElementById('adminEditEventId').value = id;
+
+  try {
+    let ev = allEventsMap[id];
+    // Fetch full event details to get complete fields
+    try {
+      const fullEv = await EventsAPI.getById(id);
+      if (fullEv) ev = fullEv?.data || fullEv;
+    } catch (err) {
+      console.warn('Could not fetch full event from API, using cached:', err);
+    }
+
+    if (!ev) {
+      esToast('Event not found', 'error');
+      return;
+    }
+
+    document.getElementById('adminEditEventTitle').value = ev.title || '';
+    document.getElementById('adminEditEventDescription').value = ev.description || '';
+
+    // Category match
+    const catId = ev.categoryId || ev.category?.id;
+    if (catId && categoriesMap[catId]) {
+      catSelect.value = catId;
+    } else if (ev.categoryName) {
+      const foundCat = Object.values(categoriesMap).find(c => c.name.toLowerCase() === ev.categoryName.toLowerCase());
+      if (foundCat) catSelect.value = foundCat.id;
+    }
+
+    // Venue match
+    const venId = ev.venueId || ev.venue?.id;
+    if (venId && venuesMap[venId]) {
+      venSelect.value = venId;
+    } else if (ev.venueName) {
+      const foundVen = Object.values(venuesMap).find(v => v.name.toLowerCase().includes(ev.venueName.toLowerCase()));
+      if (foundVen) venSelect.value = foundVen.id;
+    }
+
+    // Date and start/end time
+    if (ev.startDatetime) {
+      if (typeof ev.startDatetime === 'string' && ev.startDatetime.includes('T')) {
+        const parts = ev.startDatetime.split('T');
+        document.getElementById('adminEditEventDate').value = parts[0];
+        document.getElementById('adminEditEventStartTime').value = parts[1].slice(0, 5);
+      } else {
+        const dt = new Date(ev.startDatetime);
+        if (!isNaN(dt.getTime())) {
+          const year = dt.getFullYear();
+          const month = String(dt.getMonth() + 1).padStart(2, '0');
+          const day = String(dt.getDate()).padStart(2, '0');
+          document.getElementById('adminEditEventDate').value = `${year}-${month}-${day}`;
+          document.getElementById('adminEditEventStartTime').value = `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
+        }
+      }
+    }
+    if (ev.endDatetime) {
+      if (typeof ev.endDatetime === 'string' && ev.endDatetime.includes('T')) {
+        const parts = ev.endDatetime.split('T');
+        document.getElementById('adminEditEventEndTime').value = parts[1].slice(0, 5);
+      } else {
+        const dt = new Date(ev.endDatetime);
+        if (!isNaN(dt.getTime())) {
+          document.getElementById('adminEditEventEndTime').value = `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
+        }
+      }
+    }
+
+    // Banner URL
+    const banner = ev.bannerUrl || ev.imageUrl || '';
+    document.getElementById('adminEditEventBanner').value = banner;
+    if (banner) {
+      document.getElementById('adminBannerPreviewWrap').innerHTML = `<img src="${banner}" alt="Banner Preview" style="max-width:200px;height:100px;object-fit:cover;border-radius:6px;" class="border shadow-sm">`;
+    }
+
+    const modalEl = document.getElementById('editEventModal');
+    if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  } catch (e) {
+    esToast('Failed to open event for editing: ' + e.message, 'error');
+  }
+}
+
+// Submit Edit Event Form
+document.getElementById('editEventForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById('adminEditEventId').value;
+  if (!id) return;
+
+  const saveBtn = document.getElementById('adminSaveEventBtn');
+  const originalHtml = saveBtn.innerHTML;
+
+  const date = document.getElementById('adminEditEventDate').value;
+  const startTime = document.getElementById('adminEditEventStartTime').value;
+  const endTime = document.getElementById('adminEditEventEndTime').value || startTime;
+
+  const payload = {
+    title: document.getElementById('adminEditEventTitle').value.trim(),
+    description: document.getElementById('adminEditEventDescription').value.trim(),
+    categoryId: Number(document.getElementById('adminEditEventCategory').value) || null,
+    venueId: Number(document.getElementById('adminEditEventVenue').value) || null,
+    startDatetime: `${date}T${startTime}:00`,
+    endDatetime: `${date}T${endTime}:00`,
+    bannerUrl: document.getElementById('adminEditEventBanner').value.trim() || null
+  };
+
+  try {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<i class="bi bi-arrow-repeat spin me-1"></i> Saving...`;
+
+    await EventsAPI.updateEvent(id, payload);
+    esToast('Event updated successfully!', 'success');
+
+    const modalEl = document.getElementById('editEventModal');
+    if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+
+    loadAllEvents();
+  } catch (err) {
+    esToast(err.message || 'Failed to update event', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = originalHtml;
+  }
+});
+
+// Cancel Event from modal
+document.getElementById('adminCancelEventBtn')?.addEventListener('click', async () => {
+  const id = document.getElementById('adminEditEventId').value;
+  if (!id) return;
+
+  if (!confirm('Are you sure you want to cancel this event?')) return;
+
+  try {
+    await EventsAPI.cancelEvent(id);
+    esToast('Event marked as cancelled', 'info');
+
+    const modalEl = document.getElementById('editEventModal');
+    if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+
+    loadAllEvents();
+  } catch (err) {
+    esToast(err.message || 'Failed to cancel event', 'error');
+  }
+});
+
+// Preview Banner Button & Input Listener
+document.getElementById('adminPreviewBannerBtn')?.addEventListener('click', () => {
+  const url = document.getElementById('adminEditEventBanner').value.trim();
+  const wrap = document.getElementById('adminBannerPreviewWrap');
+  if (url) {
+    wrap.innerHTML = `<img src="${url}" alt="Banner Preview" style="max-width:200px;height:100px;object-fit:cover;border-radius:6px;" class="border shadow-sm" onerror="this.parentElement.innerHTML='<span class=\\'text-danger small\\'>Invalid image URL</span>'">`;
+  } else {
+    wrap.innerHTML = '';
+  }
+});
+
+document.getElementById('adminEditEventBanner')?.addEventListener('change', (e) => {
+  const url = e.target.value.trim();
+  const wrap = document.getElementById('adminBannerPreviewWrap');
+  if (url) {
+    wrap.innerHTML = `<img src="${url}" alt="Banner Preview" style="max-width:200px;height:100px;object-fit:cover;border-radius:6px;" class="border shadow-sm" onerror="this.parentElement.innerHTML='<span class=\\'text-danger small\\'>Invalid image URL</span>'">`;
+  } else {
+    wrap.innerHTML = '';
+  }
+});
+
+// Cloudinary Direct Upload from Admin Dashboard
+async function uploadAdminEventImage(file) {
+  const cloudName = window.ES_CONFIG?.CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = window.ES_CONFIG?.CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Cloudinary config missing in js/env.js.');
+  }
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', uploadPreset);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'Image upload failed');
+  }
+  const data = await res.json();
+  return data.secure_url;
+}
+
+document.getElementById('adminEditEventFileInput')?.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  const preview = document.getElementById('adminBannerPreviewWrap');
+  const bannerInput = document.getElementById('adminEditEventBanner');
+  if (!file) return;
+
+  // Instant local preview
+  const localUrl = URL.createObjectURL(file);
+  preview.innerHTML = `<div class="d-flex align-items-center gap-2 mt-2"><img src="${localUrl}" style="max-width:140px;height:70px;object-fit:cover;border-radius:6px;" class="border"><span class="text-muted-soft small"><i class="bi bi-arrow-repeat spin me-1"></i>Uploading to Cloudinary...</span></div>`;
+
+  try {
+    const uploadedUrl = await uploadAdminEventImage(file);
+    bannerInput.value = uploadedUrl;
+    preview.innerHTML = `<div class="d-flex align-items-center gap-2 mt-2"><img src="${uploadedUrl}" style="max-width:140px;height:70px;object-fit:cover;border-radius:6px;" class="border shadow-sm"><span class="text-success small fw-semibold"><i class="bi bi-check-circle me-1"></i>Uploaded!</span></div>`;
+    esToast('Image uploaded successfully!', 'success');
+  } catch (err) {
+    preview.innerHTML = `<span class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>${err.message || 'Upload failed'}</span>`;
+    esToast('Image upload failed: ' + err.message, 'error');
+  }
+});
 
 async function deleteCategory(id) {
   const category = categoriesMap[id];
@@ -545,8 +1007,10 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
 });
 
 // Initialize Admin Data
+loadUsers();
 loadPendingOrganizers();
 loadCategories();
+loadVenues();
 loadAllEvents();
 </script>
 </body>

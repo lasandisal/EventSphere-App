@@ -462,3 +462,16 @@
 .is-invalid ~ .invalid-feedback {
   display: block;
 }
+
+/* Profile Dropdown Active State */
+.dropdown-menu .dropdown-item.active,
+.dropdown-menu .dropdown-item:active {
+  background-color: var(--blush-soft, #f8e9e6) !important;
+  color: var(--dusty-rose, #7d4f50) !important;
+  font-weight: 600;
+}
+
+.dropdown-menu .dropdown-item.active i,
+.dropdown-menu .dropdown-item:active i {
+  color: var(--dusty-rose, #7d4f50) !important;
+}

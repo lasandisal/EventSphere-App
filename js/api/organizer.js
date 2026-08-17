@@ -17,6 +17,17 @@ const CheckInAPI = {
 
 /* Admin API — matches AdminOrganizerController, AdminUserController */
 const AdminAPI = {
+  async getUsers(params = {}) {
+    try {
+      return await esFetch('/admin/users', { params });
+    } catch (e) {
+      if (params && Object.keys(params).length > 0) {
+        // Fallback without query params in case backend expects no parameters
+        return await esFetch('/admin/users');
+      }
+      throw e;
+    }
+  },
   getPendingOrganizers() {
     return esFetch('/admin/organizers/pending');
   },
