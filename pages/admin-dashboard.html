@@ -74,7 +74,17 @@
       </div>
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Registered</th><th class="text-end">Actions</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Registered</th>
+              <th class="text-end" style="width:50px;"></th>
+            </tr>
+          </thead>
           <tbody id="usersBody"></tbody>
         </table>
       </div>
@@ -380,7 +390,7 @@ async function loadUsers(keyword = '') {
   const tbody = document.getElementById('usersBody');
   if (!tbody) return;
 
-  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading platform users...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading platform users...</td></tr>`;
 
   try {
     const params = { page: 0, size: 50 };
@@ -394,18 +404,21 @@ async function loadUsers(keyword = '') {
       list = list.filter(u => 
         (u.name && u.name.toLowerCase().includes(lower)) ||
         (u.fullName && u.fullName.toLowerCase().includes(lower)) ||
-        (u.email && u.email.toLowerCase().includes(lower))
+        (u.email && u.email.toLowerCase().includes(lower)) ||
+        (u.phoneNumber && u.phoneNumber.toLowerCase().includes(lower)) ||
+        (u.phone && u.phone.toLowerCase().includes(lower))
       );
     }
 
     if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4">No users found</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4">No users found</td></tr>`;
       return;
     }
 
     tbody.innerHTML = list.map(u => {
       const name = u.fullName || u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
       const email = u.email || '—';
+      const phone = u.phoneNumber || u.phone || u.contactNumber || u.mobile || '—';
       const roles = Array.isArray(u.roles) ? u.roles : (u.role ? [u.role] : ['USER']);
       const isAdminUser = roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
       const isOrganizerUser = roles.includes('ORGANIZER') || roles.includes('ROLE_ORGANIZER');
@@ -429,21 +442,37 @@ async function loadUsers(keyword = '') {
             <span class="fw-bold text-dark">${name}</span>
           </td>
           <td data-label="Email">${email}</td>
+          <td data-label="Phone"><span class="text-muted-soft">${phone}</span></td>
           <td data-label="Role">${roleBadge}</td>
           <td data-label="Status">${statusBadge}</td>
           <td data-label="Registered">${regDate}</td>
           <td data-label="Actions" class="text-end">
-            ${!isAdminUser ? `
-              <button class="btn btn-quiet btn-sm" onclick="promoteUserToAdmin(${u.id}, '${name.replace(/'/g, "\\'")}')" title="Promote to Administrator">
-                <i class="bi bi-shield-plus me-1"></i> Make Admin
+            <div class="dropdown">
+              <button class="btn btn-quiet btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="User Actions" style="padding:0.25rem 0.5rem;">
+                <i class="bi bi-three-dots-vertical"></i>
               </button>
-            ` : `<span class="text-muted-soft small"><i class="bi bi-shield-check text-primary"></i> Superuser</span>`}
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                ${!isAdminUser ? `
+                  <li>
+                    <button class="dropdown-item d-flex align-items-center" onclick="promoteUserToAdmin(${u.id}, '${name.replace(/'/g, "\\'")}')">
+                      <i class="bi bi-shield-plus me-2 text-primary"></i> Promote to Admin
+                    </button>
+                  </li>
+                ` : `
+                  <li>
+                    <span class="dropdown-item text-muted disabled d-flex align-items-center">
+                      <i class="bi bi-shield-check me-2 text-success"></i> Superuser
+                    </span>
+                  </li>
+                `}
+              </ul>
+            </div>
           </td>
         </tr>`;
     }).join('');
   } catch (e) {
     console.error('Failed to load users:', e);
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load users: ${e.message || 'Server error'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to load users: ${e.message || 'Server error'}</td></tr>`;
   }
 }
 
@@ -467,6 +496,20 @@ document.getElementById('adminUserSearch')?.addEventListener('input', (e) => {
 
 let pendingOrganizersMap = {};
 
+// Helper functions for flexible Organizer DTO mapping
+function getOrgVerificationId(o) {
+  return o.nicOrPassportNumber || o.nicNumber || o.businessRegistrationNumber || o.regNumber || o.nic || o.passportNumber || '—';
+}
+
+function getOrgApplicantName(o) {
+  return o.applicantName || o.fullName || o.userName || o.userFullName || o.ownerName || (o.user && (o.user.fullName || o.user.name || o.user.email)) || o.email || '—';
+}
+
+function getOrgSubmittedDate(o) {
+  const dt = o.createdAt || o.submittedAt || o.appliedAt || o.createdDate || o.createdDateTime || o.timestamp;
+  return dt ? new Date(dt).toLocaleDateString() : '—';
+}
+
 // Load Pending Organizers from /api/v1/admin/organizers/pending
 async function loadPendingOrganizers() {
   const tbody = document.getElementById('organizersBody');
@@ -477,6 +520,7 @@ async function loadPendingOrganizers() {
   try {
     const response = await AdminAPI.getPendingOrganizers();
     const list = Array.isArray(response) ? response : (response?.data || response?.content || []);
+    console.log('Pending organizers from backend:', list);
 
     if (!list.length) {
       tbody.innerHTML = `
@@ -492,16 +536,22 @@ async function loadPendingOrganizers() {
     pendingOrganizersMap = {};
     list.forEach(org => pendingOrganizersMap[org.id] = org);
 
-    tbody.innerHTML = list.map(o => `
+    tbody.innerHTML = list.map(o => {
+      const business = o.businessName || o.name || '—';
+      const applicant = getOrgApplicantName(o);
+      const verificationId = getOrgVerificationId(o);
+      const submitted = getOrgSubmittedDate(o);
+
+      return `
       <tr style="cursor: pointer;" onclick="openReviewModal(${o.id})" title="Click row to inspect KYC details">
         <td data-label="Business Entity">
-          <span class="fw-bold text-dark">${o.businessName || '—'}</span>
+          <span class="fw-bold text-dark">${business}</span>
         </td>
-        <td data-label="Applicant">${o.applicantName || o.fullName || '—'}</td>
+        <td data-label="Applicant">${applicant}</td>
         <td data-label="Verification ID">
-          <code class="fw-bold">${o.nicNumber || o.regNumber || '—'}</code>
+          <code class="fw-bold text-dark">${verificationId}</code>
         </td>
-        <td data-label="Submitted">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—'}</td>
+        <td data-label="Submitted">${submitted}</td>
         <td data-label="Actions" class="text-end" onclick="event.stopPropagation();">
           <button class="btn btn-primary btn-sm me-1" onclick="approveOrganizer(${o.id})">
             <i class="bi bi-check2"></i> Approve
@@ -510,8 +560,8 @@ async function loadPendingOrganizers() {
             <i class="bi bi-x"></i> Reject
           </button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   } catch (e) {
     console.error('Failed to load pending organizers:', e);
     tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Failed to load applications: ${e.message || 'Server error'}</td></tr>`;
@@ -524,10 +574,12 @@ function openReviewModal(id) {
   if (!o) return;
 
   document.getElementById('reviewOrgId').value = o.id;
-  document.getElementById('reviewOrgBusiness').textContent = o.businessName || '—';
-  document.getElementById('reviewOrgApplicant').textContent = o.applicantName || o.fullName || '—';
-  document.getElementById('reviewOrgNic').textContent = o.nicNumber || o.regNumber || '—';
-  document.getElementById('reviewOrgDate').textContent = o.createdAt ? new Date(o.createdAt).toLocaleString() : '—';
+  document.getElementById('reviewOrgBusiness').textContent = o.businessName || o.name || '—';
+  document.getElementById('reviewOrgApplicant').textContent = getOrgApplicantName(o);
+  document.getElementById('reviewOrgNic').textContent = getOrgVerificationId(o);
+  
+  const dt = o.createdAt || o.submittedAt || o.appliedAt || o.createdDate || o.createdDateTime || o.timestamp;
+  document.getElementById('reviewOrgDate').textContent = dt ? new Date(dt).toLocaleString() : '—';
 
   const modalEl = document.getElementById('reviewOrganizerModal');
   if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();

@@ -22,7 +22,6 @@
         <li class="nav-item"><a class="nav-link" data-nav="home" href="../index.html">Discover</a></li>
         <li class="nav-item"><a class="nav-link active" data-nav="events" href="events.html">Categories</a></li>
         <li class="nav-item"><a class="nav-link" data-nav="bookings" href="my-bookings.html">My Bookings</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav="organizer" href="organizer-dashboard.html">Organizer</a></li>
         <li class="nav-item"><a class="nav-link" data-nav="about" href="../index.html#about">About</a></li>
       </ul>
     </div>
@@ -115,11 +114,22 @@ function availabilityLabel(totalAvailable) {
     : `<span class="availability-dot">Tickets available</span>`;
 }
 
+function getCategoryPillClass(catName = '') {
+  const name = String(catName).toLowerCase();
+  if (name.includes('music') || name.includes('concert') || name.includes('art')) return 'pill-blush';
+  if (name.includes('tech') || name.includes('innovation') || name.includes('digital') || name.includes('code') || name.includes('software')) return 'pill-blue';
+  if (name.includes('sport') || name.includes('fitness') || name.includes('health') || name.includes('outdoor')) return 'pill-sage';
+  if (name.includes('food') || name.includes('drink') || name.includes('dining')) return 'pill-beige';
+  if (name.includes('business') || name.includes('workshop') || name.includes('edu')) return 'pill-lavender';
+  return 'pill-lavender';
+}
+
 function eventCard(ev) {
   const title = ev.title || 'Untitled Event';
   const categoryName = ev.categoryName || 'General';
   const venueName = ev.venueName || 'TBA';
   const bannerUrl = ev.bannerUrl || `https://placehold.co/500x300/F7D6DE/9B4A63?text=${encodeURIComponent(title)}`;
+  const pillCls = getCategoryPillClass(categoryName);
 
   let dateText = 'Date TBA', timeText = '';
   if (ev.startDatetime) {
@@ -139,8 +149,8 @@ function eventCard(ev) {
   <div class="col-md-6 col-lg-4">
     <div class="event-card">
       <div class="img-wrap">
+        <span class="pill-badge ${pillCls}">${categoryName}</span>
         <img src="${bannerUrl}" alt="${title}">
-        <span class="pill-badge category">${categoryName}</span>
       </div>
       <div class="body">
         <div class="title">${title}</div>

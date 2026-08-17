@@ -21,39 +21,118 @@
 </nav>
 
 <section class="section">
-  <div class="container-narrow" style="max-width:640px;">
-    <p class="eyebrow text-center">Host with EventSphere</p>
-    <h2 class="text-center mb-2">Become an Organizer</h2>
-    <p class="text-center text-muted-soft mb-5">Tell us about your business — an admin will review your application shortly after submission.</p>
+  <div class="container-narrow" style="max-width:680px;">
+    
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status" style="width: 2.2rem; height: 2.2rem;"></div>
+      <p class="text-muted-soft">Checking application status...</p>
+    </div>
 
-    <form id="applyForm" class="filter-bar d-flex flex-column gap-3">
-      <div>
-        <label class="form-label">Business / brand name</label>
-        <input class="form-control" name="businessName" required placeholder="e.g. Lasandi Events Co.">
-      </div>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">NIC / Passport number</label>
-          <input class="form-control" name="nicOrPassportNumber" required placeholder="For verification only">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Business registration no.</label>
-          <input class="form-control" name="businessRegistrationNumber" placeholder="If applicable">
-        </div>
-      </div>
-      <div>
-        <label class="form-label">About your events</label>
-        <textarea class="form-control" name="bio" rows="3" placeholder="What kind of events do you plan to host?"></textarea>
-      </div>
-      <button class="btn btn-primary btn-lg mt-2">Submit Application</button>
-    </form>
+    <!-- Application Form Container (For new applicants) -->
+    <div id="applyContainer" class="d-none">
+      <p class="eyebrow text-center">Host with EventSphere</p>
+      <h2 class="text-center mb-2">Become an Organizer</h2>
+      <p class="text-center text-muted-soft mb-4">Tell us about your business — an administrator will review your credentials and approve your hosting privileges.</p>
 
-    <div id="statusCard" class="filter-bar mt-4 d-none">
-      <div class="d-flex align-items-center gap-3">
-        <span class="status-badge status-pending">Pending</span>
-        <span class="text-muted-soft">Your application is under admin review.</span>
+      <form id="applyForm" class="filter-bar d-flex flex-column gap-3 p-4">
+        <div>
+          <label class="form-label fw-bold small text-dark">Business / Brand Name <span class="text-danger">*</span></label>
+          <input class="form-control" name="businessName" required placeholder="e.g. Lasandi Events Co., TechLK">
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-dark">NIC / Passport Number <span class="text-danger">*</span></label>
+            <input class="form-control" name="nicOrPassportNumber" required placeholder="For identity verification">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-dark">Business Registration No.</label>
+            <input class="form-control" name="businessRegistrationNumber" placeholder="If applicable">
+          </div>
+        </div>
+        <div>
+          <label class="form-label fw-bold small text-dark">About Your Events</label>
+          <textarea class="form-control" name="bio" rows="3" placeholder="Tell us what types of events, concerts, or workshops you plan to host..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-lg mt-2" id="submitBtn">
+          <i class="bi bi-send me-1"></i> Submit Application
+        </button>
+      </form>
+    </div>
+
+    <!-- Application Status & Details Container (When application already submitted) -->
+    <div id="statusContainer" class="d-none">
+      <p class="eyebrow text-center">Host with EventSphere</p>
+      <h2 class="text-center mb-2">Application Under Review</h2>
+      <p class="text-center text-muted-soft mb-4">You have already submitted an application to become an event organizer.</p>
+
+      <div class="table-card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pb-3 mb-3 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fs-4">📋</span>
+            <div>
+              <h5 class="fw-bold mb-0" id="statBusinessName">Business Name</h5>
+              <span class="text-muted-soft small" id="statSubmittedAt">Submitted recently</span>
+            </div>
+          </div>
+          <div id="statBadgeSlot">
+            <span class="status-badge status-pending">Pending Review</span>
+          </div>
+        </div>
+
+        <!-- Progress Timeline Steps -->
+        <div class="row g-2 text-center my-3 py-3 rounded-4" style="background: var(--beige, #f7f3ed); border: 1px solid var(--line);">
+          <div class="col-4">
+            <div class="text-success fw-bold small mb-1"><i class="bi bi-check-circle-fill"></i> Step 1</div>
+            <div class="small fw-semibold text-dark">Submitted</div>
+          </div>
+          <div class="col-4 border-start border-end" style="border-color: var(--line) !important;">
+            <div class="text-warning fw-bold small mb-1"><i class="bi bi-hourglass-split"></i> Step 2</div>
+            <div class="small fw-semibold text-dark">Admin Review</div>
+          </div>
+          <div class="col-4">
+            <div class="text-muted fw-bold small mb-1"><i class="bi bi-circle"></i> Step 3</div>
+            <div class="small text-muted-soft">Dashboard Access</div>
+          </div>
+        </div>
+
+        <!-- Submitted Application Details -->
+        <h6 class="fw-bold text-dark mt-4 mb-3"><i class="bi bi-info-circle me-1 text-primary"></i> Application Summary</h6>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="p-3 rounded-3" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">NIC / Passport Number</span>
+              <strong class="text-dark" id="statNicNumber">—</strong>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 rounded-3" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">Business Registration No.</span>
+              <strong class="text-dark" id="statRegNumber">—</strong>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="p-3 rounded-3" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">About Events / Bio</span>
+              <p class="text-dark mb-0 small" id="statBio">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-light border mt-4 mb-0 d-flex align-items-center gap-3">
+          <i class="bi bi-shield-check fs-3 text-primary"></i>
+          <div class="small text-muted-soft">
+            Our admin team reviews applications to verify credentials and ensure platform safety. You will receive hosting privileges upon approval.
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <a href="events.html" class="btn btn-outline-soft me-2"><i class="bi bi-compass me-1"></i> Explore Events</a>
+        <a href="my-bookings.html" class="btn btn-quiet"><i class="bi bi-ticket-perforated me-1"></i> My Bookings</a>
       </div>
     </div>
+
   </div>
 </section>
 
@@ -67,26 +146,86 @@
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html?redirect=' + encodeURIComponent('organizer-apply.html' + window.location.search);
+if (!EsAuthStore.isLoggedIn()) {
+  window.location.href = 'login.html?redirect=' + encodeURIComponent('organizer-apply.html' + window.location.search);
+}
 
-document.getElementById('applyForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const payload = Object.fromEntries(new FormData(e.target).entries());
+// Check if application already exists
+async function checkExistingApplication() {
+  const loading = document.getElementById('loadingState');
+  const applyContainer = document.getElementById('applyContainer');
+  const statusContainer = document.getElementById('statusContainer');
+
+  if (EsAuthStore.hasRole('ORGANIZER')) {
+    window.location.href = 'organizer-dashboard.html';
+    return;
+  }
+
   try {
-    await OrganizerAPI.apply(payload);
-  } catch (err) {
-    if (err.status !== 0) {
-      // A real rejection (e.g. an application already exists for this
-      // account) — say so, don't pretend it was submitted.
-      esToast(err.message || 'Could not submit your application', 'error');
+    const raw = await OrganizerAPI.getMyProfile();
+    const profile = raw?.data || raw;
+
+    if (profile && (profile.businessName || profile.status || profile.id)) {
+      // Existing application found!
+      loading.classList.add('d-none');
+      statusContainer.classList.remove('d-none');
+
+      document.getElementById('statBusinessName').textContent = profile.businessName || 'Organizer Application';
+      document.getElementById('statNicNumber').textContent = profile.nicOrPassportNumber || profile.nicNumber || profile.regNumber || '—';
+      document.getElementById('statRegNumber').textContent = profile.businessRegistrationNumber || profile.regNumber || 'Not provided';
+      document.getElementById('statBio').textContent = profile.bio || profile.description || 'No description provided';
+      
+      const subDate = profile.createdAt || profile.submittedAt;
+      document.getElementById('statSubmittedAt').textContent = subDate ? `Submitted on ${new Date(subDate).toLocaleDateString()}` : 'Submitted recently';
+
+      const badgeSlot = document.getElementById('statBadgeSlot');
+      const status = (profile.status || 'PENDING').toUpperCase();
+
+      if (status === 'APPROVED' || status === 'VERIFIED') {
+        badgeSlot.innerHTML = '<span class="status-badge status-confirmed">Approved</span>';
+        setTimeout(() => { window.location.href = 'organizer-dashboard.html'; }, 2000);
+      } else if (status === 'REJECTED') {
+        badgeSlot.innerHTML = '<span class="status-badge status-cancelled">Rejected</span>';
+      } else {
+        badgeSlot.innerHTML = '<span class="status-badge status-pending">Pending Review</span>';
+      }
       return;
     }
-    // status 0 = genuine network failure, demo mode is fine here.
+  } catch (err) {
+    // 404 / no profile found means user has not applied yet -> show form
+    console.log('No existing application or unauthenticated:', err);
   }
-  esToast('Application submitted — pending admin review');
-  document.getElementById('applyForm').classList.add('d-none');
-  document.getElementById('statusCard').classList.remove('d-none');
+
+  // Show apply form
+  loading.classList.add('d-none');
+  applyContainer.classList.remove('d-none');
+}
+
+// Handle Form Submission
+document.getElementById('applyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submitBtn');
+  const originalText = submitBtn.innerHTML;
+
+  const payload = Object.fromEntries(new FormData(e.target).entries());
+  try {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i> Submitting...';
+
+    await OrganizerAPI.apply(payload);
+    esToast('Application submitted successfully — pending admin review', 'success');
+
+    // Reload state to show status card
+    await checkExistingApplication();
+  } catch (err) {
+    esToast(err.message || 'Could not submit your application', 'error');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+  }
 });
+
+// Run check on page load
+checkExistingApplication();
 </script>
 </body>
 </html>

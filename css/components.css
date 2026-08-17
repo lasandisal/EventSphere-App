@@ -117,12 +117,14 @@
 /* ---------- Pill badges ---------- */
 .pill-badge{
   display: inline-block;
-  padding: 0.3rem 0.85rem;
+  padding: 0.32rem 0.85rem;
   border-radius: var(--radius-pill);
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+  background: var(--lavender-soft);
+  color: #6E5B87;
 }
 .pill-blush{ background: var(--blush-soft); color: var(--dusty-rose-dark); }
 .pill-sage{ background: var(--sage-soft); color: #5C6B4C; }
@@ -164,7 +166,13 @@
   transition: transform 0.4s ease;
 }
 .event-card:hover .img-wrap img{ transform: scale(1.06); }
-.event-card .img-wrap .pill-badge{ position: absolute; top: 0.9rem; left: 0.9rem; }
+.event-card .img-wrap .pill-badge{
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
 .event-card .body{ padding: 1.2rem 1.3rem 1.4rem; flex: 1; display:flex; flex-direction:column; }
 .event-card .title{ font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 0.35rem; font-weight: 700;}
 .event-card .meta{ font-size: 0.83rem; color: var(--charcoal-soft); display:flex; align-items:center; gap:0.4rem; margin-bottom:0.2rem; }
