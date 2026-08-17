@@ -27,6 +27,49 @@ const AuthAPI = {
   logout() {
     EsAuthStore.clear();
     window.location.href = esPathPrefix().toRoot + 'index.html';
+  },
+
+  async changePassword({ currentPassword, newPassword, confirmPassword }) {
+    try {
+      return await esFetch('/auth/change-password', {
+        method: 'POST',
+        body: { currentPassword, newPassword, confirmPassword }
+      });
+    } catch (e) {
+      try {
+        return await esFetch('/users/change-password', {
+          method: 'PUT',
+          body: { currentPassword, newPassword, confirmPassword }
+        });
+      } catch (e2) {
+        return await esFetch('/users/password', {
+          method: 'PATCH',
+          body: { currentPassword, newPassword, confirmPassword }
+        });
+      }
+    }
+  },
+
+  async updateUserProfile(payload) {
+    try {
+      const data = await esFetch('/users/profile', { method: 'PUT', body: payload });
+      if (data) {
+        const u = EsAuthStore.getUser() || {};
+        EsAuthStore.setUser({ ...u, ...(data.data || data) });
+      }
+      return data;
+    } catch (e) {
+      const data = await esFetch('/users/me', { method: 'PATCH', body: payload });
+      if (data) {
+        const u = EsAuthStore.getUser() || {};
+        EsAuthStore.setUser({ ...u, ...(data.data || data) });
+      }
+      return data;
+    }
   }
 };
 window.AuthAPI = AuthAPI;
+window.UserAPI = {
+  changePassword: AuthAPI.changePassword,
+  updateProfile: AuthAPI.updateUserProfile
+};

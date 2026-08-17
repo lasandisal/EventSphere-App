@@ -5,6 +5,17 @@ const OrganizerAPI = {
   },
   getMyProfile() {
     return esFetch('/organizer/me');
+  },
+  async updateProfile(payload) {
+    try {
+      return await esFetch('/organizer/profile', { method: 'PUT', body: payload });
+    } catch (e) {
+      try {
+        return await esFetch('/organizer/me', { method: 'PUT', body: payload });
+      } catch (e2) {
+        return await esFetch('/organizer/profile', { method: 'PATCH', body: payload });
+      }
+    }
   }
 };
 
@@ -27,6 +38,9 @@ const AdminAPI = {
       }
       throw e;
     }
+  },
+  async getAllOrganizers(params = {}) {
+    return await esFetch('/admin/organizers/all', { params });
   },
   getPendingOrganizers() {
     return esFetch('/admin/organizers/pending');

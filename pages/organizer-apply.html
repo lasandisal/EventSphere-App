@@ -21,7 +21,7 @@
 </nav>
 
 <section class="section">
-  <div class="container-narrow" style="max-width:680px;">
+  <div class="container-narrow" style="max-width:700px;">
     
     <!-- Loading State -->
     <div id="loadingState" class="text-center py-5">
@@ -33,27 +33,55 @@
     <div id="applyContainer" class="d-none">
       <p class="eyebrow text-center">Host with EventSphere</p>
       <h2 class="text-center mb-2">Become an Organizer</h2>
-      <p class="text-center text-muted-soft mb-4">Tell us about your business — an administrator will review your credentials and approve your hosting privileges.</p>
+      <p class="text-center text-muted-soft mb-4">Provide your contact and business details — an administrator will verify your credentials and approve your hosting privileges.</p>
 
       <form id="applyForm" class="filter-bar d-flex flex-column gap-3 p-4">
+        
+        <!-- Applicant Contact Info -->
+        <h6 class="fw-bold text-dark mb-1"><i class="bi bi-person-badge me-1 text-primary"></i> 1. Applicant & Contact Information</h6>
+        
+        <div>
+          <label class="form-label fw-bold small text-dark">Legal Full Name <span class="text-danger">*</span></label>
+          <input class="form-control" name="applicantName" required placeholder="e.g. Dasun Salwathura">
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-dark">Email Address <span class="text-danger">*</span></label>
+            <input class="form-control" type="email" name="applicantEmail" required placeholder="e.g. name@example.com">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-dark">Phone Number <span class="text-danger">*</span></label>
+            <input class="form-control" type="tel" name="applicantPhone" required placeholder="e.g. 0771234567">
+          </div>
+        </div>
+
+        <hr class="my-2 border-line">
+
+        <!-- Business & Identity Info -->
+        <h6 class="fw-bold text-dark mb-1"><i class="bi bi-building-check me-1 text-primary"></i> 2. Business & Verification (KYC)</h6>
+
         <div>
           <label class="form-label fw-bold small text-dark">Business / Brand Name <span class="text-danger">*</span></label>
-          <input class="form-control" name="businessName" required placeholder="e.g. Lasandi Events Co., TechLK">
+          <input class="form-control" name="businessName" required placeholder="e.g. Lasandi Events Co., TechLK, Colombo Music Hub">
         </div>
+
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-dark">NIC / Passport Number <span class="text-danger">*</span></label>
-            <input class="form-control" name="nicOrPassportNumber" required placeholder="For identity verification">
+            <input class="form-control" name="nicOrPassportNumber" required placeholder="e.g. 200316412246">
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold small text-dark">Business Registration No.</label>
-            <input class="form-control" name="businessRegistrationNumber" placeholder="If applicable">
+            <label class="form-label fw-bold small text-dark">Business Registration No. (BRN)</label>
+            <input class="form-control" name="businessRegistrationNumber" placeholder="e.g. PV-12345 (optional)">
           </div>
         </div>
+
         <div>
-          <label class="form-label fw-bold small text-dark">About Your Events</label>
+          <label class="form-label fw-bold small text-dark">About Your Events / Bio</label>
           <textarea class="form-control" name="bio" rows="3" placeholder="Tell us what types of events, concerts, or workshops you plan to host..."></textarea>
         </div>
+
         <button class="btn btn-primary btn-lg mt-2" id="submitBtn">
           <i class="bi bi-send me-1"></i> Submit Application
         </button>
@@ -98,17 +126,31 @@
 
         <!-- Submitted Application Details -->
         <h6 class="fw-bold text-dark mt-4 mb-3"><i class="bi bi-info-circle me-1 text-primary"></i> Application Summary</h6>
-        <div class="row g-3">
-          <div class="col-sm-6">
-            <div class="p-3 rounded-3" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
-              <span class="text-muted-soft small d-block mb-1">NIC / Passport Number</span>
-              <strong class="text-dark" id="statNicNumber">—</strong>
+        
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 h-100" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">Applicant Name</span>
+              <strong class="text-dark" id="statApplicantName">—</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 h-100" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">Contact Email & Phone</span>
+              <div class="text-dark fw-semibold" id="statApplicantEmail">—</div>
+              <div class="text-muted-soft small" id="statApplicantPhone">—</div>
             </div>
           </div>
           <div class="col-sm-6">
-            <div class="p-3 rounded-3" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
-              <span class="text-muted-soft small d-block mb-1">Business Registration No.</span>
-              <strong class="text-dark" id="statRegNumber">—</strong>
+            <div class="p-3 rounded-3 h-100" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">NIC / Passport Number</span>
+              <code class="text-dark fw-bold fs-6" id="statNicNumber">—</code>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 rounded-3 h-100" style="background:var(--cream-bg, #faf8f5); border:1px solid var(--line);">
+              <span class="text-muted-soft small d-block mb-1">Business Registration No. (BRN)</span>
+              <code class="text-dark" id="statRegNumber">None provided</code>
             </div>
           </div>
           <div class="col-12">
@@ -119,7 +161,7 @@
           </div>
         </div>
 
-        <div class="alert alert-light border mt-4 mb-0 d-flex align-items-center gap-3">
+        <div class="alert alert-light border mt-3 mb-0 d-flex align-items-center gap-3">
           <i class="bi bi-shield-check fs-3 text-primary"></i>
           <div class="small text-muted-soft">
             Our admin team reviews applications to verify credentials and ensure platform safety. You will receive hosting privileges upon approval.
@@ -155,6 +197,7 @@ async function checkExistingApplication() {
   const loading = document.getElementById('loadingState');
   const applyContainer = document.getElementById('applyContainer');
   const statusContainer = document.getElementById('statusContainer');
+  const user = EsAuthStore.getUser() || {};
 
   if (EsAuthStore.hasRole('ORGANIZER')) {
     window.location.href = 'organizer-dashboard.html';
@@ -171,9 +214,12 @@ async function checkExistingApplication() {
       statusContainer.classList.remove('d-none');
 
       document.getElementById('statBusinessName').textContent = profile.businessName || 'Organizer Application';
+      document.getElementById('statApplicantName').textContent = profile.applicantName || user.fullName || user.name || 'Applicant';
+      document.getElementById('statApplicantEmail').textContent = profile.applicantEmail || user.email || '—';
+      document.getElementById('statApplicantPhone').textContent = profile.applicantPhone || user.phoneNumber || user.phone || '—';
       document.getElementById('statNicNumber').textContent = profile.nicOrPassportNumber || profile.nicNumber || profile.regNumber || '—';
-      document.getElementById('statRegNumber').textContent = profile.businessRegistrationNumber || profile.regNumber || 'Not provided';
-      document.getElementById('statBio').textContent = profile.bio || profile.description || 'No description provided';
+      document.getElementById('statRegNumber').textContent = profile.businessRegistrationNumber || profile.regNumber || 'None provided (Individual Host)';
+      document.getElementById('statBio').textContent = profile.bio || profile.description || 'No description provided.';
       
       const subDate = profile.createdAt || profile.submittedAt;
       document.getElementById('statSubmittedAt').textContent = subDate ? `Submitted on ${new Date(subDate).toLocaleDateString()}` : 'Submitted recently';
@@ -195,6 +241,15 @@ async function checkExistingApplication() {
     // 404 / no profile found means user has not applied yet -> show form
     console.log('No existing application or unauthenticated:', err);
   }
+
+  // Pre-fill form from logged-in user profile if available
+  const nameInput = document.querySelector('input[name="applicantName"]');
+  const emailInput = document.querySelector('input[name="applicantEmail"]');
+  const phoneInput = document.querySelector('input[name="applicantPhone"]');
+
+  if (nameInput && !nameInput.value) nameInput.value = user.fullName || user.name || '';
+  if (emailInput && !emailInput.value) emailInput.value = user.email || '';
+  if (phoneInput && !phoneInput.value) phoneInput.value = user.phoneNumber || user.phone || '';
 
   // Show apply form
   loading.classList.add('d-none');

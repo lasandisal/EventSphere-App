@@ -144,11 +144,124 @@
 
     <!-- Profile section -->
     <section id="sec-profile" class="d-none">
-      <h2 class="mb-3">Organizer Profile</h2>
-      <div class="filter-bar" style="max-width:480px;">
-        <div class="mb-3"><span class="status-badge status-confirmed">Verified Organizer</span></div>
-        <div class="mb-2"><span class="text-muted-soft">Business name</span><div class="fw-semibold" id="profBusiness">—</div></div>
-        <div><span class="text-muted-soft">Email</span><div class="fw-semibold" id="profEmail">—</div></div>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="mb-0">Organizer Profile & Settings</h2>
+          <p class="text-muted-soft small mb-0">Manage your hosting identity, business credentials, and account security</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="status-badge status-confirmed" id="profStatusBadge"><i class="bi bi-shield-check me-1"></i> Verified Organizer</span>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Card 1: Organizer Brand & KYC Profile -->
+        <div class="col-lg-7">
+          <div class="filter-bar p-4 h-100">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+              <i class="bi bi-building fs-4 text-primary"></i>
+              <h5 class="fw-bold mb-0 text-dark">Business & Identity Details</h5>
+            </div>
+            
+            <form id="orgProfileForm" class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label fw-semibold small text-dark">Business / Brand Name <span class="text-danger">*</span></label>
+                <input class="form-control" name="businessName" id="profInputBusiness" required placeholder="e.g. Zelo Events, TechLK">
+              </div>
+
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small text-dark">Applicant Legal Name <span class="text-danger">*</span></label>
+                  <input class="form-control" name="applicantName" id="profInputName" required placeholder="Full Name">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small text-dark">Phone Number <span class="text-danger">*</span></label>
+                  <input class="form-control" type="tel" name="applicantPhone" id="profInputPhone" required placeholder="e.g. 0771234567">
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label fw-semibold small text-dark">Account Email</label>
+                <input class="form-control bg-light" name="applicantEmail" id="profInputEmail" readonly title="Account email is tied to your login credentials">
+                <small class="text-muted-soft" style="font-size:0.78rem;">Email is associated with your login account.</small>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small text-dark">NIC / Passport Number <span class="text-danger">*</span></label>
+                  <input class="form-control" name="nicOrPassportNumber" id="profInputNic" required placeholder="Identity number">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-semibold small text-dark">Business Registration (BRN)</label>
+                  <input class="form-control" name="businessRegistrationNumber" id="profInputRegNo" placeholder="BRN (optional)">
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label fw-semibold small text-dark">About Your Events / Bio</label>
+                <textarea class="form-control" name="bio" id="profInputBio" rows="3" placeholder="Tell attendees and admins about your experience and event types..."></textarea>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="btn btn-primary px-4" id="saveProfileBtn">
+                  <i class="bi bi-check2 me-1"></i> Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Card 2: Security & Password Management -->
+        <div class="col-lg-5">
+          <div class="filter-bar p-4 h-100">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+              <i class="bi bi-shield-lock fs-4 text-primary"></i>
+              <h5 class="fw-bold mb-0 text-dark">Account Security</h5>
+            </div>
+
+            <form id="changePasswordForm" class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label fw-semibold small text-dark">Current Password <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input class="form-control" type="password" name="currentPassword" id="currentPasswordInput" required placeholder="Enter current password">
+                  <button class="btn btn-outline-soft" type="button" onclick="togglePasswordVisibility('currentPasswordInput', this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label fw-semibold small text-dark">New Password <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input class="form-control" type="password" name="newPassword" id="newPasswordInput" required minlength="6" placeholder="At least 6 characters">
+                  <button class="btn btn-outline-soft" type="button" onclick="togglePasswordVisibility('newPasswordInput', this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label fw-semibold small text-dark">Confirm New Password <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input class="form-control" type="password" name="confirmPassword" id="confirmPasswordInput" required minlength="6" placeholder="Repeat new password">
+                  <button class="btn btn-outline-soft" type="button" onclick="togglePasswordVisibility('confirmPasswordInput', this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="alert alert-light border small text-muted-soft mb-0 py-2">
+                <i class="bi bi-info-circle me-1 text-primary"></i> Passwords must be at least 6 characters long and match.
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="btn btn-primary px-4" id="savePasswordBtn">
+                  <i class="bi bi-key me-1"></i> Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -163,7 +276,6 @@
 <script src="../js/api/organizer.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
-<!-- <script src="../js/utils/mock-data.js"></script> -->
 <script src="../js/utils/nav.js"></script>
 <script>
 document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
@@ -187,19 +299,118 @@ function statusBadge(s) {
   return `<span class="status-badge ${cls}">${label}</span>`;
 }
 
-async function loadProfile() {
-  // OrganizerResponseDTO has NO email field — it's the authenticated
-  // account's own email, already sitting in local storage from login.
-  const u = EsAuthStore.getUser() || {};
-  document.getElementById('profEmail').textContent = u.email || '—';
-  try {
-    const p = await OrganizerAPI.getMyProfile();
-    document.getElementById('profBusiness').textContent = p.businessName || '—';
-  } catch (e) {
-    document.getElementById('profBusiness').textContent = '—';
-    esToast('Could not load your organizer profile.', 'error');
+// Toggle password visibility
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '<i class="bi bi-eye"></i>';
   }
 }
+
+// Load Organizer & Account Profile
+async function loadProfile() {
+  const u = EsAuthStore.getUser() || {};
+  document.getElementById('profInputEmail').value = u.email || '';
+
+  try {
+    const raw = await OrganizerAPI.getMyProfile();
+    const p = raw?.data || raw || {};
+    
+    document.getElementById('profInputBusiness').value = p.businessName || '';
+    document.getElementById('profInputName').value = p.applicantName || u.fullName || u.name || '';
+    document.getElementById('profInputPhone').value = p.applicantPhone || u.phoneNumber || u.phone || '';
+    document.getElementById('profInputNic').value = p.nicOrPassportNumber || p.nicNumber || p.regNumber || '';
+    document.getElementById('profInputRegNo').value = p.businessRegistrationNumber || '';
+    document.getElementById('profInputBio').value = p.bio || p.description || '';
+
+    const statusBadgeEl = document.getElementById('profStatusBadge');
+    if (statusBadgeEl) {
+      const status = (p.status || 'APPROVED').toUpperCase();
+      if (status === 'APPROVED' || status === 'VERIFIED') {
+        statusBadgeEl.className = 'status-badge status-confirmed';
+        statusBadgeEl.innerHTML = '<i class="bi bi-shield-check me-1"></i> Verified Organizer';
+      } else {
+        statusBadgeEl.className = 'status-badge status-pending';
+        statusBadgeEl.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> ' + status;
+      }
+    }
+  } catch (e) {
+    console.error('Could not load organizer profile:', e);
+    // Auto-populate from authenticated user
+    document.getElementById('profInputName').value = u.fullName || u.name || '';
+    document.getElementById('profInputPhone').value = u.phoneNumber || u.phone || '';
+  }
+}
+
+// Handle Organizer Profile Update
+document.getElementById('orgProfileForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('saveProfileBtn');
+  const originalText = btn.innerHTML;
+
+  const payload = Object.fromEntries(new FormData(e.target).entries());
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i> Saving...';
+
+    // Update organizer profile
+    await OrganizerAPI.updateProfile(payload);
+
+    // Also update local user object
+    const u = EsAuthStore.getUser() || {};
+    if (payload.applicantName) u.fullName = payload.applicantName;
+    if (payload.applicantPhone) u.phoneNumber = payload.applicantPhone;
+    EsAuthStore.setUser(u);
+
+    esToast('Organizer profile updated successfully!', 'success');
+  } catch (err) {
+    esToast(err.message || 'Failed to update profile', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+});
+
+// Handle Change Password
+document.getElementById('changePasswordForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('savePasswordBtn');
+  const originalText = btn.innerHTML;
+
+  const currentPassword = document.getElementById('currentPasswordInput').value;
+  const newPassword = document.getElementById('newPasswordInput').value;
+  const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+  if (newPassword !== confirmPassword) {
+    esToast('New password and confirm password do not match.', 'error');
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    esToast('Password must be at least 6 characters.', 'error');
+    return;
+  }
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i> Updating...';
+
+    await AuthAPI.changePassword({ currentPassword, newPassword, confirmPassword });
+    esToast('Password updated successfully!', 'success');
+    e.target.reset();
+  } catch (err) {
+    esToast(err.message || 'Failed to update password. Please check your current password.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+});
 
 async function loadMyEvents() {
   const tbody = document.getElementById('myEventsBody');
