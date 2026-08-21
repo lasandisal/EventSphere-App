@@ -1,47 +1,95 @@
 /* =========================================================
-   EventSphere — Dashboard extras
+   EventSphere — Dark Luxe Dashboard Extras
    ========================================================= */
 
 .chart-card{
-  background: var(--cream-card); border: 1px solid var(--line);
-  border-radius: var(--radius-md); padding: 1.4rem 1.5rem;
+  background: rgba(18, 22, 34, 0.75);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.6rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
-.chart-card .chart-title{ font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.2rem; }
-.bar-chart{ display:flex; align-items:flex-end; gap: 0.7rem; height: 160px; margin-top: 1rem; }
+.chart-card .chart-title{ font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; color: #FFF; margin-bottom: 0.25rem; }
+.bar-chart{ display:flex; align-items:flex-end; gap: 0.8rem; height: 160px; margin-top: 1.4rem; padding-top: 2rem; }
 .bar-chart .bar{
-  flex:1; background: linear-gradient(180deg, var(--dusty-rose), var(--blush));
-  border-radius: 8px 8px 0 0; position: relative; min-height: 6px;
+  flex:1;
+  background: linear-gradient(180deg, #FF2E74 0%, rgba(255, 46, 116, 0.3) 100%);
+  border-radius: 8px 8px 0 0;
+  position: relative; min-height: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
-.bar-chart .bar .bar-label{ position:absolute; bottom:-22px; left:0; right:0; text-align:center; font-size:0.68rem; color: var(--charcoal-faint); }
-.bar-chart .bar.sage{ background: linear-gradient(180deg, var(--sage), var(--sage-soft)); }
-.bar-chart .bar.blue{ background: linear-gradient(180deg, var(--powder-blue), var(--powder-blue-soft)); }
+.bar-chart .bar:hover {
+  filter: brightness(1.2);
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px rgba(255, 46, 116, 0.5);
+}
+.bar-chart .bar .bar-tooltip {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 13, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+.bar-chart .bar:hover .bar-tooltip {
+  opacity: 1;
+}
+.bar-chart .bar .bar-label{ position:absolute; bottom:-22px; left:0; right:0; text-align:center; font-size:0.72rem; color: #9CA3AF; font-weight:600; }
+.bar-chart .bar.sage{
+  background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.3) 100%);
+}
+.bar-chart .bar.sage:hover {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+.bar-chart .bar.blue{
+  background: linear-gradient(180deg, #00F2FE 0%, rgba(0, 242, 254, 0.3) 100%);
+}
+.bar-chart .bar.blue:hover {
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+}
 
 .donut{
   width: 130px; height: 130px; border-radius: 50%; margin: 0 auto;
-  background: conic-gradient(var(--dusty-rose) 0% 62%, var(--lavender) 62% 85%, var(--sage) 85% 100%);
+  background: conic-gradient(#FF2E74 0% 62%, #8B5CF6 62% 85%, #10B981 85% 100%);
   display:flex; align-items:center; justify-content:center; position:relative;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
 }
-.donut::after{ content:''; width: 74px; height:74px; border-radius:50%; background: var(--cream-card); position:absolute; }
-.donut .donut-center{ position:relative; z-index:1; text-align:center; font-family: var(--font-display); font-weight:700; }
+.donut::after{ content:''; width: 74px; height:74px; border-radius:50%; background: #121624; position:absolute; }
+.donut .donut-center{ position:relative; z-index:1; text-align:center; font-family: var(--font-display); font-weight:800; color: #FFF; }
 
 .scanner-frame{
   width: 260px; height: 260px; margin: 0 auto;
   border-radius: var(--radius-lg);
-  background: var(--charcoal);
+  background: #0D1019;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative; overflow: hidden;
   display: flex; align-items:center; justify-content:center;
 }
-.scanner-frame .corner{ position:absolute; width: 34px; height:34px; border: 3px solid var(--sage); }
+.scanner-frame .corner{ position:absolute; width: 34px; height:34px; border: 3px solid #10B981; }
 .scanner-frame .tl{ top:14px; left:14px; border-right:none; border-bottom:none; }
 .scanner-frame .tr{ top:14px; right:14px; border-left:none; border-bottom:none; }
 .scanner-frame .bl{ bottom:14px; left:14px; border-right:none; border-top:none; }
 .scanner-frame .br{ bottom:14px; right:14px; border-left:none; border-top:none; }
 .scanner-frame .scan-line{
-  position:absolute; left:14px; right:14px; height:2px; background: var(--sage);
-  box-shadow: 0 0 12px var(--sage);
+  position:absolute; left:14px; right:14px; height:2px; background: #10B981;
+  box-shadow: 0 0 14px #10B981;
   animation: scan 2.2s ease-in-out infinite;
 }
 @keyframes scan{ 0%,100%{ top:16px; } 50%{ top: 244px; } }
 .scanner-frame .icon-camera{ color: rgba(255,255,255,0.25); font-size: 2.4rem; }
 
 .progress-ring-wrap{ text-align:center; }
+

@@ -27,6 +27,9 @@ const EventsAPI = {
   },
   addTicketType(eventId, payload) {
     return esFetch(`/organizer/events/${eventId}/ticket-types`, { method: 'POST', body: payload });
+  },
+  getEventBookings(eventId) {
+    return esFetch(`/organizer/events/${eventId}/bookings`);
   }
 };
 

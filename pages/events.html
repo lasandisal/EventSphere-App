@@ -147,15 +147,15 @@ function eventCard(ev) {
 
   return `
   <div class="col-md-6 col-lg-4">
-    <div class="event-card">
+    <div class="event-card h-100">
       <div class="img-wrap">
         <span class="pill-badge ${pillCls}">${categoryName}</span>
         <img src="${bannerUrl}" alt="${title}">
       </div>
       <div class="body">
-        <div class="title">${title}</div>
-        <div class="meta"><i class="bi bi-calendar3"></i> ${dateText}${timeText ? `, ${timeText}` : ''}</div>
-        <div class="meta"><i class="bi bi-geo-alt"></i> ${venueName}</div>
+        <div class="title fw-bold mb-2 text-truncate" title="${title}">${title}</div>
+        <div class="meta small mb-1"><i class="bi bi-calendar3 me-1"></i> <span>${dateText}${timeText ? `, ${timeText}` : ''}</span></div>
+        <div class="meta small mb-3 text-truncate"><i class="bi bi-geo-alt me-1"></i> <span>${venueName}</span></div>
         <div class="price-row">
           <div><div class="price">${priceText}</div>${availabilityLabel(totalAvailable)}</div>
           <a href="event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>

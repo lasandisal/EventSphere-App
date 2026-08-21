@@ -16,6 +16,9 @@ const OrganizerAPI = {
         return await esFetch('/organizer/profile', { method: 'PATCH', body: payload });
       }
     }
+  },
+  getAnalyticsOverview() {
+    return esFetch('/organizer/analytics/overview');
   }
 };
 
@@ -53,6 +56,9 @@ const AdminAPI = {
   },
   promoteToAdmin(userId) {
     return esFetch(`/admin/users/${userId}/promote-to-admin`, { method: 'PATCH' });
+  },
+  getAnalyticsOverview() {
+    return esFetch('/admin/analytics/overview');
   }
 };
 

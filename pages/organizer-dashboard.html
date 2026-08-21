@@ -37,63 +37,110 @@
 
     <!-- Dashboard section -->
     <section id="sec-dashboard">
-      <h2 class="mb-1">Welcome back</h2>
-      <p class="text-muted-soft mb-4">Here's how your events are doing.</p>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="mb-0">Organizer Performance & Analytics</h2>
+          <p class="text-muted-soft small mb-0">Track your event bookings, ticket velocity, and income in real-time</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <button class="btn btn-quiet btn-sm" onclick="loadOrganizerOverview()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+          </button>
+          <a href="create-event.html" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Create Event
+          </a>
+        </div>
+      </div>
 
+      <!-- Key Metrics Row -->
       <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
           <div class="stat-card">
             <div class="stat-icon mb-2" style="background:var(--blush-soft);">📅</div>
-            <div class="label">Total Events</div><div class="value">12</div>
-            <div class="delta up">↑ 2 this month</div>
+            <div class="label">Total Events</div>
+            <div class="value" id="orgTotalEvents">0</div>
+            <div class="text-muted-soft small mt-1">Hosted on platform</div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
           <div class="stat-card">
             <div class="stat-icon mb-2" style="background:var(--sage-soft);">🎟️</div>
-            <div class="label">Tickets Sold</div><div class="value">1,284</div>
-            <div class="delta up">↑ 18% vs last month</div>
+            <div class="label">Tickets Sold</div>
+            <div class="value" id="orgTotalTickets">0</div>
+            <div class="text-muted-soft small mt-1">Across all events</div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
           <div class="stat-card">
             <div class="stat-icon mb-2" style="background:var(--powder-blue-soft);">💰</div>
-            <div class="label">Revenue</div><div class="value">LKR 2.1M</div>
-            <div class="delta up">↑ 9% vs last month</div>
+            <div class="label">Gross Revenue</div>
+            <div class="value" id="orgTotalRevenue">LKR 0</div>
+            <div class="text-muted-soft small mt-1">Total ticket revenue</div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
           <div class="stat-card">
             <div class="stat-icon mb-2" style="background:var(--beige);">⏰</div>
-            <div class="label">Upcoming Events</div><div class="value">4</div>
-            <div class="delta down">2 this week</div>
+            <div class="label">Upcoming Events</div>
+            <div class="value" id="orgUpcomingEvents">0</div>
+            <div class="text-muted-soft small mt-1">Scheduled ahead</div>
           </div>
         </div>
       </div>
 
+      <!-- Charts Row -->
       <div class="row g-3 mb-4">
         <div class="col-lg-8">
           <div class="chart-card h-100">
-            <div class="chart-title">Ticket Sales — last 6 weeks</div>
-            <div class="text-muted-soft" style="font-size:0.8rem;">Weekly tickets sold across all events</div>
-            <div class="bar-chart">
-              <div class="bar" style="height:35%;"><span class="bar-label">W1</span></div>
-              <div class="bar" style="height:52%;"><span class="bar-label">W2</span></div>
-              <div class="bar" style="height:44%;"><span class="bar-label">W3</span></div>
-              <div class="bar" style="height:70%;"><span class="bar-label">W4</span></div>
-              <div class="bar" style="height:60%;"><span class="bar-label">W5</span></div>
-              <div class="bar" style="height:88%;"><span class="bar-label">W6</span></div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="chart-title">Revenue & Sales Velocity</div>
+              <span class="pill-badge pill-beige">Last 6 Months</span>
+            </div>
+            <div class="text-muted-soft small mb-3">Monthly gross ticket sales trajectory</div>
+            <div class="bar-chart" id="orgRevenueChartBars">
+              <div class="text-center text-muted-soft py-4 w-100"><i class="bi bi-arrow-repeat spin"></i> Loading sales trajectory...</div>
             </div>
           </div>
         </div>
         <div class="col-lg-4">
-          <div class="chart-card h-100 text-center">
-            <div class="chart-title">Attendance Mix</div>
-            <div class="donut my-3"><div class="donut-center">62%</div></div>
-            <div class="d-flex justify-content-center gap-3" style="font-size:0.76rem;">
-              <span><i class="bi bi-square-fill" style="color:var(--dusty-rose);"></i> General</span>
-              <span><i class="bi bi-square-fill" style="color:var(--lavender);"></i> VIP</span>
-              <span><i class="bi bi-square-fill" style="color:var(--sage);"></i> Comp</span>
+          <div class="chart-card h-100 text-center d-flex flex-column justify-content-between">
+            <div>
+              <div class="chart-title">Ticket Type Mix</div>
+              <div class="text-muted-soft small">Sales distribution by ticket tiers</div>
+            </div>
+            <div class="donut my-3 mx-auto"><div class="donut-center" id="orgDonutCenter">0%</div></div>
+            <div class="d-flex flex-wrap justify-content-center gap-2" id="orgAttendanceMixLegend" style="font-size:0.78rem;">
+              <span class="text-muted-soft small">Loading mix...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Events Table Row -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="table-card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+              <div>
+                <h5 class="fw-bold mb-0 text-white"><i class="bi bi-fire me-1 text-danger"></i> Top Performing Events</h5>
+                <span class="text-muted-soft small">Your events ranked by ticket sales and revenue</span>
+              </div>
+              <button class="btn btn-quiet btn-sm" onclick="switchOrganizerSection('myevents')">View All</button>
+            </div>
+            <div class="table-responsive">
+              <table class="es-table mb-0">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Tickets Sold</th>
+                    <th>Gross Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="orgTopEventsBody">
+                  <tr><td colspan="4" class="text-center text-muted-soft py-3"><i class="bi bi-arrow-repeat spin"></i> Loading sales data...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -103,15 +150,18 @@
     <!-- My Events section -->
     <section id="sec-myevents" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 class="mb-0">My Events</h2>
-        <div class="d-flex gap-2">
-          <input class="form-control" placeholder="Search events..." style="max-width:220px;">
-          <a href="create-event.html" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Create Event</a>
+        <div>
+          <h2 class="mb-0">My Events</h2>
+          <p class="text-muted-soft small mb-0">Manage all your hosted events, ticket tiers, and active sales</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <input class="form-control" id="myEventsSearchInput" placeholder="Search events..." style="max-width:220px;">
+          <a href="create-event.html" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i> Create Event</a>
         </div>
       </div>
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Sold</th><th>Available</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Sold</th><th>Available</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
           <tbody id="myEventsBody"></tbody>
         </table>
       </div>
@@ -119,10 +169,16 @@
 
     <!-- Bookings section -->
     <section id="sec-bookings" class="d-none">
-      <h2 class="mb-3">Bookings</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="mb-0">Bookings</h2>
+          <p class="text-muted-soft small mb-0">Orders placed across your active and past events</p>
+        </div>
+        <input class="form-control" id="orgBookingSearchInput" placeholder="Search bookings..." style="max-width:240px;">
+      </div>
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Booking</th><th>Event</th><th>Attendee</th><th>Tickets</th><th>Total</th><th>Status</th></tr></thead>
+          <thead><tr><th>Booking Ref</th><th>Event</th><th>Attendee</th><th>Tickets</th><th>Total Paid</th><th>Status</th></tr></thead>
           <tbody id="bookingsBody"></tbody>
         </table>
       </div>
@@ -131,8 +187,11 @@
     <!-- Attendees section -->
     <section id="sec-attendees" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 class="mb-0">Attendees</h2>
-        <input class="form-control" placeholder="Search attendees..." style="max-width:240px;">
+        <div>
+          <h2 class="mb-0">Attendees</h2>
+          <p class="text-muted-soft small mb-0">Full guest list and ticket verification status</p>
+        </div>
+        <input class="form-control" id="orgAttendeeSearchInput" placeholder="Search attendees..." style="max-width:240px;">
       </div>
       <div class="table-card">
         <table class="es-table">
@@ -158,47 +217,47 @@
         <!-- Card 1: Organizer Brand & KYC Profile -->
         <div class="col-lg-7">
           <div class="filter-bar p-4 h-100">
-            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
               <i class="bi bi-building fs-4 text-primary"></i>
-              <h5 class="fw-bold mb-0 text-dark">Business & Identity Details</h5>
+              <h5 class="fw-bold mb-0 text-white">Business & Identity Details</h5>
             </div>
             
             <form id="orgProfileForm" class="d-flex flex-column gap-3">
               <div>
-                <label class="form-label fw-semibold small text-dark">Business / Brand Name <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold small text-white">Business / Brand Name <span class="text-danger">*</span></label>
                 <input class="form-control" name="businessName" id="profInputBusiness" required placeholder="e.g. Zelo Events, TechLK">
               </div>
 
               <div class="row g-3">
                 <div class="col-sm-6">
-                  <label class="form-label fw-semibold small text-dark">Applicant Legal Name <span class="text-danger">*</span></label>
+                  <label class="form-label fw-semibold small text-white">Applicant Legal Name <span class="text-danger">*</span></label>
                   <input class="form-control" name="applicantName" id="profInputName" required placeholder="Full Name">
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label fw-semibold small text-dark">Phone Number <span class="text-danger">*</span></label>
+                  <label class="form-label fw-semibold small text-white">Phone Number <span class="text-danger">*</span></label>
                   <input class="form-control" type="tel" name="applicantPhone" id="profInputPhone" required placeholder="e.g. 0771234567">
                 </div>
               </div>
 
               <div>
-                <label class="form-label fw-semibold small text-dark">Account Email</label>
+                <label class="form-label fw-semibold small text-white">Account Email</label>
                 <input class="form-control bg-light" name="applicantEmail" id="profInputEmail" readonly title="Account email is tied to your login credentials">
                 <small class="text-muted-soft" style="font-size:0.78rem;">Email is associated with your login account.</small>
               </div>
 
               <div class="row g-3">
                 <div class="col-sm-6">
-                  <label class="form-label fw-semibold small text-dark">NIC / Passport Number <span class="text-danger">*</span></label>
+                  <label class="form-label fw-semibold small text-white">NIC / Passport Number <span class="text-danger">*</span></label>
                   <input class="form-control" name="nicOrPassportNumber" id="profInputNic" required placeholder="Identity number">
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label fw-semibold small text-dark">Business Registration (BRN)</label>
+                  <label class="form-label fw-semibold small text-white">Business Registration (BRN)</label>
                   <input class="form-control" name="businessRegistrationNumber" id="profInputRegNo" placeholder="BRN (optional)">
                 </div>
               </div>
 
               <div>
-                <label class="form-label fw-semibold small text-dark">About Your Events / Bio</label>
+                <label class="form-label fw-semibold small text-white">About Your Events / Bio</label>
                 <textarea class="form-control" name="bio" id="profInputBio" rows="3" placeholder="Tell attendees and admins about your experience and event types..."></textarea>
               </div>
 
@@ -214,14 +273,14 @@
         <!-- Card 2: Security & Password Management -->
         <div class="col-lg-5">
           <div class="filter-bar p-4 h-100">
-            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
               <i class="bi bi-shield-lock fs-4 text-primary"></i>
-              <h5 class="fw-bold mb-0 text-dark">Account Security</h5>
+              <h5 class="fw-bold mb-0 text-white">Account Security</h5>
             </div>
 
             <form id="changePasswordForm" class="d-flex flex-column gap-3">
               <div>
-                <label class="form-label fw-semibold small text-dark">Current Password <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold small text-white">Current Password <span class="text-danger">*</span></label>
                 <div class="input-group">
                   <input class="form-control" type="password" name="currentPassword" id="currentPasswordInput" required placeholder="Enter current password">
                   <button class="btn btn-outline-soft" type="button" onclick="togglePasswordVisibility('currentPasswordInput', this)">
@@ -231,7 +290,7 @@
               </div>
 
               <div>
-                <label class="form-label fw-semibold small text-dark">New Password <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold small text-white">New Password <span class="text-danger">*</span></label>
                 <div class="input-group">
                   <input class="form-control" type="password" name="newPassword" id="newPasswordInput" required minlength="6" placeholder="At least 6 characters">
                   <button class="btn btn-outline-soft" type="button" onclick="togglePasswordVisibility('newPasswordInput', this)">
@@ -241,7 +300,7 @@
               </div>
 
               <div>
-                <label class="form-label fw-semibold small text-dark">Confirm New Password <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold small text-white">Confirm New Password <span class="text-danger">*</span></label>
                 <div class="input-group">
                   <input class="form-control" type="password" name="confirmPassword" id="confirmPasswordInput" required minlength="6" placeholder="Repeat new password">
                   <button class="btn btn-outline-soft" type="button" onclick="togglePasswordVisibility('confirmPasswordInput', this)">
@@ -277,203 +336,13 @@
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
 <script src="../js/utils/nav.js"></script>
-<script>
-document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
-if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html';
-if (!EsAuthStore.hasRole('ORGANIZER')) window.location.href = 'organizer-apply.html';
 
-document.querySelectorAll('.side-link[data-section]').forEach(link => {
-  link.addEventListener('click', () => {
-    document.querySelectorAll('.side-link[data-section]').forEach(l => l.classList.remove('active'));
-    link.classList.add('active');
-    document.querySelectorAll('main > section').forEach(s => s.classList.add('d-none'));
-    const target = document.getElementById('sec-' + link.getAttribute('data-section'));
-    if (target) target.classList.remove('d-none');
-  });
-});
-
-function statusBadge(s) {
-  const map = { PUBLISHED: ['status-confirmed', 'Published'], DRAFT: ['status-pending', 'Draft'], CANCELLED: ['status-cancelled', 'Cancelled'] };
-  const key = String(s).toUpperCase();
-  const [cls, label] = map[key] || ['status-pending', key];
-  return `<span class="status-badge ${cls}">${label}</span>`;
-}
-
-// Toggle password visibility
-function togglePasswordVisibility(inputId, btn) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.innerHTML = '<i class="bi bi-eye-slash"></i>';
-  } else {
-    input.type = 'password';
-    btn.innerHTML = '<i class="bi bi-eye"></i>';
-  }
-}
-
-// Load Organizer & Account Profile
-async function loadProfile() {
-  const u = EsAuthStore.getUser() || {};
-  document.getElementById('profInputEmail').value = u.email || '';
-
-  try {
-    const raw = await OrganizerAPI.getMyProfile();
-    const p = raw?.data || raw || {};
-    
-    document.getElementById('profInputBusiness').value = p.businessName || '';
-    document.getElementById('profInputName').value = p.applicantName || u.fullName || u.name || '';
-    document.getElementById('profInputPhone').value = p.applicantPhone || u.phoneNumber || u.phone || '';
-    document.getElementById('profInputNic').value = p.nicOrPassportNumber || p.nicNumber || p.regNumber || '';
-    document.getElementById('profInputRegNo').value = p.businessRegistrationNumber || '';
-    document.getElementById('profInputBio').value = p.bio || p.description || '';
-
-    const statusBadgeEl = document.getElementById('profStatusBadge');
-    if (statusBadgeEl) {
-      const status = (p.status || 'APPROVED').toUpperCase();
-      if (status === 'APPROVED' || status === 'VERIFIED') {
-        statusBadgeEl.className = 'status-badge status-confirmed';
-        statusBadgeEl.innerHTML = '<i class="bi bi-shield-check me-1"></i> Verified Organizer';
-      } else {
-        statusBadgeEl.className = 'status-badge status-pending';
-        statusBadgeEl.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> ' + status;
-      }
-    }
-  } catch (e) {
-    console.error('Could not load organizer profile:', e);
-    // Auto-populate from authenticated user
-    document.getElementById('profInputName').value = u.fullName || u.name || '';
-    document.getElementById('profInputPhone').value = u.phoneNumber || u.phone || '';
-  }
-}
-
-// Handle Organizer Profile Update
-document.getElementById('orgProfileForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('saveProfileBtn');
-  const originalText = btn.innerHTML;
-
-  const payload = Object.fromEntries(new FormData(e.target).entries());
-
-  try {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i> Saving...';
-
-    // Update organizer profile
-    await OrganizerAPI.updateProfile(payload);
-
-    // Also update local user object
-    const u = EsAuthStore.getUser() || {};
-    if (payload.applicantName) u.fullName = payload.applicantName;
-    if (payload.applicantPhone) u.phoneNumber = payload.applicantPhone;
-    EsAuthStore.setUser(u);
-
-    esToast('Organizer profile updated successfully!', 'success');
-  } catch (err) {
-    esToast(err.message || 'Failed to update profile', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = originalText;
-  }
-});
-
-// Handle Change Password
-document.getElementById('changePasswordForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('savePasswordBtn');
-  const originalText = btn.innerHTML;
-
-  const currentPassword = document.getElementById('currentPasswordInput').value;
-  const newPassword = document.getElementById('newPasswordInput').value;
-  const confirmPassword = document.getElementById('confirmPasswordInput').value;
-
-  if (newPassword !== confirmPassword) {
-    esToast('New password and confirm password do not match.', 'error');
-    return;
-  }
-
-  if (newPassword.length < 6) {
-    esToast('Password must be at least 6 characters.', 'error');
-    return;
-  }
-
-  try {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i> Updating...';
-
-    await AuthAPI.changePassword({ currentPassword, newPassword, confirmPassword });
-    esToast('Password updated successfully!', 'success');
-    e.target.reset();
-  } catch (err) {
-    esToast(err.message || 'Failed to update password. Please check your current password.', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = originalText;
-  }
-});
-
-async function loadMyEvents() {
-  const tbody = document.getElementById('myEventsBody');
-  try {
-    const res = await EventsAPI.myEvents({ page: 0, size: 20 });
-    const list = Array.isArray(res) ? res : (res?.content || []);
-
-    if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft">No events created yet — <a href="create-event.html">create your first one</a>.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = list.map(e => {
-      // sold/available are NOT top-level Event fields — they're derived by
-      // summing across ticketTypes, which the response does include.
-      const sold = (e.ticketTypes || []).reduce((s, t) => s + (t.totalQuantity - t.availableQuantity), 0);
-      const available = (e.ticketTypes || []).reduce((s, t) => s + t.availableQuantity, 0);
-      return `
-      <tr>
-        <td data-label="Event">${e.title}</td>
-        <td data-label="Date">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
-        <td data-label="Category">${e.categoryName || 'General'}</td>
-        <td data-label="Sold">${sold}</td>
-        <td data-label="Available">${available}</td>
-        <td data-label="Status">${statusBadge(e.status)}</td>
-        <td data-label="Actions">
-          <a href="event-details.html?id=${e.id}" class="btn btn-quiet btn-sm">View</a>
-          <a href="create-event.html?edit=${e.id}" class="btn btn-quiet btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>
-          ${e.status === 'DRAFT' ? `<button class="btn btn-quiet btn-sm" onclick="publishEvent(${e.id})">Publish</button>` : ''}
-        </td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft">Could not load your events: ${e.message || 'unknown error'}</td></tr>`;
-  }
-}
-
-async function publishEvent(id) {
-  try {
-    await EventsAPI.publishEvent(id);
-    esToast('Event published');
-    loadMyEvents();
-  } catch (e) {
-    esToast(e.message || 'Could not publish (does it have at least one ticket type?)', 'error');
-  }
-}
-
-// NOTE: BookingsAPI.myBookings() returns the CURRENT USER's own bookings as
-// an attendee — not sales/bookings for the events this organizer runs.
-// There's no backend endpoint for that yet (would need something like
-// GET /api/v1/organizer/events/{id}/bookings). Calling myBookings() here
-// and relabeling it as "sales" would be real data answering the wrong
-// question, which is worse than an honest placeholder — so it stays honest.
-document.getElementById('bookingsBody').innerHTML =
-  `<tr><td colspan="6" class="text-center text-muted-soft py-4">
-     Per-event booking/sales lists aren't available yet — this needs a new backend endpoint
-     (e.g. GET /api/v1/organizer/events/{id}/bookings).
-   </td></tr>`;
-
-loadProfile();
-loadMyEvents();
-</script>
-
-
+<!-- Modular Organizer Scripts -->
+<script src="../js/organizer/organizer-events.js"></script>
+<script src="../js/organizer/organizer-bookings.js"></script>
+<script src="../js/organizer/organizer-attendees.js"></script>
+<script src="../js/organizer/organizer-profile.js"></script>
+<script src="../js/organizer/organizer-analytics.js"></script>
+<script src="../js/organizer/organizer-dashboard.js"></script>
 </body>
 </html>

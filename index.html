@@ -44,32 +44,74 @@
   </div>
 </nav>
 
-<!-- Hero Section -->
+<!-- Hero Section (Dark Luxe & Midnight Glass) -->
 <header class="hero">
-  <div class="hero-blob" style="width:260px;height:260px;background:var(--blush);top:-60px;right:8%;opacity:0.6;"></div>
-  <div class="hero-blob" style="width:180px;height:180px;background:var(--lavender-soft);bottom:-40px;left:6%;opacity:0.7;"></div>
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
   
-  <div class="container-narrow position-relative">
+  <div class="container-narrow position-relative" style="z-index: 1;">
     <div class="row align-items-center g-5">
       
-      <!-- LEFT COLUMN (Text & Search) -->
+      <!-- LEFT COLUMN (Text, Search & Hot Tags) -->
       <div class="col-lg-6">
-        <p class="eyebrow mb-3">Curated experiences, close to home</p>
-        <h1 class="headline mb-3">Find something<br>worth remembering.</h1>
-        <p class="sub mb-4">Discover events, book your tickets, and keep every experience in one place.</p>
+        <div class="d-inline-flex align-items-center gap-2 mb-3 py-1 px-3 rounded-pill" style="background: rgba(255, 46, 116, 0.12); border: 1px solid rgba(255, 46, 116, 0.28);">
+          <span class="live-pulse-dot"></span>
+          <span class="eyebrow mb-0" style="font-size: 0.72rem; letter-spacing: 2px;">Curated Experiences & Live Moments</span>
+        </div>
+        
+        <h1 class="headline mb-3 fw-bold">Experience The<br><span class="gradient-text">Unforgettable.</span></h1>
+        <p class="sub mb-4" style="color: #9CA3AF; font-size: 1.1rem; max-width: 520px; line-height: 1.6;">
+          Discover premier concerts, tech summits, nightlife festivals, and workshops. Book tickets instantly with verified digital QR passes.
+        </p>
         
         <!-- Search form filters locally on current page -->
-        <form class="hero-search mb-4" id="homeSearchForm">
-          <i class="bi bi-search text-muted"></i>
-          <input type="text" id="searchInput" placeholder="Search concerts, workshops, tech, sports...">
-          <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        <form class="hero-search mb-3" id="homeSearchForm">
+          <i class="bi bi-search" style="color: var(--neon-rose); font-size: 1.1rem;"></i>
+          <input type="text" id="searchInput" placeholder="Search concerts, tech summits, workshops, comedy...">
+          <button type="submit" class="btn btn-primary btn-sm px-3">
+            <span>Explore</span> <i class="bi bi-arrow-right ms-1"></i>
+          </button>
         </form>
-      </div> <!-- ✨ THIS IS THE CLOSING TAG THAT WAS MISSING ✨ -->
 
-      <!-- RIGHT COLUMN (Image) -->
+        <!-- Quick Trending Tags -->
+        <div class="d-flex align-items-center gap-2 flex-wrap pt-1">
+          <span class="small text-muted-soft fw-semibold me-1"><i class="bi bi-fire text-warning me-1"></i>Trending:</span>
+          <span class="trending-chip" onclick="quickSearch('Tech')">⚡ Tech Summit</span>
+          <span class="trending-chip" onclick="quickSearch('Concert')">🎵 Live Music</span>
+          <span class="trending-chip" onclick="quickSearch('Workshop')">🎨 Workshops</span>
+          <span class="trending-chip" onclick="quickSearch('Comedy')">🎭 Standup</span>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN (Layered Bento Showcase with Floating Glass Badges) -->
       <div class="col-lg-6">
-        <div class="ratio ratio-4x3 rounded-4 overflow-hidden shadow-lg" style="border-radius: var(--radius-lg);">
-          <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&q=80" alt="People enjoying an event" style="object-fit:cover;">
+        <div class="hero-visual-card px-2">
+          
+          <!-- Top Right Floating Glass Badge -->
+          <div class="glass-badge-floating top-right d-none d-sm-flex">
+            <span class="live-pulse-dot"></span>
+            <div>
+              <div class="fw-bold text-white small">2,400+ Tickets Booked</div>
+              <div class="text-muted-soft" style="font-size:0.7rem;">Live across platform events</div>
+            </div>
+          </div>
+
+          <!-- Main Hero Image Showcase -->
+          <div class="hero-main-img-wrap ratio ratio-4x3">
+            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1000&q=80" alt="Live Event Atmosphere">
+          </div>
+
+          <!-- Bottom Left Floating Glass Badge -->
+          <div class="glass-badge-floating bottom-left d-none d-sm-flex">
+            <div class="avatar-circle" style="width:34px;height:34px;font-size:0.82rem;background:linear-gradient(135deg,#00F2FE,#4FACFE);">
+              <i class="bi bi-qr-code-scan"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-white small">Instant QR Pass</div>
+              <div class="text-muted-soft" style="font-size:0.7rem;">100% Verified Entry</div>
+            </div>
+          </div>
+
         </div>
       </div>
       
@@ -82,14 +124,14 @@
   <div class="container-narrow">
     <div class="section-head d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
       <div>
-        <p class="eyebrow">Handpicked for you</p>
-        <h2 id="sectionTitle" class="mb-0">Something wonderful, nearby</h2>
+        <p class="eyebrow mb-1">Handpicked for you</p>
+        <h2 id="sectionTitle" class="mb-0">Trending Experiences Nearby</h2>
       </div>
       <a href="pages/events.html" class="btn btn-outline-soft btn-sm">View full directory <i class="bi bi-arrow-right ms-1"></i></a>
     </div>
 
     <!-- Category Filter Bar -->
-    <div class="d-flex gap-2 flex-wrap align-items-center mb-4 pb-2 border-bottom" id="categoryFilterBar">
+    <div class="d-flex gap-2 flex-wrap align-items-center mb-4 pb-2 border-bottom" id="categoryFilterBar" style="border-color: rgba(255,255,255,0.08) !important;">
       <button class="filter-pill active" data-category-id="">
         <i class="bi bi-grid-fill"></i> All Events
       </button>
@@ -219,22 +261,18 @@ function eventCard(ev) {
 
   return `
   <div class="col-md-6 col-lg-3">
-    <div class="event-card h-100 d-flex flex-column justify-content-between">
-      <div>
-        <div class="img-wrap">
-          <span class="pill-badge ${v.cls}">${ev.categoryName || 'General'}</span>
-          <img src="${banner}" alt="${ev.title}" onerror="this.onerror=null; this.src='${fallbackSvg}';">
-        </div>
-        <div class="body p-3">
-          <h5 class="title fw-bold mb-2 text-truncate" title="${ev.title}">${ev.title}</h5>
-          <div class="meta text-muted small mb-1"><i class="bi bi-calendar3 me-1"></i> ${dateText}${timeText ? ', ' + timeText : ''}</div>
-          <div class="meta text-muted small mb-3 text-truncate"><i class="bi bi-geo-alt me-1"></i> ${ev.venueName || 'Online / TBA'}</div>
-        </div>
+    <div class="event-card h-100">
+      <div class="img-wrap">
+        <span class="pill-badge ${v.cls}">${ev.categoryName || 'General'}</span>
+        <img src="${banner}" alt="${ev.title}" onerror="this.onerror=null; this.src='${fallbackSvg}';">
       </div>
-      <div class="body px-3 pb-3 pt-0">
-        <div class="price-row d-flex align-items-center justify-content-between pt-2 border-top">
+      <div class="body">
+        <div class="title fw-bold mb-2 text-truncate" title="${ev.title}">${ev.title}</div>
+        <div class="meta small mb-1"><i class="bi bi-calendar3 me-1"></i> <span>${dateText}${timeText ? ', ' + timeText : ''}</span></div>
+        <div class="meta small mb-3 text-truncate"><i class="bi bi-geo-alt me-1"></i> <span>${ev.venueName || 'Online / TBA'}</span></div>
+        <div class="price-row">
           <div>
-            <div class="price fw-bold">${priceText}</div>
+            <div class="price">${priceText}</div>
             ${availabilityLabel(totalAvailable)}
           </div>
           <a href="pages/event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm">View Event</a>
@@ -293,6 +331,15 @@ function applyCategoryFilter(categoryId, categoryName) {
   // Smooth scroll to events area
   document.getElementById('eventsContainer')?.scrollIntoView({ behavior: 'smooth' });
 
+  loadEvents();
+}
+
+// Quick trending search handler
+function quickSearch(keyword) {
+  const input = document.getElementById('searchInput');
+  if (input) input.value = keyword;
+  currentKeyword = keyword;
+  document.getElementById('eventsContainer')?.scrollIntoView({ behavior: 'smooth' });
   loadEvents();
 }
 
