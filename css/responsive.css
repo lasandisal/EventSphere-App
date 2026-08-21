@@ -1,49 +1,315 @@
 /* =========================================================
-   EventSphere — Responsive
+   EventSphere — Master Responsive Stylesheet
+   Tailored for Smartphones, Foldables, Tablets & Desktops
    ========================================================= */
 
-@media (max-width: 991px){
-  h1{ font-size: 2.5rem; }
-  .dash-shell{ flex-direction: column; }
-  .es-sidebar{
-    width: 100%; min-height: auto; position: static;
-    display: flex; overflow-x: auto; gap: 0.4rem; padding: 1rem;
-    border-right: none; border-bottom: 1px solid var(--line);
+/* ---------------------------------------------------------
+   1. TABLETS & SMALL LAPTOPS (max-width: 991.98px)
+   --------------------------------------------------------- */
+@media (max-width: 991.98px) {
+  h1 { font-size: clamp(2rem, 5vw, 2.6rem); }
+  h2 { font-size: clamp(1.6rem, 4vw, 2rem); }
+  
+  /* Navbar Mobile Drawer */
+  .es-navbar {
+    padding: 0.75rem 0;
   }
-  .es-sidebar .side-link{ white-space: nowrap; margin-bottom: 0; }
-  .dash-main{ padding: 1.5rem 1.2rem; }
-  .auth-visual{ display: none; }
-  .summary-card{ position: static; margin-top: 1.5rem; }
+  .es-navbar .container,
+  .es-navbar .container-narrow,
+  .es-navbar .container-fluid {
+    position: relative;
+  }
+  .es-navbar .navbar-toggler {
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.6rem;
+    line-height: 1;
+    transition: background 0.2s ease;
+  }
+  .es-navbar .navbar-toggler:focus {
+    box-shadow: 0 0 0 3px rgba(255, 46, 116, 0.3);
+  }
+  .es-navbar .navbar-collapse {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 1rem;
+    right: 1rem;
+    background: rgba(14, 18, 28, 0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65);
+    z-index: 1050;
+  }
+  .es-navbar .navbar-nav {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+    width: 100%;
+    margin: 0 !important;
+  }
+  .es-navbar .navbar-nav .nav-link {
+    width: 100%;
+    padding: 0.7rem 1rem !important;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+  }
+  .es-navbar .navbar-nav .nav-link:hover,
+  .es-navbar .navbar-nav .nav-link.active {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Dashboard Shell & Sidebar */
+  .dash-shell { flex-direction: column; }
+  .es-sidebar {
+    width: 100%;
+    min-height: auto;
+    position: static;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    scrollbar-width: none;
+  }
+  .es-sidebar::-webkit-scrollbar { display: none; }
+  .es-sidebar .side-link {
+    white-space: nowrap;
+    margin-bottom: 0;
+    padding: 0.6rem 1rem;
+  }
+  .dash-main { padding: 1.5rem 1rem; }
+
+  /* Auth Visual Split */
+  .auth-split { min-height: 100vh; }
+  .auth-visual { display: none !important; }
+  .auth-form-side {
+    width: 100% !important;
+    padding: 3rem 1.5rem !important;
+    justify-content: center;
+  }
+
+  /* Summary Card in Booking */
+  .summary-card {
+    position: static !important;
+    margin-top: 1.5rem;
+  }
 }
 
-@media (max-width: 767px){
-  .section{ padding: 3.2rem 0; }
-  h1{ font-size: 2.1rem; }
-  h2{ font-size: 1.75rem; }
-  .hero{ padding: 3rem 0 2.5rem; text-align: center; }
-  .hero .headline, .hero .sub{ max-width: 100%; }
-  .hero-search{ max-width: 100%; }
-  .step-indicator .connector{ width: 24px; }
-  .step-indicator .step .label{ display: none; }
-  .ai-panel{ right: 12px; left: 12px; width: auto; bottom: 90px; }
-  .ai-fab{ right: 18px; bottom: 18px; }
-  .es-table{ font-size: 0.82rem; }
-  .es-table thead{ display: none; }
-  .es-table tbody tr{
-    display: block; margin-bottom: 0.8rem; border: 1px solid var(--line);
-    border-radius: var(--radius-sm); padding: 0.5rem 0.8rem;
+/* ---------------------------------------------------------
+   2. MOBILE PHONES & PHABLETS (max-width: 767.98px)
+   --------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  /* Global Typography & Layout */
+  body {
+    font-size: 0.95rem;
   }
-  .es-table tbody td{
-    display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line);
-    padding: 0.5rem 0.1rem;
+  .section { padding: 2.5rem 0; }
+  .section-sm { padding: 1.75rem 0; }
+  .container-narrow, .container {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
   }
-  .es-table tbody td:last-child{ border-bottom: none; }
-  .es-table tbody td::before{ content: attr(data-label); font-weight: 700; color: var(--charcoal-faint); font-size: 0.72rem; text-transform: uppercase; }
-  .digital-ticket{ max-width: 100%; }
+
+  /* Prevent iOS Safari auto-zoom on input focus (requires 16px minimum) */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Hero Section */
+  .hero {
+    padding: 2.5rem 0 2rem;
+    text-align: left;
+  }
+  .hero .headline {
+    font-size: clamp(2rem, 8vw, 2.75rem);
+    line-height: 1.15;
+  }
+  .hero .sub {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .hero-search {
+    flex-direction: column;
+    padding: 0.5rem;
+    background: rgba(18, 22, 34, 0.9);
+    border-radius: var(--radius-lg);
+    gap: 0.5rem;
+  }
+  .hero-search input {
+    width: 100%;
+    padding: 0.75rem 0.5rem;
+  }
+  .hero-search button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+  }
+  .hero-visual-card {
+    margin-top: 1.5rem;
+  }
+
+  /* Category Filter Pills (Smooth Mobile Horizontal Carousel) */
+  #categoryFilterBar,
+  .filter-pill-container {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.6rem !important;
+    scrollbar-width: none;
+  }
+  #categoryFilterBar::-webkit-scrollbar { display: none; }
+  .filter-pill {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  /* My Bookings Card Transformation (Vertical on Mobile) */
+  .event-card.flex-row {
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
+  .event-card.flex-row .img-wrap {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 160px !important;
+  }
+  .event-card.flex-row .body {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+  }
+  .event-card.flex-row .body > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .event-card.flex-row .body > div:last-child .btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  /* Booking Step Indicator */
+  .step-indicator {
+    padding: 0.75rem 0.5rem;
+    justify-content: space-between;
+    width: 100%;
+    overflow-x: auto;
+  }
+  .step-indicator .step .circle {
+    width: 32px;
+    height: 32px;
+    font-size: 0.82rem;
+  }
+  .step-indicator .step .label {
+    display: none !important;
+  }
+  .step-indicator .connector {
+    flex: 1;
+    min-width: 12px;
+    margin: 0 4px;
+  }
+
+  /* Ticket Selection Rows in Booking Step 1 */
+  .ticket-type-card,
+  .ticket-select-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+    padding: 1rem !important;
+  }
+  .ticket-select-row .qty-stepper {
+    align-self: flex-end;
+  }
+
+  /* Tables Responsive Card Transformation */
+  .es-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Stats Cards Grid */
+  .stat-card {
+    padding: 1.1rem !important;
+  }
+  .stat-card .value {
+    font-size: 1.5rem !important;
+  }
+
+  /* AI Floating Assistant Drawer on Mobile */
+  .ai-fab {
+    right: 16px;
+    bottom: 16px;
+    width: 52px;
+    height: 52px;
+  }
+  .ai-panel {
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 82vh !important;
+    max-height: 82vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.75) !important;
+  }
+
+  /* Footer */
+  .es-footer { padding: 3rem 0 1.5rem; }
+  .es-footer .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
 }
 
-@media (max-width: 480px){
-  .es-navbar .brand{ font-size: 1.3rem; }
-  .category-card{ padding: 1rem 0.6rem; }
-  .event-card .title{ font-size: 1.1rem; }
+/* ---------------------------------------------------------
+   3. EXTRA SMALL SCREENS & COMPACT PHONES (max-width: 479.98px)
+   --------------------------------------------------------- */
+@media (max-width: 479.98px) {
+  .es-navbar .brand {
+    font-size: 1.25rem;
+  }
+  .es-navbar .brand .sparkle {
+    width: 1rem;
+    height: 1rem;
+  }
+  .btn-lg {
+    padding: 0.75rem 1.2rem;
+    font-size: 0.95rem;
+  }
+  .filter-bar {
+    padding: 1rem !important;
+  }
+  .trending-chip {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.65rem;
+  }
+  .event-card .title {
+    font-size: 1.15rem;
+  }
+  .auth-form-side {
+    padding: 2rem 1rem !important;
+  }
 }
