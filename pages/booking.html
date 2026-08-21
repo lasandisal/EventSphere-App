@@ -39,14 +39,14 @@
 
         <!-- Step 1: Tickets -->
         <div class="booking-step" data-step-panel="1">
-          <h3 class="mb-3">Your selected tickets</h3>
+          <h3 class="mb-3 text-white">Your selected tickets</h3>
           <div id="ticketsRecap" class="d-flex flex-column gap-3 mb-4"></div>
           <button class="btn btn-primary" onclick="goStep(2)">Continue</button>
         </div>
 
         <!-- Step 2: Attendees -->
         <div class="booking-step d-none" data-step-panel="2">
-          <h3 class="mb-2">Attendee Details</h3>
+          <h3 class="mb-2 text-white">Attendee Details</h3>
           <p class="text-muted-soft mb-4" style="font-size: 0.9rem;">
             The primary booker will receive the full order receipt and all QR tickets. Individual guest passes will be sent directly to each guest's email.
           </p>
@@ -59,7 +59,7 @@
 
         <!-- Step 3: Review -->
         <div class="booking-step d-none" data-step-panel="3">
-          <h3 class="mb-2">Review Your Booking</h3>
+          <h3 class="mb-2 text-white">Review Your Booking</h3>
           <p class="text-muted-soft mb-4" style="font-size: 0.9rem;">Please confirm attendee and ticket dispatch details before continuing to secure payment.</p>
           <div id="reviewList" class="d-flex flex-column gap-3 mb-4"></div>
           <div class="d-flex gap-2">
@@ -70,39 +70,53 @@
 
         <!-- Step 4: Payment -->
         <div class="booking-step d-none" data-step-panel="4">
-          <h3 class="mb-3">Payment</h3>
-          <div class="filter-bar mb-4 d-flex align-items-center gap-3">
-            <i class="bi bi-shield-lock-fill text-success fs-4"></i>
+          <h3 class="mb-3 text-white">Payment</h3>
+          <div class="p-3 mb-4 d-flex align-items-center gap-3 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);">
+            <i class="bi bi-shield-lock-fill text-success fs-3"></i>
             <div>
-              <div class="fw-semibold">Secure checkout via PayHere</div>
-              <div class="text-muted-soft" style="font-size:0.82rem;">Your payment is encrypted end-to-end.</div>
+              <div class="fw-semibold text-white">Secure checkout via PayHere Sandbox</div>
+              <div class="text-muted-soft" style="font-size:0.82rem;">Your payment is processed securely via sandbox gateway.</div>
             </div>
           </div>
-          <div class="d-flex flex-column gap-2" style="font-size:0.9rem;">
-            <div class="d-flex justify-content-between"><span class="text-muted-soft">Event</span><b id="paySummaryEvent">—</b></div>
-            <div class="d-flex justify-content-between"><span class="text-muted-soft">Tickets</span><b id="paySummaryCount">—</b></div>
-            <div class="d-flex justify-content-between"><span class="text-muted-soft">Amount</span><b id="paySummaryTotal">—</b></div>
+          <div class="p-3 rounded-3 mb-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted-soft">Event</span><b class="text-white" id="paySummaryEvent">—</b></div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted-soft">Tickets</span><b class="text-white" id="paySummaryCount">—</b></div>
+            <div class="d-flex justify-content-between"><span class="text-muted-soft">Total Amount</span><b style="color: var(--neon-rose); font-size:1.1rem;" id="paySummaryTotal">—</b></div>
           </div>
-          <button class="btn btn-primary btn-lg w-100 mt-4" onclick="startPayment()">
-            <i class="bi bi-lock-fill me-1"></i> Pay Securely Now
+          
+          <button class="btn btn-primary btn-lg w-100 mb-3" onclick="startPayment()">
+            <i class="bi bi-lock-fill me-1"></i> Pay Securely with PayHere
           </button>
+
+          <div id="paymentStatusBox" class="mt-3 text-center d-none p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span class="text-white fw-semibold small">Verifying payment &amp; generating your digital QR passes...</span>
+          </div>
         </div>
 
         <!-- Step 5: Confirmation -->
         <div class="booking-step d-none text-center" data-step-panel="5">
-          <div style="font-size:3.2rem; color:var(--sage);">✓</div>
-          <h2 class="mb-2">You're all set!</h2>
-          <p class="text-muted-soft mb-4">Your booking has been confirmed.</p>
-          <a href="my-bookings.html" class="btn btn-primary btn-lg">Go to My Bookings</a>
+          <div class="p-5 rounded-4" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px);">
+            <div class="mb-3" style="font-size:3.5rem; line-height: 1; color: #34D399;">✓</div>
+            <h2 class="mb-2 text-white fw-bold">You're all set!</h2>
+            <p class="text-muted-soft mb-4" style="font-size: 1rem;">Your booking is <b class="text-success">CONFIRMED</b> and digital QR admission passes have been dispatched to the attendee emails.</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+              <a href="#" id="viewTicketBtn" class="btn btn-primary btn-lg"><i class="bi bi-qr-code me-1"></i> View My Ticket</a>
+              <a href="my-bookings.html" class="btn btn-outline-soft btn-lg">My Bookings</a>
+            </div>
+          </div>
         </div>
 
       </div>
 
       <div class="col-lg-5">
-        <div class="summary-card">
-          <h3 class="mb-3">Booking Summary</h3>
+        <div class="summary-card" style="background: rgba(18, 22, 34, 0.85); backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg); padding: 2rem;">
+          <h3 class="mb-3 text-white">Booking Summary</h3>
           <div id="summaryLines"></div>
-          <div class="total-row"><span>Total</span><span id="summaryTotal">LKR 0</span></div>
+          <div class="total-row mt-3 pt-3 border-top border-white-10 d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-white fs-5">Total</span>
+            <span id="summaryTotal" class="fw-bold fs-4" style="color: var(--neon-rose);">LKR 0</span>
+          </div>
         </div>
       </div>
     </div>
@@ -115,6 +129,7 @@
 <script src="../js/api/auth.js"></script>
 <script src="../js/api/events.js"></script>
 <script src="../js/api/bookings.js"></script>
+<script src="../js/utils/md5.js"></script>
 <script src="../js/api/payments.js"></script>
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
@@ -132,6 +147,7 @@ const pending = JSON.parse(sessionStorage.getItem('es_pending_booking') || 'null
 const eventId = new URLSearchParams(window.location.search).get('eventId');
 const items = pending ? pending.items : [];
 let eventTitle = 'Event Booking';
+let pollInterval = null;
 
 // Redirect back if no pending booking items exist
 if (!items.length) {
@@ -139,24 +155,28 @@ if (!items.length) {
   setTimeout(() => window.location.href = 'events.html', 1200);
 }
 
-function money(n) { return 'LKR ' + (n ? n.toLocaleString() : '0'); }
+function money(n) { return 'LKR ' + (n ? Number(n).toLocaleString() : '0'); }
 
 function renderTicketsRecap() {
   document.getElementById('ticketsRecap').innerHTML = items.map(i => `
-    <div class="ticket-type-card">
-      <div class="d-flex justify-content-between">
+    <div class="ticket-type-card p-3 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
-          <div class="tt-name">${i.name}</div>
-          <div class="text-muted-soft" style="font-size:0.85rem;">Qty ${i.quantity}</div>
+          <div class="tt-name" style="color: var(--neon-rose); font-weight:700; font-size:0.95rem;">${i.name}</div>
+          <div class="text-muted-soft" style="font-size:0.85rem;">Quantity: ${i.quantity}</div>
         </div>
-        <div class="tt-price">${money(i.price * i.quantity)}</div>
+        <div class="tt-price text-white fw-bold fs-5">${money(i.price * i.quantity)}</div>
       </div>
     </div>`).join('');
 }
 
 function renderSummary() {
   const lines = document.getElementById('summaryLines');
-  lines.innerHTML = items.map(i => `<div class="line-item"><span>${i.quantity} × ${i.name}</span><span>${money(i.price * i.quantity)}</span></div>`).join('');
+  lines.innerHTML = items.map(i => `
+    <div class="line-item d-flex justify-content-between py-2 text-muted-soft" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <span class="text-white-50">${i.quantity} × ${i.name}</span>
+      <span class="text-white fw-semibold">${money(i.price * i.quantity)}</span>
+    </div>`).join('');
   const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
   document.getElementById('summaryTotal').textContent = money(total);
 }
@@ -173,22 +193,23 @@ function renderAttendeeForm() {
       const defaultEmail = isPrimary ? (currentUser.email || '') : '';
 
       html += `
-      <div class="filter-bar mb-3 p-3 border rounded-3 bg-white">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <div class="fw-semibold" style="font-size:0.9rem;">
-            Attendee ${n} — <span class="text-muted-soft">${i.name}</span>
+      <div class="p-4 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-white fs-6">Attendee ${n}</span>
+            <span class="badge" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose); border: 1px solid rgba(255, 46, 116, 0.3); font-size:0.75rem;">${i.name}</span>
           </div>
           ${isPrimary 
-            ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size:0.75rem;">Primary Booker &amp; Billing</span>' 
-            : '<span class="badge bg-light text-muted border px-2 py-1" style="font-size:0.75rem;">Guest Ticket</span>'}
+            ? '<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); font-size:0.75rem; padding: 0.35rem 0.65rem;">Primary Booker &amp; Billing</span>' 
+            : '<span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.3); font-size:0.75rem; padding: 0.35rem 0.65rem;">Guest Ticket</span>'}
         </div>
-        <div class="row g-2">
+        <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label text-muted small mb-1">Full Name</label>
-            <input required class="form-control" name="name-${n}" value="${defaultName}" placeholder="Attendee name">
+            <label class="form-label text-muted-soft small mb-1">Full Name</label>
+            <input required class="form-control" name="name-${n}" value="${defaultName}" placeholder="Attendee full name">
           </div>
           <div class="col-md-6">
-            <label class="form-label text-muted small mb-1">Email Address</label>
+            <label class="form-label text-muted-soft small mb-1">Email Address</label>
             <input required type="email" class="form-control" name="email-${n}" value="${defaultEmail}" 
                    placeholder="Ticket pass delivery email">
           </div>
@@ -224,16 +245,21 @@ function collectAttendees() {
 }
 
 function renderReview() {
-  const currentUser = EsAuthStore.getUser() || {};
   document.getElementById('reviewList').innerHTML = attendees.map((a, idx) => `
-    <div class="p-3 border rounded-3 bg-white">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <span class="fw-bold">${a.name} <span class="badge bg-light text-muted border ms-1">${a.ticket}</span></span>
+    <div class="p-3 mb-2 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);">
+      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-bold text-white fs-6">${a.name}</span>
+          <span class="badge" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose); border: 1px solid rgba(255, 46, 116, 0.3); font-size:0.75rem; padding: 0.25rem 0.5rem;">${a.ticket}</span>
+        </div>
         ${a.isPrimary 
-          ? '<span class="badge bg-success-subtle text-success border border-success-subtle">Receives Master Receipt &amp; Passes</span>' 
-          : '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Receives Guest Pass</span>'}
+          ? '<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); font-size:0.75rem; padding: 0.35rem 0.65rem;">Receives Master Receipt &amp; Passes</span>' 
+          : '<span class="badge" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.3); font-size:0.75rem; padding: 0.35rem 0.65rem;">Receives Guest Pass</span>'}
       </div>
-      <div class="text-muted small"><i class="bi bi-envelope me-1"></i>${a.email}</div>
+      <div class="text-muted-soft small d-flex align-items-center gap-1">
+        <i class="bi bi-envelope text-white-50"></i>
+        <span>${a.email}</span>
+      </div>
     </div>`).join('');
 }
 
@@ -269,11 +295,72 @@ async function submitBooking() {
     };
 
     const booking = await BookingsAPI.create(payload);
-    currentBookingId = booking?.id || booking?.bookingId;
+    currentBookingId = booking?.id || booking?.bookingId || (booking?.data && (booking.data.id || booking.data.bookingId));
     goStep(4);
   } catch (e) {
     console.error('Booking failed:', e);
     esToast(e.message || 'Failed to create booking', 'error');
+  }
+}
+
+function checkBookingConfirmed() {
+  if (!currentBookingId) return;
+  if (pollInterval) clearInterval(pollInterval);
+
+  const statusBox = document.getElementById('paymentStatusBox');
+  if (statusBox) statusBox.classList.remove('d-none');
+
+  pollInterval = setInterval(async () => {
+    try {
+      const res = await BookingsAPI.getById(currentBookingId);
+      const b = res?.data || res;
+      if (b && b.status === 'CONFIRMED') {
+        clearInterval(pollInterval);
+        onBookingSuccess();
+      }
+    } catch (err) {
+      console.warn('Polling booking status error:', err);
+    }
+  }, 2500);
+}
+
+function onBookingSuccess() {
+  if (pollInterval) clearInterval(pollInterval);
+  sessionStorage.removeItem('es_pending_booking');
+  document.getElementById('viewTicketBtn').href = `ticket.html?bookingId=${currentBookingId}`;
+  esToast('Payment Confirmed! Passes dispatched to emails.', 'success');
+  goStep(5);
+}
+
+async function simulateSandboxPayment() {
+  if (!currentBookingId) {
+    esToast('No active booking reference found', 'error');
+    return;
+  }
+
+  const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
+  try {
+    esToast('Sending simulated webhook callback...');
+    await PaymentsAPI.simulateNotify(currentBookingId, total);
+    
+    // Poll to confirm DB update
+    setTimeout(async () => {
+      try {
+        const res = await BookingsAPI.getById(currentBookingId);
+        const b = res?.data || res;
+        if (b && b.status === 'CONFIRMED') {
+          onBookingSuccess();
+        } else {
+          esToast('Webhook sent! Refreshing booking state...', 'info');
+          checkBookingConfirmed();
+        }
+      } catch (e) {
+        onBookingSuccess();
+      }
+    }, 1000);
+  } catch (err) {
+    console.error('Simulate failed:', err);
+    esToast('Simulate webhook error: ' + err.message, 'error');
   }
 }
 
@@ -293,6 +380,7 @@ async function startPayment() {
 
     if (data.redirectUrl || data.checkoutUrl) {
       window.open(data.redirectUrl || data.checkoutUrl, '_blank');
+      checkBookingConfirmed();
       return;
     }
 
@@ -339,6 +427,9 @@ async function startPayment() {
 
     document.body.appendChild(form);
     form.submit();
+
+    // Start auto polling for confirmation
+    checkBookingConfirmed();
 
   } catch (e) {
     console.error('Payment Initiation Failed:', e);

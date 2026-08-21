@@ -773,3 +773,69 @@ a:hover{ color: #38BDF8; }
 ::-webkit-scrollbar-track{ background: #0A0D14; }
 ::-webkit-scrollbar-thumb{ background: rgba(255, 255, 255, 0.15); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover{ background: rgba(255, 46, 116, 0.5); }
+
+/* ---- Password Toggle Controls & Hero Blob ---- */
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+}
+.password-toggle-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-toggle-group .form-control {
+  padding-right: 46px !important;
+}
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4;
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+.password-toggle-btn:hover {
+  color: #FFFFFF;
+}
+.password-toggle-btn:focus {
+  outline: none;
+  color: var(--neon-rose);
+}
+.password-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.auth-visual {
+  flex: 1.1;
+  background: radial-gradient(circle at 25% 25%, rgba(255, 46, 116, 0.14) 0%, transparent 55%),
+              radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.16) 0%, transparent 60%),
+              linear-gradient(160deg, #131826 0%, #0A0D14 100%);
+  position: relative; 
+  overflow: hidden; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  padding: 4rem 3.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.auth-visual .auth-content {
+  position: relative;
+  z-index: 2;
+  max-width: 460px;
+  width: 100%;
+}

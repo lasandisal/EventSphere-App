@@ -15,24 +15,29 @@
 
 <div class="auth-shell">
   <div class="auth-visual">
-    <div class="hero-blob" style="width:220px;height:220px;background:rgba(255,255,255,0.35);top:8%;left:10%;"></div>
-    <div>
-      <a href="../index.html" class="brand mb-4 d-inline-flex" style="color:var(--charcoal);"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
-      <h2 style="max-width:360px;">Welcome back to your next favourite memory.</h2>
+    <div class="hero-blob" style="width:340px; height:340px; background: radial-gradient(circle, rgba(255,46,116,0.22) 0%, transparent 70%); top:8%; left:6%;"></div>
+    <div class="hero-blob" style="width:280px; height:280px; background: radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%); bottom:12%; right:10%;"></div>
+    <div class="auth-content">
+      <a href="../index.html" class="brand mb-4 d-inline-flex align-items-center gap-2 text-decoration-none" style="color:#FFF;">
+        <span class="sparkle" id="brandSparkle"></span>
+        <span class="fw-bold fs-4 text-white">EventSphere</span>
+      </a>
+      <h2 class="text-white fw-bold mb-3" style="max-width:380px; font-size: 2.1rem; line-height: 1.25;">Welcome back to your next favourite memory.</h2>
+      <p class="text-muted-soft" style="max-width:340px; font-size: 0.92rem;">Access exclusive tickets, live bookings, and verified organizers all in one place.</p>
     </div>
   </div>
   <div class="auth-form-side">
     <div class="auth-card">
       <p class="eyebrow">Log in</p>
-      <h2 class="mb-4">Good to see you again</h2>
+      <h2 class="mb-4 text-white">Good to see you again</h2>
       <form id="loginForm" class="d-flex flex-column gap-3" novalidate>
         <div>
-          <label class="form-label" for="loginEmail">Email</label>
+          <label class="form-label text-white" for="loginEmail">Email</label>
           <input type="email" class="form-control" id="loginEmail" name="email" required placeholder="you@example.com">
           <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label" for="loginPassword">Password</label>
+          <label class="form-label text-white" for="loginPassword">Password</label>
           <div class="password-toggle-group">
             <input type="password" class="form-control" id="loginPassword" name="password" required placeholder="••••••••">
             <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
@@ -40,12 +45,12 @@
           <div class="invalid-feedback"></div>
         </div>
         <div class="d-flex justify-content-between align-items-center" style="font-size:0.85rem;">
-          <label class="d-flex align-items-center gap-2"><input type="checkbox" checked> Remember me</label>
-          <a href="#">Forgot password?</a>
+          <label class="d-flex align-items-center gap-2 text-muted-soft"><input type="checkbox" checked class="form-check-input mt-0"> Remember me</label>
+          <a href="#" class="text-decoration-none" style="color: var(--neon-cyan);">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Log in</button>
       </form>
-      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Don't have an account? <a href="register.html" id="registerLink">Sign up</a></p>
+      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Don't have an account? <a href="register.html" id="registerLink" style="color: var(--neon-rose); font-weight:600;">Sign up</a></p>
     </div>
   </div>
 </div>

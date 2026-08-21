@@ -1,9 +1,6 @@
 # Local environment files (contains developer overrides)
 .env
 
-# Generated runtime configuration artifact (DO NOT COMMIT)
-js/env.js
-
 # OS & Archive files
 .DS_Store
 # Python

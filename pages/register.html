@@ -14,30 +14,35 @@
 <body data-page="register">
 
 <div class="auth-shell">
-  <div class="auth-visual" style="background: linear-gradient(160deg, var(--sage-soft) 0%, var(--blush) 100%);">
-    <div class="hero-blob" style="width:200px;height:200px;background:rgba(255,255,255,0.4);bottom:12%;right:10%;"></div>
-    <div>
-      <a href="../index.html" class="brand mb-4 d-inline-flex" style="color:var(--charcoal);"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
-      <h2 style="max-width:360px;">Join a calmer way to discover events worth showing up for.</h2>
+  <div class="auth-visual">
+    <div class="hero-blob" style="width:340px; height:340px; background: radial-gradient(circle, rgba(139,92,246,0.22) 0%, transparent 70%); top:8%; left:6%;"></div>
+    <div class="hero-blob" style="width:280px; height:280px; background: radial-gradient(circle, rgba(255,46,116,0.22) 0%, transparent 70%); bottom:12%; right:10%;"></div>
+    <div class="auth-content">
+      <a href="../index.html" class="brand mb-4 d-inline-flex align-items-center gap-2 text-decoration-none" style="color:#FFF;">
+        <span class="sparkle" id="brandSparkle"></span>
+        <span class="fw-bold fs-4 text-white">EventSphere</span>
+      </a>
+      <h2 class="text-white fw-bold mb-3" style="max-width:380px; font-size: 2.1rem; line-height: 1.25;">Join a calmer way to discover events worth showing up for.</h2>
+      <p class="text-muted-soft" style="max-width:340px; font-size: 0.92rem;">Instant QR digital admission, secure checkout, and verified organizer experiences.</p>
     </div>
   </div>
   <div class="auth-form-side">
     <div class="auth-card">
       <p class="eyebrow">Create account</p>
-      <h2 class="mb-4">Let's get you set up</h2>
+      <h2 class="mb-4 text-white">Let's get you set up</h2>
       <form id="registerForm" class="d-flex flex-column gap-3" novalidate>
         <div>
-          <label class="form-label" for="regFullName">Full name</label>
+          <label class="form-label text-white" for="regFullName">Full name</label>
           <input type="text" class="form-control" id="regFullName" name="fullName" required placeholder="Your name">
           <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label" for="regEmail">Email</label>
+          <label class="form-label text-white" for="regEmail">Email</label>
           <input type="email" class="form-control" id="regEmail" name="email" required placeholder="you@example.com">
           <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label" for="regPassword">Password</label>
+          <label class="form-label text-white" for="regPassword">Password</label>
           <div class="password-toggle-group">
             <input type="password" class="form-control" id="regPassword" name="password" required placeholder="••••••••">
             <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
@@ -45,7 +50,7 @@
           <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label" for="regConfirmPassword">Confirm password</label>
+          <label class="form-label text-white" for="regConfirmPassword">Confirm password</label>
           <div class="password-toggle-group">
             <input type="password" class="form-control" id="regConfirmPassword" name="confirmPassword" required placeholder="••••••••">
             <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
@@ -53,7 +58,7 @@
           <div class="invalid-feedback"></div>
         </div>
         <div>
-          <label class="form-label">Account type</label>
+          <label class="form-label text-white">Account type</label>
           <select class="form-select" name="accountType">
             <option value="USER">Attendee — browse &amp; book events</option>
             <option value="ORGANIZER">Organizer — host events (pending review)</option>
@@ -61,7 +66,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Create account</button>
       </form>
-      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Already have an account? <a href="login.html" id="loginLink">Log in</a></p>
+      <p class="text-center mt-4 text-muted-soft" style="font-size:0.88rem;">Already have an account? <a href="login.html" id="loginLink" style="color: var(--neon-rose); font-weight:600;">Log in</a></p>
     </div>
   </div>
 </div>
