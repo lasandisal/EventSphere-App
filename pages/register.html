@@ -80,6 +80,7 @@
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
 <script src="../js/utils/validation.js"></script>
+<script src="../js/utils/otp-modal.js"></script>
 <script>
 const brandSp = document.getElementById('brandSparkle');
 if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
@@ -110,25 +111,42 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   const fd = new FormData(form);
   const payload = Object.fromEntries(fd.entries());
 
-  // The backend has no accountType field — self-registration always grants
-  // USER only (RoleName.USER), never ORGANIZER. Organizer access is a
-  // separate application + admin-approval flow (organizer-apply.html), by
-  // design, so nobody can start publishing events unchecked. If this form
-  // still has an "account type" selector implying otherwise, that's worth
-  // removing or repointing at the apply flow — it's misleading as-is.
   delete payload.accountType;
   delete payload.confirmPassword;
+  payload.email = (payload.email || '').trim();
 
   const btn = form.querySelector('button[type="submit"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
 
   try {
     await AuthAPI.register(payload);
-    esToast('Account created — welcome to EventSphere!');
-    setTimeout(() => window.location.href = '../index.html', 600);
+    if (btn) { btn.disabled = false; btn.textContent = 'Create account'; }
+    
+    // Launch Email OTP Verification Modal
+    EsOtpModal.open({
+      email: payload.email,
+      title: 'Verify Your Email',
+      message: "We've sent a 6-digit verification code to your email.",
+      onSuccess: (authData) => {
+        esToast('Account verified — welcome to EventSphere!');
+        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+        setTimeout(() => {
+          if (redirectUrl) {
+            window.location.href = decodeURIComponent(redirectUrl);
+          } else {
+            if (EsAuthStore.hasRole('ADMIN')) window.location.href = 'admin-dashboard.html';
+            else if (EsAuthStore.hasRole('ORGANIZER')) window.location.href = 'organizer-dashboard.html';
+            else window.location.href = '../index.html';
+          }
+        }, 500);
+      },
+      onEditEmail: () => {
+        if (emailInput) emailInput.focus();
+      }
+    });
   } catch (err) {
     esToast(err.message || 'Could not create your account.', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = 'Sign up'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Create account'; }
   }
 });
 </script>

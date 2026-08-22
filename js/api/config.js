@@ -33,7 +33,17 @@
     getUser() { try { return JSON.parse(localStorage.getItem(ES_USER_KEY)); } catch (e) { return null; } },
     setUser(u) { localStorage.setItem(ES_USER_KEY, JSON.stringify(u)); },
     isLoggedIn() { return !!this.getToken(); },
-    hasRole(role) { const u = this.getUser(); return !!(u && u.roles && u.roles.includes(role)); }
+    hasRole(role) {
+      const u = this.getUser();
+      if (!u || !u.roles || !Array.isArray(u.roles)) return false;
+      const target = role.toUpperCase();
+      const targetPrefixed = target.startsWith('ROLE_') ? target : `ROLE_${target}`;
+      const targetClean = target.replace(/^ROLE_/, '');
+      return u.roles.some(r => {
+        const norm = String(r).toUpperCase();
+        return norm === target || norm === targetPrefixed || norm === targetClean;
+      });
+    }
   };
 
   /**
@@ -74,7 +84,10 @@
         err.payload = payload;
         throw err;
       }
-      return payload ? payload.data : null;
+      if (payload !== null && typeof payload === 'object' && 'data' in payload) {
+        return payload.data !== undefined ? payload.data : payload;
+      }
+      return payload;
     } catch (networkErr) {
       if (networkErr.status) throw networkErr;
       const err = new Error('Could not reach EventSphere servers.');

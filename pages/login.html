@@ -64,11 +64,20 @@
 <script src="../js/utils/icons.js"></script>
 <script src="../js/utils/toast.js"></script>
 <script src="../js/utils/validation.js"></script>
+<script src="../js/utils/otp-modal.js"></script>
 <script>
 const brandSp = document.getElementById('brandSparkle');
 if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 EsValidation.initPasswordToggles(document.getElementById('loginForm'));
 EsValidation.attachLiveValidation(document.getElementById('loginForm'));
+
+// Check for email prefill from query parameter
+const urlParams = new URLSearchParams(window.location.search);
+const prefillEmail = urlParams.get('email');
+if (prefillEmail) {
+  const emailInp = document.getElementById('loginEmail');
+  if (emailInp) emailInp.value = decodeURIComponent(prefillEmail);
+}
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -87,20 +96,61 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     return;
   }
 
-  const email = emailInput.value;
+  const email = emailInput.value.trim();
   const password = passwordInput.value;
   const btn = form.querySelector('button[type="submit"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
 
   try {
-    await AuthAPI.login({ email, password });
+    const authData = await AuthAPI.login({ email, password });
     esToast('Welcome back!');
-    setTimeout(() => window.location.href = '../index.html', 500);
+    const redirectUrl = urlParams.get('redirect');
+    setTimeout(() => {
+      if (redirectUrl) {
+        window.location.href = decodeURIComponent(redirectUrl);
+      } else {
+        if (EsAuthStore.hasRole('ADMIN')) window.location.href = 'admin-dashboard.html';
+        else if (EsAuthStore.hasRole('ORGANIZER')) window.location.href = 'organizer-dashboard.html';
+        else window.location.href = '../index.html';
+      }
+    }, 500);
   } catch (err) {
-    // No demo-mode fallback — a login failure is always shown for what it
-    // is (wrong password, backend unreachable, etc.), never faked as success.
-    esToast(err.message || 'Login failed. Check your email and password.', 'error');
     if (btn) { btn.disabled = false; btn.textContent = 'Log in'; }
+
+    const msg = (err.message || '').toLowerCase();
+    const isUnverified = err.status === 403 || 
+                         msg.includes('not verified') || 
+                         msg.includes('unverified') || 
+                         msg.includes('verify your email') ||
+                         msg.includes('email is not verified');
+
+    if (isUnverified) {
+      esToast('Your email is not verified yet. Please enter the code sent to your email.', 'error');
+      EsOtpModal.open({
+        email: email,
+        title: 'Verify Your Email',
+        message: "Your email address has not been verified yet. We've sent a 6-digit code to your inbox.",
+        onSuccess: (data) => {
+          esToast('Email verified successfully! Welcome back.');
+          const redirectUrl = urlParams.get('redirect');
+          setTimeout(() => {
+            if (redirectUrl) {
+              window.location.href = decodeURIComponent(redirectUrl);
+            } else {
+              if (EsAuthStore.hasRole('ADMIN')) window.location.href = 'admin-dashboard.html';
+              else if (EsAuthStore.hasRole('ORGANIZER')) window.location.href = 'organizer-dashboard.html';
+              else window.location.href = '../index.html';
+            }
+          }, 500);
+        },
+        onEditEmail: () => {
+          if (emailInput) emailInput.focus();
+        }
+      });
+      return;
+    }
+
+    esToast(err.message || 'Login failed. Check your email and password.', 'error');
   }
 });
 </script>

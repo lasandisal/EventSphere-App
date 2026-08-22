@@ -24,6 +24,25 @@ const AuthAPI = {
     return data;
   },
 
+  async verifyOtp({ email, otp }) {
+    const data = await esFetch('/auth/verify-otp', {
+      method: 'POST',
+      body: { email, otp }
+    });
+    if (data && data.token) {
+      EsAuthStore.setToken(data.token);
+      EsAuthStore.setUser(data.user || data);
+    }
+    return data;
+  },
+
+  async resendOtp({ email }) {
+    return await esFetch('/auth/resend-otp', {
+      method: 'POST',
+      body: { email }
+    });
+  },
+
   logout() {
     EsAuthStore.clear();
     window.location.href = esPathPrefix().toRoot + 'index.html';
