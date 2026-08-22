@@ -15,7 +15,7 @@
 
 <nav class="es-navbar">
   <div class="container-narrow d-flex align-items-center justify-content-between">
-    <a href="../index.html" class="brand"><span class="sparkle" id="brandSparkle"></span>EventSphere</a>
+    <a href="../index.html" class="brand text-decoration-none d-flex align-items-center"><img src="../assets/images/logo.png" alt="EventSphere Logo" class="brand-logo me-2">EventSphere</a>
     <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks"><i class="bi bi-list fs-3"></i></button>
     <div class="collapse navbar-collapse d-lg-flex justify-content-lg-center" id="navLinks">
       <ul class="navbar-nav gap-lg-2 mt-3 mt-lg-0">
@@ -76,7 +76,8 @@
 <script src="../js/utils/nav.js"></script>
 <script src="../js/utils/ai-widget.js"></script>
 <script>
-document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+const brandSp = document.getElementById('brandSparkle');
+if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 
 const statusMap = {
   PENDING:   ['status-pending',   'Pending payment'],

@@ -19,7 +19,7 @@
     <div class="hero-blob" style="width:280px; height:280px; background: radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%); bottom:12%; right:10%;"></div>
     <div class="auth-content">
       <a href="../index.html" class="brand mb-4 d-inline-flex align-items-center gap-2 text-decoration-none" style="color:#FFF;">
-        <span class="sparkle" id="brandSparkle"></span>
+        <img src="../assets/images/logo.png" alt="EventSphere Logo" class="brand-logo me-1">
         <span class="fw-bold fs-4 text-white">EventSphere</span>
       </a>
       <h2 class="text-white fw-bold mb-3" style="max-width:380px; font-size: 2.1rem; line-height: 1.25;">Welcome back to your next favourite memory.</h2>
@@ -62,7 +62,8 @@
 <script src="../js/utils/toast.js"></script>
 <script src="../js/utils/validation.js"></script>
 <script>
-document.getElementById('brandSparkle').innerHTML = EsIcons.sparkle;
+const brandSp = document.getElementById('brandSparkle');
+if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 EsValidation.initPasswordToggles(document.getElementById('loginForm'));
 EsValidation.attachLiveValidation(document.getElementById('loginForm'));
 
