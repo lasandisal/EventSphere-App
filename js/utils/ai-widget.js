@@ -7,11 +7,11 @@
     const wrap = document.createElement('div');
     wrap.innerHTML = `
       <button class="ai-fab" id="aiFab" aria-label="Open EventSphere Assistant">
-        <span class="sparkle" style="width:1.5em;height:1.5em;">${EsIcons.sparkle}</span>
+        <i class="bi bi-chat-dots-fill" style="font-size: 1.55rem; color: #FFFFFF;"></i>
       </button>
       <div class="ai-panel" id="aiPanel">
         <div class="ai-header">
-          <span class="sparkle" style="color:var(--dusty-rose-dark);width:1.3em;height:1.3em;">${EsIcons.sparkle}</span>
+          <i class="bi bi-chat-dots-fill me-2" style="color: var(--neon-rose); font-size: 1.25rem;"></i>
           <div>
             <div class="t">EventSphere Assistant</div>
             <div class="s">Let me help you find something you'll love.</div>
