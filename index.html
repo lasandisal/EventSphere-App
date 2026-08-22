@@ -84,14 +84,11 @@
             </button>
           </form>
 
-          <!-- Quick Trending Tags -->
-          <div class="d-flex align-items-center gap-2 flex-wrap pt-1">
+          <!-- Quick Trending Tags (Loaded dynamically from database) -->
+          <div class="d-flex align-items-center gap-2 flex-wrap pt-1" id="heroTrendingWrapper">
             <span class="small text-muted-soft fw-semibold me-1"><i
                 class="bi bi-fire text-warning me-1"></i>Trending:</span>
-            <span class="trending-chip" onclick="quickSearch('Tech')">⚡ Tech Summit</span>
-            <span class="trending-chip" onclick="quickSearch('Concert')">🎵 Live Music</span>
-            <span class="trending-chip" onclick="quickSearch('Workshop')">🎨 Workshops</span>
-            <span class="trending-chip" onclick="quickSearch('Comedy')">🎭 Standup</span>
+            <div id="heroCategoryPills" class="d-inline-flex align-items-center gap-2 flex-wrap"></div>
           </div>
         </div>
 
@@ -235,10 +232,10 @@
       // 1. Hero Pills (Top 4-5)
       if (heroPills) {
         heroPills.innerHTML = list.slice(0, 5).map(c => `
-      <button type="button" class="filter-pill" onclick="applyCategoryFilter(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
-        ${c.icon || c.emoji || '🏷️'} ${c.name}
-      </button>
-    `).join('');
+          <button type="button" class="trending-chip border-0" onclick="applyCategoryFilter(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
+            ${c.icon || c.emoji || '🏷️'} ${c.name}
+          </button>
+        `).join('');
       }
 
       // 2. Main Filter Bar above Events Grid
