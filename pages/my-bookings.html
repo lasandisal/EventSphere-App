@@ -82,6 +82,10 @@
 const brandSp = document.getElementById('brandSparkle');
 if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 
+if (!EsAuthStore.isLoggedIn()) {
+  window.location.href = 'login.html?redirect=' + encodeURIComponent('my-bookings.html' + window.location.search);
+}
+
 const statusMap = {
   PENDING:   ['status-pending',   'Pending payment'],
   CONFIRMED: ['status-confirmed', 'Confirmed'],

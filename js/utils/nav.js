@@ -1,12 +1,20 @@
 (function () {
   function renderNavAuth() {
     const slot = document.getElementById('navAuthSlot');
-    if (!slot) return;
     const user = EsAuthStore.getUser();
     const prefix = esPathPrefix().toPages; // '' when inside /pages/, 'pages/' from root
     const currentPage = document.body.getAttribute('data-page') || '';
+    const isLoggedIn = EsAuthStore.isLoggedIn() && !!user;
 
-    if (!EsAuthStore.isLoggedIn() || !user) {
+    // Dynamically show/hide "My Bookings" link in the navbar based on authentication state
+    document.querySelectorAll('.es-navbar .nav-link[data-nav="bookings"]').forEach(link => {
+      const parentLi = link.closest('.nav-item') || link;
+      parentLi.style.display = isLoggedIn ? '' : 'none';
+    });
+
+    if (!slot) return;
+
+    if (!isLoggedIn) {
       slot.innerHTML = `
         <a href="${prefix}login.html" class="btn btn-outline-soft btn-sm">Log in</a>
         <a href="${prefix}register.html" class="btn btn-primary btn-sm">Sign up</a>`;
@@ -14,8 +22,8 @@
     }
 
     const initials = (user.fullName || user.email || 'U').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
-    const isOrganizer = (user.roles || []).includes('ORGANIZER');
-    const isAdmin = (user.roles || []).includes('ADMIN');
+    const isOrganizer = (user.roles || []).some(r => String(r).toUpperCase().includes('ORGANIZER'));
+    const isAdmin = (user.roles || []).some(r => String(r).toUpperCase().includes('ADMIN'));
 
     // Determine which dropdown item is active
     const isBookingsActive = currentPage === 'bookings' ? 'active' : '';
