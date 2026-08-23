@@ -259,7 +259,7 @@
   /* AI Floating Assistant Drawer on Mobile */
   .ai-fab {
     right: 16px;
-    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     width: 52px;
     height: 52px;
   }
@@ -273,10 +273,72 @@
     max-height: 82vh !important;
     border-radius: 20px 20px 0 0 !important;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.75) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+  }
+
+  /* Event Details Hero Banner on Mobile */
+  .ratio-21x9 {
+    --bs-aspect-ratio: 56.25% !important; /* 16:9 ratio for richer mobile presentation */
+    max-height: 280px !important;
+    min-height: 200px !important;
+  }
+
+  /* Gate Check-In Scanner Frame on Mobile */
+  .scanner-frame {
+    width: 100% !important;
+    max-width: 340px !important;
+    aspect-ratio: 1 / 1 !important;
+    max-height: 50vh !important;
+    margin: 0 auto 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  /* Digital Admission Ticket Mobile Refinements */
+  .digital-ticket {
+    width: 100% !important;
+    border-radius: 16px !important;
+  }
+  .digital-ticket .tk-event {
+    font-size: clamp(1.2rem, 4.5vw, 1.45rem) !important;
+    word-break: break-word;
+    margin-bottom: 0.75rem;
+  }
+  .tk-main-info {
+    padding: 1.25rem 1rem !important;
+  }
+  .tk-meta-grid {
+    gap: 0.6rem 0.85rem !important;
+  }
+  .tk-meta-item b {
+    font-size: 0.88rem !important;
+  }
+  .tk-qr-stub {
+    padding: 1.25rem 1rem !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  .qr-img-box img {
+    max-width: 130px !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  /* Modals on Mobile */
+  .modal-dialog {
+    margin: 0.75rem auto !important;
+    max-width: calc(100% - 1.5rem) !important;
+  }
+  .modal-cyber {
+    border-radius: 16px !important;
+  }
+  .otp-code-input {
+    letter-spacing: clamp(3px, 1.5vw, 6px) !important;
+    font-size: 1.15rem !important;
   }
 
   /* Footer */
-  .es-footer { padding: 3rem 0 1.5rem; }
+  .es-footer { 
+    padding: 3rem 0 calc(1.5rem + env(safe-area-inset-bottom, 0px)); 
+  }
   .es-footer .footer-bottom {
     flex-direction: column;
     text-align: center;
@@ -289,15 +351,15 @@
    --------------------------------------------------------- */
 @media (max-width: 479.98px) {
   .es-navbar .brand {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
   .es-navbar .brand .sparkle {
-    width: 1rem;
-    height: 1rem;
+    width: 0.95rem;
+    height: 0.95rem;
   }
   .btn-lg {
-    padding: 0.75rem 1.2rem;
-    font-size: 0.95rem;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.92rem;
   }
   .filter-bar {
     padding: 1rem !important;
@@ -307,9 +369,52 @@
     padding: 0.35rem 0.65rem;
   }
   .event-card .title {
-    font-size: 1.15rem;
+    font-size: 1.12rem;
   }
   .auth-form-side {
-    padding: 2rem 1rem !important;
+    padding: 2rem 0.85rem !important;
+  }
+
+  /* Ticket Stacking on extra small phones */
+  .tk-meta-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* OTP Boxes sizing */
+  .otp-boxes {
+    gap: 0.25rem !important;
+  }
+  .otp-box {
+    width: clamp(36px, 12vw, 44px) !important;
+    height: clamp(44px, 14vw, 52px) !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* Form actions full width on small screens */
+  .auth-card .btn,
+  .modal-cyber .btn {
+    width: 100%;
   }
 }
+
+/* ---------------------------------------------------------
+   4. ULTRA-COMPACT & FOLDABLE OUTER SCREENS (max-width: 359.98px)
+   --------------------------------------------------------- */
+@media (max-width: 359.98px) {
+  .container-narrow, .container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  .tk-meta-grid {
+    grid-template-columns: 1fr !important; /* Stack cleanly on < 360px */
+  }
+  .tk-header {
+    font-size: 1rem !important;
+    padding: 0.6rem 1rem !important;
+  }
+  .status-badge {
+    font-size: 0.72rem !important;
+    padding: 0.25rem 0.6rem !important;
+  }
+}
+
