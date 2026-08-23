@@ -146,7 +146,8 @@ async function loadTicket() {
 
     container.innerHTML = ticketsList.map((t, idx) => {
       const code = t.ticketCode || `${booking.bookingReference}-${idx + 1}`;
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(code)}`;
+      const qrPayload = t.qrPayload || t.signedPayload || t.signedQrPayload || code;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(qrPayload)}`;
 
       // Resolve effective ticket status (VALID, USED, CANCELLED, EXPIRED, PENDING)
       let statusKey = (t.status || (isBookingConfirmed ? 'VALID' : booking.status)).toUpperCase();
