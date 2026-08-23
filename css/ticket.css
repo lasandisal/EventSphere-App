@@ -153,12 +153,56 @@
   justify-content: center;
   box-shadow: var(--shadow-tiny);
   margin-bottom: 0.5rem;
+  position: relative;
 }
 
 .qr-img-box img {
   width: 140px;
   height: 140px;
   display: block;
+  transition: opacity 0.2s ease;
+}
+
+.qr-used-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 12, 29, 0.72);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  padding: 0.5rem;
+}
+
+.digital-ticket.ticket-used {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.digital-ticket.ticket-used .tk-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.digital-ticket.ticket-expired {
+  opacity: 0.75;
+  filter: grayscale(0.2);
+}
+
+.digital-ticket.ticket-expired .tk-header {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+}
+
+.digital-ticket.ticket-cancelled {
+  opacity: 0.65;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.digital-ticket.ticket-cancelled .tk-header {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
 }
 
 .tk-qr-stub .code-label {

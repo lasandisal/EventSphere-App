@@ -141,22 +141,96 @@ async function loadTicket() {
       }
     });
 
-    const isConfirmed = booking.status === 'CONFIRMED';
+    const isBookingConfirmed = booking.status === 'CONFIRMED';
+    const isEventPast = dt && dt < new Date();
 
     container.innerHTML = ticketsList.map((t, idx) => {
       const code = t.ticketCode || `${booking.bookingReference}-${idx + 1}`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(code)}`;
 
+      // Resolve effective ticket status (VALID, USED, CANCELLED, EXPIRED, PENDING)
+      let statusKey = (t.status || (isBookingConfirmed ? 'VALID' : booking.status)).toUpperCase();
+      if (booking.status === 'CANCELLED' || statusKey === 'CANCELLED') {
+        statusKey = 'CANCELLED';
+      } else if (statusKey === 'USED') {
+        statusKey = 'USED';
+      } else if (isEventPast) {
+        statusKey = 'EXPIRED';
+      } else if (isBookingConfirmed || statusKey === 'VALID') {
+        statusKey = 'VALID';
+      }
+
+      // Status Badge Configuration
+      let badgeHtml = '';
+      let ticketCardClass = 'digital-ticket';
+      let qrStubHtml = '';
+
+      if (statusKey === 'VALID') {
+        badgeHtml = `<span class="badge bg-success text-white" style="font-size:0.75rem;"><i class="bi bi-check-circle-fill me-1"></i>VALID</span>`;
+        qrStubHtml = `
+          <div class="qr-img-box">
+            <img src="${qrUrl}" alt="Admission QR Code" loading="lazy">
+          </div>
+          <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Scan at Entrance</div>
+          <div class="code-label fw-bold text-white" title="${code}"><code>${code}</code></div>
+        `;
+      } else if (statusKey === 'USED') {
+        ticketCardClass += ' ticket-used';
+        badgeHtml = `<span class="badge text-white" style="background:#6366f1; font-size:0.75rem;"><i class="bi bi-shield-check me-1"></i>USED / ADMITTED</span>`;
+        qrStubHtml = `
+          <div class="qr-img-box">
+            <img src="${qrUrl}" alt="Admission QR Code" style="opacity:0.25; filter:grayscale(1);">
+            <div class="qr-used-overlay">
+              <i class="bi bi-check2-circle fs-1 text-success d-block mb-1"></i>
+              <span class="badge bg-dark text-white fw-bold" style="font-size:0.68rem; letter-spacing:0.5px;">ADMITTED</span>
+            </div>
+          </div>
+          <div class="text-success small fw-semibold mb-1" style="font-size:0.75rem;"><i class="bi bi-check2 me-1"></i>Ticket Checked In</div>
+          <div class="code-label text-muted" title="${code}"><code>${code}</code></div>
+        `;
+      } else if (statusKey === 'EXPIRED') {
+        ticketCardClass += ' ticket-expired';
+        badgeHtml = `<span class="badge bg-secondary text-white" style="font-size:0.75rem;"><i class="bi bi-clock-history me-1"></i>EXPIRED</span>`;
+        qrStubHtml = `
+          <div class="qr-img-box">
+            <img src="${qrUrl}" alt="Admission QR Code" style="opacity:0.2; filter:grayscale(1);">
+            <div class="qr-used-overlay">
+              <i class="bi bi-hourglass-bottom fs-2 text-warning d-block mb-1"></i>
+              <span class="badge bg-dark text-white fw-bold" style="font-size:0.68rem;">EVENT CONCLUDED</span>
+            </div>
+          </div>
+          <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Pass Expired</div>
+          <div class="code-label text-muted" title="${code}"><code>${code}</code></div>
+        `;
+      } else if (statusKey === 'CANCELLED') {
+        ticketCardClass += ' ticket-cancelled';
+        badgeHtml = `<span class="badge bg-danger text-white" style="font-size:0.75rem;"><i class="bi bi-x-circle me-1"></i>CANCELLED</span>`;
+        qrStubHtml = `
+          <div class="text-danger py-4">
+            <i class="bi bi-x-octagon fs-1 d-block mb-1"></i>
+            <span class="fw-bold small d-block">Cancelled</span>
+            <span class="text-muted" style="font-size:0.7rem;">This ticket is void</span>
+          </div>
+        `;
+      } else {
+        badgeHtml = `<span class="badge bg-warning text-dark" style="font-size:0.75rem;"><i class="bi bi-hourglass-split me-1"></i>PENDING</span>`;
+        qrStubHtml = `
+          <div class="text-warning py-3">
+            <i class="bi bi-clock-history fs-2 d-block mb-1"></i>
+            <span class="fw-bold small d-block">Pending Payment</span>
+            <span class="text-muted" style="font-size:0.7rem;">QR codes activate on confirmation</span>
+          </div>
+        `;
+      }
+
       return `
-      <div class="digital-ticket">
+      <div class="${ticketCardClass}">
         <!-- Header -->
         <div class="tk-header">
           <div class="d-flex align-items-center">
             <span class="sparkle me-1">${EsIcons.sparkle}</span> EventSphere Pass
           </div>
-          <span class="badge ${isConfirmed ? 'bg-success' : 'bg-warning'} text-white" style="font-size:0.75rem;">
-            ${booking.status}
-          </span>
+          ${badgeHtml}
         </div>
 
         <!-- Horizontal Content Split -->
@@ -206,21 +280,9 @@ async function loadTicket() {
           </div>
 
           <!-- Right: Scannable QR Code Stub -->
-<div class="tk-qr-stub">
-  ${isConfirmed ? `
-    <div class="qr-img-box">
-      <img src="${qrUrl}" alt="Admission QR Code" loading="lazy">
-    </div>
-    <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Scan at Entrance</div>
-    <div class="code-label fw-bold text-white" title="${code}"><code>${code}</code></div>
-  ` : `
-    <div class="text-warning py-3">
-      <i class="bi bi-clock-history fs-2 d-block mb-1"></i>
-      <span class="fw-bold small d-block">Pending</span>
-      <span class="text-muted" style="font-size:0.7rem;">QR codes activate on confirmation</span>
-    </div>
-  `}
-</div>
+          <div class="tk-qr-stub">
+            ${qrStubHtml}
+          </div>
 
         </div>
       </div>`;
