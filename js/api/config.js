@@ -50,7 +50,14 @@
    * esFetch — thin wrapper around fetch() for the EventSphere API.
    */
   async function esFetch(path, { method = 'GET', body, params, isForm = false } = {}) {
-    let url = `${global.ES_CONFIG.API_BASE}${path}`;
+    let cleanPath = path || '';
+    if (cleanPath.startsWith('/api/v1')) {
+      cleanPath = cleanPath.substring(7);
+    }
+    if (!cleanPath.startsWith('/')) {
+      cleanPath = '/' + cleanPath;
+    }
+    let url = `${global.ES_CONFIG.API_BASE}${cleanPath}`;
     if (params) {
       const qs = Object.entries(params)
         .filter(([, v]) => v !== undefined && v !== null && v !== '')
@@ -69,7 +76,7 @@
       fetchBody = new URLSearchParams(body).toString();
       headers['Content-Type'] = 'application/x-www-form-urlencoded';
     } else if (body !== undefined) {
-      fetchBody = JSON.stringify(body);
+      fetchBody = typeof body === 'string' ? body : JSON.stringify(body);
     }
 
     try {
