@@ -43,6 +43,25 @@ const AuthAPI = {
     });
   },
 
+  // Send 6-digit OTP for Forgot Password
+  forgotPassword: async (email) => {
+    const emailVal = typeof email === 'object' && email !== null ? email.email : email;
+    const fetcher = typeof apiFetch === 'function' ? apiFetch : esFetch;
+    return await fetcher('/api/v1/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email: emailVal })
+    });
+  },
+
+  // Reset Password using OTP
+  resetPassword: async ({ email, otp, newPassword }) => {
+    const fetcher = typeof apiFetch === 'function' ? apiFetch : esFetch;
+    return await fetcher('/api/v1/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword })
+    });
+  },
+
   logout() {
     EsAuthStore.clear();
     window.location.href = esPathPrefix().toRoot + 'index.html';

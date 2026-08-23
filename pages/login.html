@@ -49,7 +49,7 @@
         </div>
         <div class="d-flex justify-content-between align-items-center" style="font-size:0.85rem;">
           <label class="d-flex align-items-center gap-2 text-muted-soft"><input type="checkbox" checked class="form-check-input mt-0"> Remember me</label>
-          <a href="#" class="text-decoration-none" style="color: var(--neon-cyan);">Forgot password?</a>
+          <a href="#" id="forgotPasswordBtn" class="text-decoration-none" style="color: var(--neon-cyan); cursor:pointer;">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary btn-lg mt-2">Log in</button>
       </form>
@@ -58,6 +58,76 @@
   </div>
 </div>
 
+<!-- ========================================== -->
+<!-- FORGOT PASSWORD & RESET OTP MODAL -->
+<!-- ========================================== -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-cyber">
+      <div class="modal-header">
+        <h5 class="modal-title text-white fw-bold" id="forgotPasswordModalLabel">
+          <i class="bi bi-shield-lock me-2 text-warning"></i>Reset Your Password
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Step 1: Request OTP -->
+        <div id="fpStep1">
+          <p class="text-muted-soft small mb-3">
+            Enter your registered email address and we'll send you a 6-digit verification code to reset your password.
+          </p>
+          <form id="fpRequestForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label text-white small" for="fpEmail">Email Address</label>
+              <input type="email" class="form-control" id="fpEmail" required placeholder="you@example.com">
+              <div class="invalid-feedback"></div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 mt-2" id="fpSendOtpBtn">
+              Send Reset Code
+            </button>
+          </form>
+        </div>
+
+        <!-- Step 2: Enter OTP & New Password -->
+        <div id="fpStep2" style="display: none;">
+          <div class="alert alert-info py-2 px-3 small mb-3 text-white border-0" style="background: rgba(13, 202, 240, 0.15);">
+            <i class="bi bi-envelope-check me-2"></i> Code sent to <strong id="fpTargetEmailDisplay"></strong>
+          </div>
+          <form id="fpResetForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label text-white small" for="fpOtp">6-Digit Code</label>
+              <input type="text" maxlength="6" class="form-control otp-code-input" id="fpOtp" required placeholder="000000" autocomplete="one-time-code">
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-white small" for="fpNewPassword">New Password</label>
+              <div class="password-toggle-group">
+                <input type="password" class="form-control" id="fpNewPassword" required placeholder="At least 6 characters" minlength="6">
+                <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
+              </div>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-white small" for="fpConfirmPassword">Confirm New Password</label>
+              <div class="password-toggle-group">
+                <input type="password" class="form-control" id="fpConfirmPassword" required placeholder="Re-type new password" minlength="6">
+                <button type="button" class="password-toggle-btn" aria-label="Show password" title="Show password"></button>
+              </div>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-secondary flex-shrink-0" id="fpBackBtn">Back</button>
+              <button type="submit" class="btn btn-primary w-100" id="fpSubmitResetBtn">Reset Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/env.js"></script>
 <script src="../js/api/config.js"></script>
 <script src="../js/api/auth.js"></script>
@@ -79,6 +149,9 @@ if (prefillEmail) {
   if (emailInp) emailInp.value = decodeURIComponent(prefillEmail);
 }
 
+// -------------------------------------------------------------
+// Login Form Submission
+// -------------------------------------------------------------
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -151,6 +224,118 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 
     esToast(err.message || 'Login failed. Check your email and password.', 'error');
+  }
+});
+
+// -------------------------------------------------------------
+// Forgot Password Flow
+// -------------------------------------------------------------
+const fpModalEl = document.getElementById('forgotPasswordModal');
+const fpModal = new bootstrap.Modal(fpModalEl);
+const fpStep1 = document.getElementById('fpStep1');
+const fpStep2 = document.getElementById('fpStep2');
+const fpEmailInput = document.getElementById('fpEmail');
+const fpSendOtpBtn = document.getElementById('fpSendOtpBtn');
+const fpSubmitResetBtn = document.getElementById('fpSubmitResetBtn');
+let activeResetEmail = '';
+
+// Init password toggles inside forgot password modal
+EsValidation.initPasswordToggles(document.getElementById('fpResetForm'));
+
+document.getElementById('forgotPasswordBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  // Pre-fill email from login form if already entered
+  const loginEmailVal = document.getElementById('loginEmail')?.value?.trim();
+  if (loginEmailVal) fpEmailInput.value = loginEmailVal;
+
+  fpStep1.style.display = 'block';
+  fpStep2.style.display = 'none';
+  fpModal.show();
+});
+
+document.getElementById('fpBackBtn').addEventListener('click', () => {
+  fpStep2.style.display = 'none';
+  fpStep1.style.display = 'block';
+});
+
+// Step 1: Request Password Reset OTP
+document.getElementById('fpRequestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = fpEmailInput.value.trim();
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    esToast('Please enter a valid email address.', 'error');
+    fpEmailInput.focus();
+    return;
+  }
+
+  fpSendOtpBtn.disabled = true;
+  fpSendOtpBtn.textContent = 'Sending code...';
+
+  try {
+    await AuthAPI.forgotPassword(email);
+    activeResetEmail = email;
+    document.getElementById('fpTargetEmailDisplay').textContent = email;
+    esToast('Reset code sent to your email!');
+
+    fpStep1.style.display = 'none';
+    fpStep2.style.display = 'block';
+    document.getElementById('fpOtp').focus();
+  } catch (err) {
+    esToast(err.message || 'Failed to send reset code. Please check your email.', 'error');
+  } finally {
+    fpSendOtpBtn.disabled = false;
+    fpSendOtpBtn.textContent = 'Send Reset Code';
+  }
+});
+
+// Step 2: Submit OTP and New Password
+document.getElementById('fpResetForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const otp = document.getElementById('fpOtp').value.trim();
+  const newPassword = document.getElementById('fpNewPassword').value;
+  const confirmPassword = document.getElementById('fpConfirmPassword').value;
+
+  if (!/^\d{6}$/.test(otp)) {
+    esToast('Please enter the 6-digit code sent to your email.', 'error');
+    document.getElementById('fpOtp').focus();
+    return;
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    esToast('New password must be at least 6 characters.', 'error');
+    document.getElementById('fpNewPassword').focus();
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    esToast('Passwords do not match.', 'error');
+    document.getElementById('fpConfirmPassword').focus();
+    return;
+  }
+
+  fpSubmitResetBtn.disabled = true;
+  fpSubmitResetBtn.textContent = 'Resetting password...';
+
+  try {
+    await AuthAPI.resetPassword({
+      email: activeResetEmail,
+      otp: otp,
+      newPassword: newPassword
+    });
+
+    esToast('Password reset successfully! You can now log in.', 'success');
+    fpModal.hide();
+
+    // Auto fill and focus login password
+    document.getElementById('loginEmail').value = activeResetEmail;
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  } catch (err) {
+    esToast(err.message || 'Failed to reset password. Please check your code.', 'error');
+  } finally {
+    fpSubmitResetBtn.disabled = false;
+    fpSubmitResetBtn.textContent = 'Reset Password';
   }
 });
 </script>

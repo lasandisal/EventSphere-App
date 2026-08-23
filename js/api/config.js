@@ -3,9 +3,9 @@
    Talks to the Spring Boot backend under /api/v1/*.
    ========================================================= */
 
-(function(global) {
+(function (global) {
   const isLocalhost = typeof window !== 'undefined' && (
-    window.location.hostname === 'localhost' || 
+    window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === ''
   );
@@ -13,8 +13,8 @@
   // If ES_CONFIG was not already defined by env.js, initialize it with safe defaults
   if (!global.ES_CONFIG || !global.ES_CONFIG.API_BASE) {
     global.ES_CONFIG = {
-      API_BASE: isLocalhost 
-        ? "http://localhost:7080/api/v1" 
+      API_BASE: isLocalhost
+        ? "http://localhost:7080/api/v1"
         : "https://its-1114-eventsphere-booking-platform.onrender.com/api/v1",
       PAYHERE_GATEWAY_URL: "https://sandbox.payhere.lk/pay/checkout",
       CLOUDINARY_CLOUD_NAME: "ze21miiw",
