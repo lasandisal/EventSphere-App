@@ -26,11 +26,43 @@
   const ES_TOKEN_KEY = 'es_token';
   const ES_USER_KEY = 'es_user';
 
+  function parseJwt(token) {
+    if (!token || typeof token !== 'string') return null;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  }
+
   const EsAuthStore = {
-    getToken() { return localStorage.getItem(ES_TOKEN_KEY); },
+    getToken() {
+      const token = localStorage.getItem(ES_TOKEN_KEY);
+      if (!token) return null;
+      const claims = parseJwt(token);
+      if (claims && claims.exp) {
+        if (Date.now() >= claims.exp * 1000 - 5000) {
+          this.clear();
+          return null;
+        }
+      }
+      return token;
+    },
     setToken(t) { localStorage.setItem(ES_TOKEN_KEY, t); },
     clear() { localStorage.removeItem(ES_TOKEN_KEY); localStorage.removeItem(ES_USER_KEY); },
-    getUser() { try { return JSON.parse(localStorage.getItem(ES_USER_KEY)); } catch (e) { return null; } },
+    getUser() {
+      if (!this.getToken()) return null;
+      try { return JSON.parse(localStorage.getItem(ES_USER_KEY)); } catch (e) { return null; }
+    },
     setUser(u) { localStorage.setItem(ES_USER_KEY, JSON.stringify(u)); },
     isLoggedIn() { return !!this.getToken(); },
     hasRole(role) {
@@ -85,6 +117,28 @@
       try { payload = await res.json(); } catch (e) { /* no body */ }
 
       if (!res.ok) {
+        if (res.status === 401 && headers['Authorization']) {
+          EsAuthStore.clear();
+          // If this is a public GET request, retry once without the expired Authorization header
+          const isProtected = ['/admin', '/organizer', '/bookings', '/users'].some(p => cleanPath.startsWith(p));
+          if (method === 'GET' && !isProtected) {
+            delete headers['Authorization'];
+            try {
+              const retryRes = await fetch(url, { method, headers, body: fetchBody });
+              let retryPayload = null;
+              try { retryPayload = await retryRes.json(); } catch (e) {}
+              if (retryRes.ok) {
+                if (retryPayload !== null && typeof retryPayload === 'object' && 'data' in retryPayload) {
+                  return retryPayload.data !== undefined ? retryPayload.data : retryPayload;
+                }
+                return retryPayload;
+              }
+            } catch (retryErr) {
+              /* fall through to error */
+            }
+          }
+        }
+
         const message = (payload && payload.message) || `Request failed (${res.status})`;
         const err = new Error(message);
         err.status = res.status;
