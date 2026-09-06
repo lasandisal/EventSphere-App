@@ -40,7 +40,6 @@
     }
 
     slot.innerHTML = `
-      <button class="icon-btn" title="Notifications">${EsIcons.bell}</button>
       <div class="dropdown">
         <button class="avatar-circle border-0" data-bs-toggle="dropdown">${initials}</button>
         <ul class="dropdown-menu dropdown-menu-end mt-2 shadow-sm" style="border-radius:16px; border-color:var(--line);">
