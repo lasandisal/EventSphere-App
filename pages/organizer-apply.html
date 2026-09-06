@@ -243,7 +243,7 @@ async function checkExistingApplication() {
     }
   } catch (err) {
     // 404 / no profile found means user has not applied yet -> show form
-    console.log('No existing application or unauthenticated:', err);
+    if (err && err.status === 404) { console.info('No existing organizer application. Ready to apply.'); } else { console.warn('Application check:', err); }
   }
 
   // Pre-fill form from logged-in user profile if available
