@@ -1,6 +1,6 @@
 /* Payments API — matches PaymentController (/api/v1/payments/**) */
 const PAYHERE_MERCHANT_ID = '1237371';
-const PAYHERE_MERCHANT_SECRET = 'MTU4NDUyMzI2NDE3OTc3NTYzMzIyODA0MzkyNjU0MTM0OTc3MjEw';
+const PAYHERE_MERCHANT_SECRET = 'Mjg3NTQ1OTk1MjIwNTY5Mzc4NzE2MzQ2MDc0NzkxNTA5NDUzMjg=';
 
 const PaymentsAPI = {
   initiate(bookingId) {
