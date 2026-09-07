@@ -9,9 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     sparkleEl.innerHTML = EsIcons.sparkle;
   }
 
-  // Auth Guard
+  // Auth & Role Guard
   if (!EsAuthStore.isLoggedIn()) {
     window.location.href = 'login.html?redirect=' + encodeURIComponent('admin-dashboard.html' + window.location.search);
+    return;
+  }
+  if (!EsAuthStore.hasRole('ADMIN')) {
+    if (typeof esToast === 'function') {
+      esToast('Access denied: Administrator privileges required', 'error');
+    }
+    setTimeout(() => {
+      window.location.href = 'login.html?redirect=' + encodeURIComponent('admin-dashboard.html' + window.location.search);
+    }, 1200);
     return;
   }
 

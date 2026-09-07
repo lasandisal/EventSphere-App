@@ -67,11 +67,18 @@
     isLoggedIn() { return !!this.getToken(); },
     hasRole(role) {
       const u = this.getUser();
-      if (!u || !u.roles || !Array.isArray(u.roles)) return false;
+      let roles = (u && u.roles) || [];
+      if (!Array.isArray(roles) || roles.length === 0) {
+        const claims = parseJwt(this.getToken());
+        if (claims && Array.isArray(claims.roles)) {
+          roles = claims.roles;
+        }
+      }
+      if (!Array.isArray(roles)) return false;
       const target = role.toUpperCase();
       const targetPrefixed = target.startsWith('ROLE_') ? target : `ROLE_${target}`;
       const targetClean = target.replace(/^ROLE_/, '');
-      return u.roles.some(r => {
+      return roles.some(r => {
         const norm = String(r).toUpperCase();
         return norm === target || norm === targetPrefixed || norm === targetClean;
       });
