@@ -73,7 +73,15 @@
 
         <!-- Step 4: Payment -->
         <div class="booking-step d-none" data-step-panel="4">
-          <h3 class="mb-3 text-white">Payment</h3>
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h3 class="mb-0 text-white">Payment</h3>
+            <div id="holdTimerBadge" class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35);">
+              <i class="bi bi-stopwatch text-warning"></i>
+              <span class="text-white-50 small">Hold expires in:</span>
+              <span id="holdCountdown" class="fw-bold font-monospace text-warning">10:00</span>
+            </div>
+          </div>
+
           <div class="p-3 mb-4 d-flex align-items-center gap-3 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);">
             <i class="bi bi-shield-lock-fill text-success fs-3"></i>
             <div>
@@ -81,19 +89,59 @@
               <div class="text-muted-soft" style="font-size:0.82rem;">Your payment is processed securely via sandbox gateway.</div>
             </div>
           </div>
+
           <div class="p-3 rounded-3 mb-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
             <div class="d-flex justify-content-between mb-2"><span class="text-muted-soft">Event</span><b class="text-white" id="paySummaryEvent">—</b></div>
             <div class="d-flex justify-content-between mb-2"><span class="text-muted-soft">Tickets</span><b class="text-white" id="paySummaryCount">—</b></div>
             <div class="d-flex justify-content-between"><span class="text-muted-soft">Total Amount</span><b style="color: var(--neon-rose); font-size:1.1rem;" id="paySummaryTotal">—</b></div>
           </div>
           
-          <button class="btn btn-primary btn-lg w-100 mb-3" onclick="startPayment()">
-            <i class="bi bi-lock-fill me-1"></i> Pay Securely with PayHere
-          </button>
+          <div id="paymentActions">
+            <button class="btn btn-primary btn-lg w-100 mb-2" id="btnPayWithPayHere" onclick="startPayment()">
+              <i class="bi bi-lock-fill me-1"></i> Pay Securely with PayHere
+            </button>
+
+            <button class="btn btn-outline-danger w-100 mb-3" id="btnCancelHold" onclick="cancelCurrentBooking()">
+              <i class="bi bi-x-circle me-1"></i> Cancel Reservation &amp; Release Tickets
+            </button>
+
+            <div class="text-center mt-2 mb-2">
+              <button type="button" class="btn btn-link btn-sm text-muted text-decoration-none" onclick="simulateSandboxPayment()" style="font-size:0.78rem;">
+                <i class="bi bi-lightning-charge me-1"></i> Sandbox Test: Simulate Successful Webhook
+              </button>
+            </div>
+          </div>
 
           <div id="paymentStatusBox" class="mt-3 text-center d-none p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
             <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
             <span class="text-white fw-semibold small">Verifying payment &amp; generating your digital QR passes...</span>
+          </div>
+
+          <!-- Payment Gateway Error Box -->
+          <div id="paymentErrorBox" class="mt-3 p-3 rounded-3 d-none" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35);">
+            <div class="d-flex align-items-start gap-2 text-danger mb-2">
+              <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+              <div>
+                <strong class="d-block text-white">Payment Gateway Issue</strong>
+                <span class="small text-white-50" id="paymentErrorMessage">Could not initiate checkout.</span>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-light flex-fill" onclick="startPayment()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Retry PayHere
+              </button>
+              <button class="btn btn-sm btn-danger flex-fill" onclick="cancelCurrentBooking()">
+                <i class="bi bi-x-circle me-1"></i> Cancel &amp; Release Tickets
+              </button>
+            </div>
+          </div>
+
+          <!-- Hold Expired Box -->
+          <div id="holdExpiredBox" class="mt-3 p-3 rounded-3 d-none text-center" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35);">
+            <i class="bi bi-clock-history text-danger fs-1 mb-2 d-block"></i>
+            <h5 class="text-white mb-1">Reservation Hold Expired</h5>
+            <p class="text-white-50 small mb-3">Your 10-minute ticket reservation window has expired. The tickets have been released back to the event pool to prevent overselling.</p>
+            <a href="events.html" class="btn btn-primary btn-sm">Find Events</a>
           </div>
         </div>
 
@@ -147,14 +195,18 @@ if (!EsAuthStore.isLoggedIn()) {
   setTimeout(() => window.location.href = 'login.html?redirect=' + encodeURIComponent(returnTo), 800);
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+const eventId = urlParams.get('eventId');
+const bookingIdParam = urlParams.get('bookingId');
 const pending = JSON.parse(sessionStorage.getItem('es_pending_booking') || 'null');
-const eventId = new URLSearchParams(window.location.search).get('eventId');
-const items = pending ? pending.items : [];
+let items = pending ? pending.items : [];
 let eventTitle = 'Event Booking';
 let pollInterval = null;
+let holdTimerInterval = null;
+let currentBookingId = bookingIdParam ? Number(bookingIdParam) : null;
 
-// Redirect back if no pending booking items exist
-if (!items.length) {
+// Redirect back if no pending booking items exist and no bookingId in URL
+if (!items.length && !bookingIdParam) {
   esToast('No tickets selected. Redirecting to discovery...', 'error');
   setTimeout(() => window.location.href = 'events.html', 1200);
 }
@@ -277,10 +329,97 @@ function goStep(step) {
     s.classList.toggle('active', n === step);
     s.classList.toggle('done', n < step);
   });
+
+  if (step === 4) {
+    startHoldCountdown(600);
+  }
+
   window.scrollTo({ top: 200, behavior: 'smooth' });
 }
 
-let currentBookingId = null;
+function startHoldCountdown(durationSeconds = 600) {
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
+  let remaining = durationSeconds;
+  const timerEl = document.getElementById('holdCountdown');
+  
+  function updateDisplay() {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    if (timerEl) {
+      timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      if (remaining <= 60) {
+        timerEl.classList.remove('text-warning');
+        timerEl.classList.add('text-danger');
+      }
+    }
+    if (remaining <= 0) {
+      clearInterval(holdTimerInterval);
+      handleHoldExpired();
+    }
+    remaining--;
+  }
+
+  updateDisplay();
+  holdTimerInterval = setInterval(updateDisplay, 1000);
+}
+
+async function handleHoldExpired() {
+  if (pollInterval) clearInterval(pollInterval);
+  document.getElementById('paymentActions')?.classList.add('d-none');
+  document.getElementById('paymentStatusBox')?.classList.add('d-none');
+  document.getElementById('paymentErrorBox')?.classList.add('d-none');
+  document.getElementById('holdExpiredBox')?.classList.remove('d-none');
+  
+  if (currentBookingId) {
+    try {
+      await BookingsAPI.cancel(currentBookingId);
+    } catch (e) {
+      console.warn('Auto-cancel on hold expiry error:', e);
+    }
+  }
+  sessionStorage.removeItem('es_pending_booking');
+}
+
+async function cancelCurrentBooking() {
+  if (!currentBookingId) {
+    esToast('No active reservation found to cancel', 'error');
+    return;
+  }
+
+  const confirmed = confirm('Are you sure you want to cancel this reservation? The held tickets will be immediately released back to other attendees.');
+  if (!confirmed) return;
+
+  const btnCancel = document.getElementById('btnCancelHold');
+  const origText = btnCancel ? btnCancel.innerHTML : '';
+  if (btnCancel) {
+    btnCancel.disabled = true;
+    btnCancel.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Releasing tickets...';
+  }
+
+  try {
+    if (holdTimerInterval) clearInterval(holdTimerInterval);
+    if (pollInterval) clearInterval(pollInterval);
+
+    await BookingsAPI.cancel(currentBookingId);
+    sessionStorage.removeItem('es_pending_booking');
+    esToast('Reservation cancelled and tickets released', 'success');
+
+    setTimeout(() => {
+      if (eventId) {
+        window.location.href = `event-details.html?id=${eventId}`;
+      } else {
+        window.location.href = 'events.html';
+      }
+    }, 1000);
+  } catch (err) {
+    console.error('Cancel booking failed:', err);
+    esToast(err.message || 'Failed to cancel booking', 'error');
+    if (btnCancel) {
+      btnCancel.disabled = false;
+      btnCancel.innerHTML = origText;
+    }
+  }
+}
 
 async function submitBooking() {
   const btn = document.getElementById('btnConfirmBooking');
@@ -343,6 +482,7 @@ function checkBookingConfirmed() {
 
 function onBookingSuccess() {
   if (pollInterval) clearInterval(pollInterval);
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
   sessionStorage.removeItem('es_pending_booking');
   document.getElementById('viewTicketBtn').href = `ticket.html?bookingId=${currentBookingId}`;
   esToast('Payment Confirmed! Passes dispatched to emails.', 'success');
@@ -386,6 +526,9 @@ async function startPayment() {
     esToast('Invalid booking reference', 'error');
     return;
   }
+
+  const errBox = document.getElementById('paymentErrorBox');
+  if (errBox) errBox.classList.add('d-none');
 
   try {
     esToast('Initiating payment gateway...');
@@ -450,11 +593,38 @@ async function startPayment() {
 
   } catch (e) {
     console.error('Payment Initiation Failed:', e);
+    if (errBox) {
+      const errMsg = document.getElementById('paymentErrorMessage');
+      if (errMsg) {
+        errMsg.textContent = e.message || 'Payment initiation failed. If unauthorized, verify login session and payment gateway credentials.';
+      }
+      errBox.classList.remove('d-none');
+    }
     esToast(e.message || 'Could not initiate payment', 'error');
   }
 }
 
 async function initBookingPage() {
+  if (bookingIdParam) {
+    try {
+      esToast('Loading existing reservation...', 'info');
+      const res = await BookingsAPI.getById(bookingIdParam);
+      const b = res?.data || res;
+      if (b) {
+        currentBookingId = b.id;
+        eventTitle = b.eventTitle || eventTitle;
+        const total = b.totalAmount || 0;
+        document.getElementById('paySummaryEvent').textContent = eventTitle;
+        document.getElementById('paySummaryCount').textContent = (b.items || []).reduce((s, i) => s + i.quantity, 0) + ' tickets';
+        document.getElementById('paySummaryTotal').textContent = money(total);
+        goStep(4);
+        return;
+      }
+    } catch (err) {
+      console.warn('Could not load booking by ID param:', err);
+    }
+  }
+
   renderTicketsRecap();
   renderSummary();
   renderAttendeeForm();
