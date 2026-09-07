@@ -45,6 +45,7 @@ const CategoriesAPI = {
 const VenuesAPI = {
   getAll() { return esFetch('/venues'); },
   getById(id) { return esFetch(`/venues/${id}`); },
+  createCustom(payload) { return esFetch('/organizer/venues', { method: 'POST', body: payload }); },
   // Admin — AdminVenueController
   create(payload) { return esFetch('/admin/venues', { method: 'POST', body: payload }); },
   update(id, payload) { return esFetch(`/admin/venues/${id}`, { method: 'PUT', body: payload }); },
