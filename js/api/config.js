@@ -13,9 +13,7 @@
   // If ES_CONFIG was not already defined by env.js, initialize it with safe defaults
   if (!global.ES_CONFIG || !global.ES_CONFIG.API_BASE) {
     global.ES_CONFIG = {
-      API_BASE: isLocalhost
-        ? "http://localhost:7080/api/v1"
-        : "https://its-1114-eventsphere-booking-platform.onrender.com/api/v1",
+      API_BASE: "https://its-1114-eventsphere-booking-platform.onrender.com/api/v1",
       PAYHERE_GATEWAY_URL: "https://sandbox.payhere.lk/pay/checkout",
       CLOUDINARY_CLOUD_NAME: "ze21miiw",
       CLOUDINARY_UPLOAD_PRESET: "eventsphere_preset"
