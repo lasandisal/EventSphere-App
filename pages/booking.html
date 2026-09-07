@@ -67,7 +67,7 @@
           <div id="reviewList" class="d-flex flex-column gap-3 mb-4"></div>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-soft" onclick="goStep(2)">Back</button>
-            <button class="btn btn-primary" onclick="submitBooking()">Confirm &amp; Continue to Payment</button>
+            <button class="btn btn-primary" id="btnConfirmBooking" onclick="submitBooking()">Confirm &amp; Continue to Payment</button>
           </div>
         </div>
 
@@ -283,6 +283,14 @@ function goStep(step) {
 let currentBookingId = null;
 
 async function submitBooking() {
+  const btn = document.getElementById('btnConfirmBooking');
+  if (btn && btn.disabled) return;
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+  }
+
   const total = items.reduce((s, i) => s + (i.price * i.quantity), 0);
   document.getElementById('paySummaryEvent').textContent = eventTitle;
   document.getElementById('paySummaryCount').textContent = items.reduce((s, i) => s + i.quantity, 0) + ' tickets';
@@ -304,6 +312,11 @@ async function submitBooking() {
   } catch (e) {
     console.error('Booking failed:', e);
     esToast(e.message || 'Failed to create booking', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
   }
 }
 

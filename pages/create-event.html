@@ -401,6 +401,21 @@ document.getElementById('createEventForm')?.addEventListener('submit', async (e)
     }
   });
 
+  const btnDraft = document.getElementById('btnDraft');
+  const btnPublish = document.getElementById('btnPublish');
+  const activeBtn = e.submitter || (mode === 'publish' ? btnPublish : btnDraft);
+  const origActiveHtml = activeBtn ? activeBtn.innerHTML : '';
+
+  // Prevent double-clicking / duplicate submissions
+  if (btnDraft) btnDraft.disabled = true;
+  if (btnPublish) btnPublish.disabled = true;
+  if (activeBtn) {
+    const loadingText = mode === 'publish'
+      ? (editEventId ? 'Updating...' : 'Publishing...')
+      : (editEventId ? 'Saving...' : 'Saving Draft...');
+    activeBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+  }
+
   try {
     let savedEvent;
     if (editEventId) {
@@ -422,6 +437,10 @@ document.getElementById('createEventForm')?.addEventListener('submit', async (e)
     }, 800);
   } catch (err) {
     esToast(err.message || 'Could not save the event', 'error');
+    // Restore buttons so organizer can fix any errors and retry
+    if (btnDraft) btnDraft.disabled = false;
+    if (btnPublish) btnPublish.disabled = false;
+    if (activeBtn) activeBtn.innerHTML = origActiveHtml;
   }
 });
 
