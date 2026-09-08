@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About EventSphere — System Architecture & Technology</title>
-  <meta name="description" content="Learn about EventSphere — an automated, concurrent, and cloud-ready event booking engine built for ITS 1114 Advanced API Development at IJSE using Spring Boot 3, PayHere, and Google Gemini AI.">
+  <title>About EventSphere — Connecting People with Live Experiences</title>
+  <meta name="description" content="EventSphere is Sri Lanka's premier live event ticketing and discovery platform. Discover concerts, tech conferences, wellness retreats, and cultural gatherings with instant digital QR passes and secure checkout.">
   <link rel="icon" type="image/png" href="../assets/images/logo.png">
   <link rel="shortcut icon" href="../favicon.ico">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -20,9 +20,69 @@
     /* Custom High-Impact Styling for About Page */
     .about-hero {
       position: relative;
-      padding: 5.5rem 0 3.5rem 0;
+      padding: 5rem 0 3rem 0;
       overflow: hidden;
     }
+    
+    /* Segmented Tab Switcher */
+    .about-tab-nav {
+      background: rgba(18, 22, 34, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 0.35rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      margin: 1.5rem auto 0 auto;
+    }
+    .about-tab-btn {
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      font-weight: 600;
+      font-size: 0.92rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+    .about-tab-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .about-tab-btn.active {
+      background: var(--grad-primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 18px rgba(255, 46, 116, 0.4);
+    }
+    .about-tab-btn .badge-academic {
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 0.72rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      margin-left: 0.25rem;
+    }
+
+    /* Tab Panes */
+    .about-tab-pane {
+      display: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .about-tab-pane.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .feature-card {
       background: rgba(18, 22, 34, 0.72);
       backdrop-filter: blur(14px);
@@ -76,7 +136,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 140px;
+      min-height: 130px;
     }
     .stat-box:hover {
       border-color: rgba(139, 92, 246, 0.4);
@@ -85,24 +145,22 @@
     }
     .stat-number {
       font-family: var(--font-display);
-      font-size: 1.25rem;
+      font-size: 1.4rem;
       font-weight: 800;
-      line-height: 1.25;
+      line-height: 1.2;
       background: var(--grad-primary);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 0.4rem;
-      min-height: 3.1rem;
+      margin-bottom: 0.35rem;
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
     }
     .stat-label {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: #9CA3AF;
       line-height: 1.35;
-      min-height: 2.4rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -165,6 +223,21 @@
       border-color: rgba(255, 46, 116, 0.5);
       transform: translateY(-2px);
     }
+
+    /* Business story visual highlights */
+    .pillar-box {
+      background: rgba(18, 22, 34, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      height: 100%;
+      transition: all 0.3s ease;
+    }
+    .pillar-box:hover {
+      border-color: rgba(255, 46, 116, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
   </style>
 </head>
 
@@ -199,416 +272,665 @@
     </div>
   </nav>
 
-  <!-- Hero Section -->
+  <!-- Hero Section with Dual Tab Switcher -->
   <header class="about-hero text-center">
     <div class="hero-glow-1"></div>
     <div class="hero-glow-2"></div>
     <div class="container-narrow position-relative" style="z-index: 2; max-width: 950px;">
+      
+      <!-- Primary Business Badge -->
       <span class="pill-badge pill-badge-rose mb-3">
-        <i class="bi bi-mortarboard-fill me-1"></i> ITS 1114 – Advanced API Development | IJSE
+        <i class="bi bi-stars me-1"></i> Sri Lanka's Premier Event Ticketing Platform
       </span>
+
       <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.03em;">
-        Automated, Concurrent &amp; Cloud-Ready Event Ticketing
+        Connecting People with Unforgettable Live Experiences
       </h1>
-      <p class="text-muted-soft fs-5 mx-auto mb-4" style="max-width: 780px; line-height: 1.65;">
-        <strong>EventSphere</strong> replaces fragmented manual event coordination (social media DMs, manual bank slips, and spreadsheets) with an automated, concurrent, and secure booking engine powered by <strong>Spring Boot 3 (Java 21)</strong>, <strong>PayHere IPG</strong>, and <strong>Google Gemini AI</strong>.
+      <p class="text-muted-soft fs-5 mx-auto mb-3" style="max-width: 780px; line-height: 1.65;">
+        EventSphere is built to eliminate the stress of finding and attending live gatherings. No more messy bank slip uploads, WhatsApp queues, or gate delays — just effortless discovery, instant passes, and authentic community connections.
       </p>
 
-      <!-- Key Engineering Highlights Badges -->
-      <div class="row g-3 justify-content-center align-items-stretch mt-2">
-        <div class="col-6 col-md-3 d-flex">
-          <div class="stat-box w-100">
-            <div class="stat-number">Pessimistic Locking</div>
-            <div class="stat-label">Zero Overselling / Concurrency</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3 d-flex">
-          <div class="stat-box w-100">
-            <div class="stat-number">10-Min Hold TTL</div>
-            <div class="stat-label">Auto-Release Scheduler</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3 d-flex">
-          <div class="stat-box w-100">
-            <div class="stat-number">HMAC-SHA256</div>
-            <div class="stat-label">Anti-Tamper QR Passes</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3 d-flex">
-          <div class="stat-box w-100">
-            <div class="stat-number">Gemini AI</div>
-            <div class="stat-label">Tool / Function Calling</div>
-          </div>
+      <!-- DUAL TAB SWITCHER (Business vs Academic Tech) -->
+      <div class="d-flex justify-content-center">
+        <div class="about-tab-nav" role="tablist">
+          <button class="about-tab-btn active" id="tabBtnStory" data-target="#paneStory" role="tab" aria-selected="true">
+            <i class="bi bi-heart-fill text-danger"></i>
+            <span>Our Story &amp; Platform</span>
+          </button>
+          <button class="about-tab-btn" id="tabBtnTech" data-target="#paneTech" role="tab" aria-selected="false">
+            <i class="bi bi-cpu text-info"></i>
+            <span>Engineering &amp; Architecture</span>
+            <span class="badge-academic">ITS 1114</span>
+          </button>
         </div>
       </div>
+
     </div>
   </header>
 
-  <!-- Problem vs Solution Showcase -->
-  <section class="section-sm">
-    <div class="container-narrow">
-      <div class="row g-4 align-items-stretch">
-        <div class="col-lg-6">
-          <div class="filter-bar h-100 p-4 p-md-5 d-flex flex-column justify-content-center" style="border-left: 4px solid var(--error);">
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <div class="feature-icon-box mb-0" style="background: rgba(239, 68, 68, 0.15); color: var(--error);">
-                <i class="bi bi-exclamation-triangle-fill"></i>
+  <!-- ================================================================= -->
+  <!-- TAB PANE 1: OUR STORY & BUSINESS PLATFORM (Default User-Facing)   -->
+  <!-- ================================================================= -->
+  <div class="about-tab-pane active" id="paneStory">
+
+    <!-- Platform Highlights / Key Metrics -->
+    <section class="section-sm pt-2">
+      <div class="container-narrow" style="max-width: 950px;">
+        <div class="row g-3 justify-content-center align-items-stretch">
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number"><i class="bi bi-qr-code-scan me-2 text-danger"></i>100%</div>
+              <div class="stat-label">Digital QR Passes</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Instant</div>
+              <div class="stat-label">PayHere Checkout</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number"><i class="bi bi-shield-check me-2 text-success"></i>Zero</div>
+              <div class="stat-label">Overselling / Concurrency</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number"><i class="bi bi-door-open-fill me-2 text-info"></i>1-Sec</div>
+              <div class="stat-label">Gate Verification</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mission & Vision -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="row g-4 align-items-stretch">
+          <div class="col-md-6">
+            <div class="pillar-box" style="border-left: 4px solid var(--neon-rose);">
+              <div class="feature-icon-box" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
+                <i class="bi bi-compass-fill"></i>
               </div>
-              <h4 class="mb-0 text-white">The Legacy Challenge</h4>
+              <h4 class="text-white fw-bold mb-3">Our Mission</h4>
+              <p class="text-muted-soft mb-0" style="line-height: 1.75; font-size: 0.98rem;">
+                To bridge passionate audiences with creators, performers, and organizers through transparent, frictionless, and secure ticketing. We empower local event creators with modern digital tools while giving attendees a peaceful, reliable way to celebrate life together.
+              </p>
             </div>
-            <p class="text-muted-soft mb-0" style="line-height: 1.7;">
-              Traditional event management in Sri Lanka relies heavily on manual bank slip uploads, WhatsApp chats, and spreadsheet tracking. This leads to double-booking during peak rush sales, fraudulent admission passes, delayed payment confirmations, and zero gate auditability.
-            </p>
           </div>
-        </div>
 
-        <div class="col-lg-6">
-          <div class="filter-bar h-100 p-4 p-md-5 d-flex flex-column justify-content-center" style="border-left: 4px solid var(--neon-emerald);">
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <div class="feature-icon-box mb-0" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
-                <i class="bi bi-check2-circle"></i>
+          <div class="col-md-6">
+            <div class="pillar-box" style="border-left: 4px solid var(--neon-violet);">
+              <div class="feature-icon-box" style="background: rgba(139, 92, 246, 0.15); color: var(--neon-violet);">
+                <i class="bi bi-eye-fill"></i>
               </div>
-              <h4 class="mb-0 text-white">The EventSphere Engine</h4>
+              <h4 class="text-white fw-bold mb-3">Our Vision</h4>
+              <p class="text-muted-soft mb-0" style="line-height: 1.75; font-size: 0.98rem;">
+                To cultivate Sri Lanka’s most vibrant cultural and entertainment ecosystem — where discovering an unforgettable concert, indie performance, tech summit, or wellness retreat is as seamless, instant, and trusted as streaming your favourite music.
+              </p>
             </div>
-            <p class="text-muted-soft mb-0" style="line-height: 1.7;">
-              A unified 3-tier enterprise platform featuring database-level pessimistic write locking (<span class="code-badge">PESSIMISTIC_WRITE</span>), automated 10-minute cart reservations, cryptographic HMAC-SHA256 QR passes, PayHere webhook verification, and 24/7 AI-driven event recommendations.
-            </p>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Deep Dive: Core Engineering Capabilities -->
-  <section class="section-sm">
-    <div class="container-narrow">
-      <div class="text-center mb-5">
-        <p class="eyebrow mb-1">Under The Hood</p>
-        <h2 class="text-white">Core Technical Systems &amp; Engineering Highlights</h2>
-      </div>
-
-      <div class="row g-4">
-        <!-- 1. Pessimistic Concurrency -->
-        <div class="col-md-6 col-lg-4">
-          <div class="feature-card">
-            <div class="feature-icon-box" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
-              <i class="bi bi-lock-fill"></i>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="text-white fw-bold mb-0">Pessimistic Concurrency</h5>
-              <span class="code-badge">SELECT FOR UPDATE</span>
-            </div>
-            <p class="text-muted-soft small mb-0">
-              During high-demand concert ticket drops, standard database reads risk double-selling. EventSphere applies <span class="text-white">LockModeType.PESSIMISTIC_WRITE</span> to lock ticket type inventory rows at the MySQL engine level, guaranteeing strict atomic seat decrements.
-            </p>
-          </div>
-        </div>
-
-        <!-- 2. 10-Minute Cart Hold & Auto-Release -->
-        <div class="col-md-6 col-lg-4">
-          <div class="feature-card">
-            <div class="feature-icon-box" style="background: rgba(255, 183, 3, 0.15); color: var(--neon-amber);">
-              <i class="bi bi-hourglass-split"></i>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="text-white fw-bold mb-0">10-Min Cart Hold &amp; TTL</h5>
-              <span class="code-badge">@Scheduled(60s)</span>
-            </div>
-            <p class="text-muted-soft small mb-0">
-              When an attendee selects tickets, the system provisionally holds them with a 10-minute TTL. The background <span class="text-white">BookingExpiryScheduler</span> runs every 60s, releasing abandoned tickets back to the public pool so seats are never locked indefinitely.
-            </p>
-          </div>
-        </div>
-
-        <!-- 3. Cryptographic HMAC-SHA256 QR Passes -->
-        <div class="col-md-6 col-lg-4">
-          <div class="feature-card">
-            <div class="feature-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
-              <i class="bi bi-qr-code-scan"></i>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="text-white fw-bold mb-0">Anti-Tamper QR Passes</h5>
-              <span class="code-badge">HMAC-SHA256</span>
-            </div>
-            <p class="text-muted-soft small mb-0">
-              Admission passes do not expose raw sequential IDs. Instead, <span class="text-white">TicketSigningUtil</span> generates URL-safe tokens encoded as <span class="code-badge">Base64Url(ticketCode:signature)</span>. Gate scanners pre-verify signatures in memory before querying the DB.
-            </p>
-          </div>
-        </div>
-
-        <!-- 4. PayHere IPG & Webhooks -->
-        <div class="col-md-6 col-lg-4">
-          <div class="feature-card">
-            <div class="feature-icon-box" style="background: rgba(0, 242, 254, 0.15); color: var(--neon-cyan);">
-              <i class="bi bi-credit-card-2-front-fill"></i>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="text-white fw-bold mb-0">PayHere IPG Pipeline</h5>
-              <span class="code-badge">MD5 Webhook Sig</span>
-            </div>
-            <p class="text-muted-soft small mb-0">
-              Checkouts are secured using SHA-256 merchant hashes. Asynchronous server-to-server webhook callbacks (<span class="code-badge">/api/v1/payments/notify</span>) validate PayHere’s MD5 signature, idempotently confirm bookings, issue tickets, and log audit payloads.
-            </p>
-          </div>
-        </div>
-
-        <!-- 5. Asynchronous Multi-Recipient Emailing -->
-        <div class="col-md-6 col-lg-4">
-          <div class="feature-card">
-            <div class="feature-icon-box" style="background: rgba(56, 189, 248, 0.15); color: var(--powder-blue);">
-              <i class="bi bi-envelope-paper-heart-fill"></i>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="text-white fw-bold mb-0">Multi-Recipient Delivery</h5>
-              <span class="code-badge">@Async + Brevo</span>
-            </div>
-            <p class="text-muted-soft small mb-0">
-              Leveraging Spring’s <span class="text-white">@Async</span> task execution with Brevo SMTP, the system sends an itemized master order receipt to the buyer, while simultaneously dispatching personalized digital admission passes directly to individual guest attendee emails.
-            </p>
-          </div>
-        </div>
-
-        <!-- 6. Google Gemini AI Function Calling -->
-        <div class="col-md-6 col-lg-4">
-          <div class="feature-card">
-            <div class="feature-icon-box" style="background: rgba(139, 92, 246, 0.15); color: var(--neon-violet);">
-              <i class="bi bi-robot"></i>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="text-white fw-bold mb-0">Gemini Function Calling</h5>
-              <span class="code-badge">Read-Only Guardrails</span>
-            </div>
-            <p class="text-muted-soft small mb-0">
-              Powered by Google Gemini API with native tool calling (<span class="code-badge">search_events</span>, <span class="code-badge">get_event_details</span>, <span class="code-badge">get_my_bookings</span>). Safety guardrails keep the assistant strictly read-only, preventing unauthorized state alterations.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3-Tier Layered Architecture Diagram -->
-  <section class="section-sm">
-    <div class="container-narrow">
-      <div class="filter-bar p-4 p-md-5">
-        <div class="text-center mb-4">
-          <span class="pill-badge pill-badge-lavender mb-2">Clean Enterprise Architecture</span>
-          <h3 class="text-white">Three-Tier Decoupled System Architecture</h3>
-          <p class="text-muted-soft mx-auto small" style="max-width: 650px;">
-            Adhering to strict separation of concerns across presentation, business logic, persistence, and external service layers.
+    <!-- Why EventSphere: The Problem We Solve -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="text-center mb-5">
+          <p class="eyebrow mb-1">The EventSphere Difference</p>
+          <h2 class="text-white">Say Goodbye to the Old Way of Ticketing</h2>
+          <p class="text-muted-soft mx-auto small" style="max-width: 600px;">
+            Traditional event management in Sri Lanka has long relied on manual bank slips and social media DMs. Here is how EventSphere transforms the experience.
           </p>
         </div>
 
-        <div class="row g-3 text-start">
-          <!-- Tier 1 -->
-          <div class="col-md-3">
-            <div class="arch-flow-node h-100">
-              <div class="text-primary fs-3 mb-2"><i class="bi bi-laptop"></i></div>
-              <h6 class="text-white fw-bold mb-1">Presentation Tier</h6>
-              <p class="text-muted-soft small mb-2">Responsive Web, Mobile &amp; Gate Scanner</p>
-              <span class="code-badge">HTML5 / Vanilla JS / CSS</span>
+        <div class="row g-4 align-items-stretch">
+          <!-- The Legacy Way -->
+          <div class="col-lg-6">
+            <div class="filter-bar h-100 p-4 p-md-5" style="border-left: 4px solid var(--error);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="feature-icon-box mb-0" style="background: rgba(239, 68, 68, 0.15); color: var(--error);">
+                  <i class="bi bi-x-octagon-fill"></i>
+                </div>
+                <h4 class="mb-0 text-white">The Old Frustration</h4>
+              </div>
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-3 mb-0" style="line-height: 1.6;">
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-dash-circle text-danger mt-1"></i>
+                  <span><strong>Manual Bank Slips:</strong> Attendees must make transfers, take screenshots, and wait 24–48 hours for someone to confirm.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-dash-circle text-danger mt-1"></i>
+                  <span><strong>Accidental Overselling:</strong> Multiple buyers purchase the same seats during high-demand rushes because spreadsheets lag behind.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-dash-circle text-danger mt-1"></i>
+                  <span><strong>Ticket Duplication &amp; Fraud:</strong> Static PDF tickets get forwarded or copied on WhatsApp, causing heartbreaking gate denials.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-dash-circle text-danger mt-1"></i>
+                  <span><strong>Gate Queues:</strong> Door staff check names against printed paper lists with highlighters in dark concert venues.</span>
+                </li>
+              </ul>
             </div>
           </div>
-          <!-- Tier 2 -->
-          <div class="col-md-3">
-            <div class="arch-flow-node h-100" style="border-color: rgba(255, 46, 116, 0.4);">
-              <div class="text-danger fs-3 mb-2"><i class="bi bi-shield-check"></i></div>
-              <h6 class="text-white fw-bold mb-1">Security &amp; API</h6>
-              <p class="text-muted-soft small mb-2">Stateless JWT Auth, CORS, RBAC &amp; DTOs</p>
-              <span class="code-badge">Spring Security 6</span>
-            </div>
-          </div>
-          <!-- Tier 3 -->
-          <div class="col-md-3">
-            <div class="arch-flow-node h-100" style="border-color: rgba(139, 92, 246, 0.4);">
-              <div class="text-violet fs-3 mb-2" style="color:var(--neon-violet);"><i class="bi bi-gear-wide-connected"></i></div>
-              <h6 class="text-white fw-bold mb-1">Core Logic &amp; Services</h6>
-              <p class="text-muted-soft small mb-2">Concurrency Control, TTL Jobs, QR Engine</p>
-              <span class="code-badge">Spring Boot 3.2.4</span>
-            </div>
-          </div>
-          <!-- Tier 4 -->
-          <div class="col-md-3">
-            <div class="arch-flow-node h-100" style="border-color: rgba(0, 242, 254, 0.4);">
-              <div class="text-info fs-3 mb-2"><i class="bi bi-database-fill-check"></i></div>
-              <h6 class="text-white fw-bold mb-1">Persistence &amp; Cloud</h6>
-              <p class="text-muted-soft small mb-2">MySQL, PayHere, Gemini, Cloudinary &amp; Brevo</p>
-              <span class="code-badge">Hibernate &amp; Cloud Services</span>
+
+          <!-- The EventSphere Way -->
+          <div class="col-lg-6">
+            <div class="filter-bar h-100 p-4 p-md-5" style="border-left: 4px solid var(--neon-emerald);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="feature-icon-box mb-0" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
+                  <i class="bi bi-check2-circle"></i>
+                </div>
+                <h4 class="mb-0 text-white">The EventSphere Standard</h4>
+              </div>
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-3 mb-0" style="line-height: 1.6;">
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check2-circle text-success mt-1"></i>
+                  <span><strong>Instant Digital Confirmation:</strong> Pay via Visa, Mastercard, or Genie on PayHere and receive tickets instantly.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check2-circle text-success mt-1"></i>
+                  <span><strong>Guaranteed Seat Reservations:</strong> 10-minute cart hold locks your tickets while you pay, guaranteeing zero double-bookings.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check2-circle text-success mt-1"></i>
+                  <span><strong>Cryptographic Anti-Tamper Passes:</strong> Each QR pass is uniquely signed and sent directly to individual attendees.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check2-circle text-success mt-1"></i>
+                  <span><strong>High-Speed Gate Scanner:</strong> Door staff use any smartphone camera to check in attendees with dual audio-visual feedback.</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Three-Tier User Roles & Capabilities -->
-  <section class="section-sm">
-    <div class="container-narrow">
-      <div class="text-center mb-5">
-        <p class="eyebrow mb-1">Role-Based Access Control (RBAC)</p>
-        <h2 class="text-white">Designed For Every Event Participant</h2>
-      </div>
-
-      <div class="row g-4">
-        <!-- Role 1: Attendee -->
-        <div class="col-lg-4">
-          <div class="role-card role-user">
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <div class="avatar-circle" style="width:36px; height:36px; background:var(--grad-cyan); font-size:0.85rem;">
-                <i class="bi bi-person"></i>
-              </div>
-              <div>
-                <h5 class="text-white fw-bold mb-0">Attendees</h5>
-                <span class="code-badge">ROLE_USER</span>
-              </div>
-            </div>
-            <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
-              <li><i class="bi bi-check2 text-info me-2"></i>Explore published events by category &amp; city</li>
-              <li><i class="bi bi-check2 text-info me-2"></i>Select ticket tiers with 10-minute reservation hold</li>
-              <li><i class="bi bi-check2 text-info me-2"></i>Checkout via PayHere Sandbox / Live gateway</li>
-              <li><i class="bi bi-check2 text-info me-2"></i>Receive anti-tamper QR passes and email receipts</li>
-              <li><i class="bi bi-check2 text-info me-2"></i>Ask natural language questions to Gemini AI</li>
-            </ul>
-          </div>
+    <!-- Built For Fans and Organizers -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="text-center mb-5">
+          <p class="eyebrow mb-1">Tailored Solutions</p>
+          <h2 class="text-white">Designed for Every Side of the Experience</h2>
         </div>
 
-        <!-- Role 2: Organizer -->
-        <div class="col-lg-4">
-          <div class="role-card role-organizer">
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <div class="avatar-circle" style="width:36px; height:36px; background:var(--grad-primary); font-size:0.85rem;">
-                <i class="bi bi-briefcase"></i>
+        <div class="row g-4">
+          <!-- Card 1: For Attendees -->
+          <div class="col-lg-6">
+            <div class="pillar-box">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="feature-icon-box mb-0" style="background: rgba(0, 242, 254, 0.15); color: var(--neon-cyan);">
+                  <i class="bi bi-ticket-perforated-fill"></i>
+                </div>
+                <div>
+                  <h4 class="text-white fw-bold mb-0">For Attendees &amp; Fans</h4>
+                  <span class="text-muted-soft small">Simple, transparent, and memorable</span>
+                </div>
               </div>
-              <div>
-                <h5 class="text-white fw-bold mb-0">Organizers</h5>
-                <span class="code-badge">ROLE_ORGANIZER</span>
-              </div>
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-2 mb-0" style="line-height: 1.7;">
+                <li><i class="bi bi-check2 text-info me-2"></i><strong>Effortless Discovery:</strong> Browse concerts, theatre, technology festivals, and lifestyle workshops.</li>
+                <li><i class="bi bi-check2 text-info me-2"></i><strong>Group Bookings Made Easy:</strong> Enter names and emails for every friend; each receives their own pass.</li>
+                <li><i class="bi bi-check2 text-info me-2"></i><strong>Offline-Ready QR Passes:</strong> Passes save directly to your phone dashboard and email inbox.</li>
+                <li><i class="bi bi-check2 text-info me-2"></i><strong>AI Concierge:</strong> Ask our smart event assistant for recommendations based on your preferences.</li>
+              </ul>
             </div>
-            <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
-              <li><i class="bi bi-check2 text-danger me-2"></i>Submit verified business applications (BRN, NIC)</li>
-              <li><i class="bi bi-check2 text-danger me-2"></i>Publish events with Cloudinary media banners</li>
-              <li><i class="bi bi-check2 text-danger me-2"></i>Configure tiered pricing (VIP, General, Early Bird)</li>
-              <li><i class="bi bi-check2 text-danger me-2"></i>Monitor live ticket sales &amp; attendee manifests</li>
-              <li><i class="bi bi-check2 text-danger me-2"></i>Gate scanner tool to validate cryptographic QR passes</li>
-            </ul>
           </div>
-        </div>
 
-        <!-- Role 3: Admin -->
-        <div class="col-lg-4">
-          <div class="role-card role-admin">
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <div class="avatar-circle" style="width:36px; height:36px; background:linear-gradient(135deg,#8B5CF6,#EC4899); font-size:0.85rem;">
-                <i class="bi bi-shield-lock"></i>
+          <!-- Card 2: For Organizers -->
+          <div class="col-lg-6">
+            <div class="pillar-box">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="feature-icon-box mb-0" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
+                  <i class="bi bi-megaphone-fill"></i>
+                </div>
+                <div>
+                  <h4 class="text-white fw-bold mb-0">For Event Organizers</h4>
+                  <span class="text-muted-soft small">Full control from ticketing to the door</span>
+                </div>
               </div>
-              <div>
-                <h5 class="text-white fw-bold mb-0">Administrators</h5>
-                <span class="code-badge">ROLE_ADMIN</span>
-              </div>
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-2 mb-0" style="line-height: 1.7;">
+                <li><i class="bi bi-check2 text-danger me-2"></i><strong>Rapid Event Launch:</strong> Publish events with multiple ticket tiers (VIP, Early Bird, General Admission).</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i><strong>Mobile Gate Check-In:</strong> Turn any team member's smartphone into a fast door scanner in seconds.</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i><strong>Live Attendee Manifests:</strong> Monitor tickets sold, pending revenue, and real-time gate attendance.</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i><strong>Verified Credentials:</strong> Business registration verification gives attendees total confidence.</li>
+              </ul>
             </div>
-            <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
-              <li><i class="bi bi-check2 text-warning me-2"></i>Review, approve, or reject organizer credentials</li>
-              <li><i class="bi bi-check2 text-warning me-2"></i>Manage user statuses (Active, Suspended, Roles)</li>
-              <li><i class="bi bi-check2 text-warning me-2"></i>Oversee categories, venues, and platform audit logs</li>
-              <li><i class="bi bi-check2 text-warning me-2"></i>Inspect live platform metrics and total gross revenue</li>
-              <li><i class="bi bi-check2 text-warning me-2"></i>System-wide maintenance and emergency event controls</li>
-            </ul>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Complete Technology Stack Breakdown Table -->
-  <section class="section-sm">
-    <div class="container-narrow">
-      <div class="filter-bar p-4 p-md-5">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-          <div>
-            <h4 class="text-white mb-1">Technology Stack Specification</h4>
-            <p class="text-muted-soft small mb-0">Comprehensive breakdown of frameworks, libraries, and protocols</p>
+    <!-- Our Core Values -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="filter-bar p-4 p-md-5">
+          <div class="text-center mb-5">
+            <p class="eyebrow mb-1">What Guides Us</p>
+            <h3 class="text-white">Our Foundational Values</h3>
           </div>
-          <span class="code-badge">Spring Boot 3.2.4 + Java 21 LTS</span>
-        </div>
 
-        <div class="table-responsive">
-          <table class="tech-table">
-            <thead>
-              <tr>
-                <th>Layer / Capability</th>
-                <th>Technology</th>
-                <th>Details &amp; Purpose</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-cpu text-primary me-2"></i>Language &amp; Runtime</td>
-                <td><span class="text-white fw-semibold">Java 21 (LTS)</span></td>
-                <td>Modern Java features (pattern matching, records, sealed types, virtual thread readiness).</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-box text-success me-2"></i>Framework</td>
-                <td><span class="text-white fw-semibold">Spring Boot 3.2.4</span></td>
-                <td>Core IoC, dependency injection, REST starters, async task scheduling, and transaction boundaries.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-shield-shaded text-danger me-2"></i>Security &amp; Auth</td>
-                <td><span class="text-white fw-semibold">Spring Security 6 + JJWT 0.11.5</span></td>
-                <td>Stateless JWT authentication, RBAC, BCrypt password hashing (cost factor 12), and CORS filters.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-database text-info me-2"></i>Persistence &amp; ORM</td>
-                <td><span class="text-white fw-semibold">Spring Data JPA &amp; Hibernate</span></td>
-                <td>15 interconnected domain entities, custom JPQL queries, and HikariCP connection pooling.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-hdd-network text-warning me-2"></i>Database Engine</td>
-                <td><span class="text-white fw-semibold">MySQL 8+ / 9.x</span></td>
-                <td>Relational schema with ACID compliance, hosted locally or on Aiven Cloud MySQL.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-arrow-repeat text-primary me-2"></i>Concurrency Control</td>
-                <td><span class="text-white fw-semibold">Pessimistic Locking (PESSIMISTIC_WRITE)</span></td>
-                <td>Prevents race conditions and ticket overselling during simultaneous peak checkouts.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-credit-card text-danger me-2"></i>Payment Gateway</td>
-                <td><span class="text-white fw-semibold">PayHere IPG</span></td>
-                <td>Sandbox/Live checkout hashes (SHA-256) and server-to-server webhook verification (MD5).</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Media &amp; CDN Storage</td>
-                <td><span class="text-white fw-semibold">Cloudinary CDN</span></td>
-                <td>Client-side direct unsigned image uploads for high-resolution event banners with fast edge content delivery.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-stars text-violet me-2" style="color:var(--neon-violet);"></i>Artificial Intelligence</td>
-                <td><span class="text-white fw-semibold">Google Gemini API</span></td>
-                <td>Natural language event concierge utilizing native tool / function calling with read-only safety.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-qr-code text-success me-2"></i>QR Code Generation</td>
-                <td><span class="text-white fw-semibold">Google ZXing 3.5.3</span></td>
-                <td>Dynamic PNG QR rendering of cryptographically signed HMAC-SHA256 admission tokens.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-envelope text-info me-2"></i>Email Service</td>
-                <td><span class="text-white fw-semibold">Spring Mail + Brevo SMTP</span></td>
-                <td>Asynchronous (<span class="code-badge">@Async</span>) delivery of HTML receipts, attendee passes, and 6-digit OTP codes.</td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-white"><i class="bi bi-browser-chrome text-light me-2"></i>Client Tier</td>
-                <td><span class="text-white fw-semibold">HTML5, CSS3 &amp; Vanilla JS (ES6+)</span></td>
-                <td>Lightweight, responsive dark luxe glassmorphism interface with auto-clearing token expiry wrappers.</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="row g-4 text-start">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center gap-2 mb-2 text-white fw-bold">
+                <i class="bi bi-shield-shaded text-primary fs-5"></i>
+                <span>Trust &amp; Transparency</span>
+              </div>
+              <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
+                Zero hidden booking markups, verified event organizers, and bank-grade payment security protect both fans and creators.
+              </p>
+            </div>
+
+            <div class="col-md-4">
+              <div class="d-flex align-items-center gap-2 mb-2 text-white fw-bold">
+                <i class="bi bi-speedometer2 text-danger fs-5"></i>
+                <span>Speed &amp; Reliability</span>
+              </div>
+              <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
+                From 60-second mobile checkouts to rapid gate scanning, our technology is engineered to keep queues moving and parties starting on time.
+              </p>
+            </div>
+
+            <div class="col-md-4">
+              <div class="d-flex align-items-center gap-2 mb-2 text-white fw-bold">
+                <i class="bi bi-people-fill text-success fs-5"></i>
+                <span>Community &amp; Culture</span>
+              </div>
+              <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
+                We are proud to celebrate Sri Lanka’s burgeoning music, arts, technology, and startup ecosystems by giving every voice a stage.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Trust, Privacy & Data Security Section -->
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- TAB PANE 2: SYSTEM ARCHITECTURE & TECH SPECS (ITS 1114 Coursework)-->
+  <!-- ================================================================= -->
+  <div class="about-tab-pane" id="paneTech">
+
+    <!-- Academic Banner -->
+    <section class="section-sm pt-2">
+      <div class="container-narrow" style="max-width: 950px;">
+        <div class="p-3 text-center filter-bar" style="background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.35);">
+          <div class="d-flex align-items-center justify-content-center gap-2 text-white mb-1">
+            <i class="bi bi-mortarboard-fill text-warning fs-5"></i>
+            <span class="fw-bold">ITS 1114 – Advanced API Development | Coursework Evaluation</span>
+          </div>
+          <p class="text-muted-soft small mb-0">
+            This tab showcases the technical architecture, enterprise design patterns, and engineering criteria implemented for the IJSE final evaluation.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Engineering Highlights Badges -->
+    <section class="section-sm">
+      <div class="container-narrow" style="max-width: 950px;">
+        <div class="row g-3 justify-content-center align-items-stretch">
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number">Pessimistic Locking</div>
+              <div class="stat-label">Zero Overselling / Concurrency</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number">10-Min Hold TTL</div>
+              <div class="stat-label">Auto-Release Scheduler</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number">HMAC-SHA256</div>
+              <div class="stat-label">Anti-Tamper QR Passes</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 d-flex">
+            <div class="stat-box w-100">
+              <div class="stat-number">Gemini AI</div>
+              <div class="stat-label">Tool / Function Calling</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Deep Dive: Core Engineering Capabilities -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="text-center mb-5">
+          <p class="eyebrow mb-1">Under The Hood</p>
+          <h2 class="text-white">Core Technical Systems &amp; Engineering Highlights</h2>
+        </div>
+
+        <div class="row g-4">
+          <!-- 1. Pessimistic Concurrency -->
+          <div class="col-md-6 col-lg-4">
+            <div class="feature-card">
+              <div class="feature-icon-box" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
+                <i class="bi bi-lock-fill"></i>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white fw-bold mb-0">Pessimistic Concurrency</h5>
+                <span class="code-badge">SELECT FOR UPDATE</span>
+              </div>
+              <p class="text-muted-soft small mb-0">
+                During high-demand concert ticket drops, standard database reads risk double-selling. EventSphere applies <span class="text-white">LockModeType.PESSIMISTIC_WRITE</span> to lock ticket type inventory rows at the MySQL engine level, guaranteeing strict atomic seat decrements.
+              </p>
+            </div>
+          </div>
+
+          <!-- 2. 10-Minute Cart Hold & Auto-Release -->
+          <div class="col-md-6 col-lg-4">
+            <div class="feature-card">
+              <div class="feature-icon-box" style="background: rgba(255, 183, 3, 0.15); color: var(--neon-amber);">
+                <i class="bi bi-hourglass-split"></i>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white fw-bold mb-0">10-Min Cart Hold &amp; TTL</h5>
+                <span class="code-badge">@Scheduled(60s)</span>
+              </div>
+              <p class="text-muted-soft small mb-0">
+                When an attendee selects tickets, the system provisionally holds them with a 10-minute TTL. The background <span class="text-white">BookingExpiryScheduler</span> runs every 60s, releasing abandoned tickets back to the public pool so seats are never locked indefinitely.
+              </p>
+            </div>
+          </div>
+
+          <!-- 3. Cryptographic HMAC-SHA256 QR Passes -->
+          <div class="col-md-6 col-lg-4">
+            <div class="feature-card">
+              <div class="feature-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
+                <i class="bi bi-qr-code-scan"></i>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white fw-bold mb-0">Anti-Tamper QR Passes</h5>
+                <span class="code-badge">HMAC-SHA256</span>
+              </div>
+              <p class="text-muted-soft small mb-0">
+                Admission passes do not expose raw sequential IDs. Instead, <span class="text-white">TicketSigningUtil</span> generates URL-safe tokens encoded as <span class="code-badge">Base64Url(ticketCode:signature)</span>. Gate scanners pre-verify signatures in memory before querying the DB.
+              </p>
+            </div>
+          </div>
+
+          <!-- 4. PayHere IPG & Webhooks -->
+          <div class="col-md-6 col-lg-4">
+            <div class="feature-card">
+              <div class="feature-icon-box" style="background: rgba(0, 242, 254, 0.15); color: var(--neon-cyan);">
+                <i class="bi bi-credit-card-2-front-fill"></i>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white fw-bold mb-0">PayHere IPG Pipeline</h5>
+                <span class="code-badge">MD5 Webhook Sig</span>
+              </div>
+              <p class="text-muted-soft small mb-0">
+                Checkouts are secured using SHA-256 merchant hashes. Asynchronous server-to-server webhook callbacks (<span class="code-badge">/api/v1/payments/notify</span>) validate PayHere’s MD5 signature, idempotently confirm bookings, issue tickets, and log audit payloads.
+              </p>
+            </div>
+          </div>
+
+          <!-- 5. Asynchronous Multi-Recipient Emailing -->
+          <div class="col-md-6 col-lg-4">
+            <div class="feature-card">
+              <div class="feature-icon-box" style="background: rgba(56, 189, 248, 0.15); color: var(--powder-blue);">
+                <i class="bi bi-envelope-paper-heart-fill"></i>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white fw-bold mb-0">Multi-Recipient Delivery</h5>
+                <span class="code-badge">@Async + Brevo</span>
+              </div>
+              <p class="text-muted-soft small mb-0">
+                Leveraging Spring’s <span class="text-white">@Async</span> task execution with Brevo SMTP, the system sends an itemized master order receipt to the buyer, while simultaneously dispatching personalized digital admission passes directly to individual guest attendee emails.
+              </p>
+            </div>
+          </div>
+
+          <!-- 6. Google Gemini AI Function Calling -->
+          <div class="col-md-6 col-lg-4">
+            <div class="feature-card">
+              <div class="feature-icon-box" style="background: rgba(139, 92, 246, 0.15); color: var(--neon-violet);">
+                <i class="bi bi-robot"></i>
+              </div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white fw-bold mb-0">Gemini Function Calling</h5>
+                <span class="code-badge">Read-Only Guardrails</span>
+              </div>
+              <p class="text-muted-soft small mb-0">
+                Powered by Google Gemini API with native tool calling (<span class="code-badge">search_events</span>, <span class="code-badge">get_event_details</span>, <span class="code-badge">get_my_bookings</span>). Safety guardrails keep the assistant strictly read-only, preventing unauthorized state alterations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-Tier Layered Architecture Diagram -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="filter-bar p-4 p-md-5">
+          <div class="text-center mb-4">
+            <span class="pill-badge pill-badge-lavender mb-2">Clean Enterprise Architecture</span>
+            <h3 class="text-white">Three-Tier Decoupled System Architecture</h3>
+            <p class="text-muted-soft mx-auto small" style="max-width: 650px;">
+              Adhering to strict separation of concerns across presentation, business logic, persistence, and external service layers.
+            </p>
+          </div>
+
+          <div class="row g-3 text-start">
+            <div class="col-md-3">
+              <div class="arch-flow-node h-100">
+                <div class="text-primary fs-3 mb-2"><i class="bi bi-laptop"></i></div>
+                <h6 class="text-white fw-bold mb-1">Presentation Tier</h6>
+                <p class="text-muted-soft small mb-2">Responsive Web, Mobile &amp; Gate Scanner</p>
+                <span class="code-badge">HTML5 / Vanilla JS / CSS</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="arch-flow-node h-100" style="border-color: rgba(255, 46, 116, 0.4);">
+                <div class="text-danger fs-3 mb-2"><i class="bi bi-shield-check"></i></div>
+                <h6 class="text-white fw-bold mb-1">Security &amp; API</h6>
+                <p class="text-muted-soft small mb-2">Stateless JWT Auth, CORS, RBAC &amp; DTOs</p>
+                <span class="code-badge">Spring Security 6</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="arch-flow-node h-100" style="border-color: rgba(139, 92, 246, 0.4);">
+                <div class="text-violet fs-3 mb-2" style="color:var(--neon-violet);"><i class="bi bi-gear-wide-connected"></i></div>
+                <h6 class="text-white fw-bold mb-1">Core Logic &amp; Services</h6>
+                <p class="text-muted-soft small mb-2">Concurrency Control, TTL Jobs, QR Engine</p>
+                <span class="code-badge">Spring Boot 3.2.4</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="arch-flow-node h-100" style="border-color: rgba(0, 242, 254, 0.4);">
+                <div class="text-info fs-3 mb-2"><i class="bi bi-database-fill-check"></i></div>
+                <h6 class="text-white fw-bold mb-1">Persistence &amp; Cloud</h6>
+                <p class="text-muted-soft small mb-2">MySQL, PayHere, Gemini, Cloudinary &amp; Brevo</p>
+                <span class="code-badge">Hibernate &amp; Cloud Services</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Three-Tier User Roles & Capabilities -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="text-center mb-5">
+          <p class="eyebrow mb-1">Role-Based Access Control (RBAC)</p>
+          <h2 class="text-white">Designed For Every Event Participant</h2>
+        </div>
+
+        <div class="row g-4">
+          <!-- Role 1: Attendee -->
+          <div class="col-lg-4">
+            <div class="role-card role-user">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="avatar-circle" style="width:36px; height:36px; background:var(--grad-cyan); font-size:0.85rem;">
+                  <i class="bi bi-person"></i>
+                </div>
+                <div>
+                  <h5 class="text-white fw-bold mb-0">Attendees</h5>
+                  <span class="code-badge">ROLE_USER</span>
+                </div>
+              </div>
+              <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
+                <li><i class="bi bi-check2 text-info me-2"></i>Explore published events by category &amp; city</li>
+                <li><i class="bi bi-check2 text-info me-2"></i>Select ticket tiers with 10-minute reservation hold</li>
+                <li><i class="bi bi-check2 text-info me-2"></i>Checkout via PayHere Sandbox / Live gateway</li>
+                <li><i class="bi bi-check2 text-info me-2"></i>Receive anti-tamper QR passes and email receipts</li>
+                <li><i class="bi bi-check2 text-info me-2"></i>Ask natural language questions to Gemini AI</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Role 2: Organizer -->
+          <div class="col-lg-4">
+            <div class="role-card role-organizer">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="avatar-circle" style="width:36px; height:36px; background:var(--grad-primary); font-size:0.85rem;">
+                  <i class="bi bi-briefcase"></i>
+                </div>
+                <div>
+                  <h5 class="text-white fw-bold mb-0">Organizers</h5>
+                  <span class="code-badge">ROLE_ORGANIZER</span>
+                </div>
+              </div>
+              <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
+                <li><i class="bi bi-check2 text-danger me-2"></i>Submit verified business applications (BRN, NIC)</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i>Publish events with Cloudinary media banners</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i>Configure tiered pricing (VIP, General, Early Bird)</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i>Monitor live ticket sales &amp; attendee manifests</li>
+                <li><i class="bi bi-check2 text-danger me-2"></i>Gate scanner tool to validate cryptographic QR passes</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Role 3: Admin -->
+          <div class="col-lg-4">
+            <div class="role-card role-admin">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="avatar-circle" style="width:36px; height:36px; background:linear-gradient(135deg,#8B5CF6,#EC4899); font-size:0.85rem;">
+                  <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                  <h5 class="text-white fw-bold mb-0">Administrators</h5>
+                  <span class="code-badge">ROLE_ADMIN</span>
+                </div>
+              </div>
+              <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
+                <li><i class="bi bi-check2 text-warning me-2"></i>Review, approve, or reject organizer credentials</li>
+                <li><i class="bi bi-check2 text-warning me-2"></i>Manage user statuses (Active, Suspended, Roles)</li>
+                <li><i class="bi bi-check2 text-warning me-2"></i>Oversee categories, venues, and platform audit logs</li>
+                <li><i class="bi bi-check2 text-warning me-2"></i>Inspect live platform metrics and total gross revenue</li>
+                <li><i class="bi bi-check2 text-warning me-2"></i>System-wide maintenance and emergency event controls</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Complete Technology Stack Breakdown Table -->
+    <section class="section-sm">
+      <div class="container-narrow">
+        <div class="filter-bar p-4 p-md-5">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+            <div>
+              <h4 class="text-white mb-1">Technology Stack Specification</h4>
+              <p class="text-muted-soft small mb-0">Comprehensive breakdown of frameworks, libraries, and protocols</p>
+            </div>
+            <span class="code-badge">Spring Boot 3.2.4 + Java 21 LTS</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="tech-table">
+              <thead>
+                <tr>
+                  <th>Layer / Capability</th>
+                  <th>Technology</th>
+                  <th>Details &amp; Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-cpu text-primary me-2"></i>Language &amp; Runtime</td>
+                  <td><span class="text-white fw-semibold">Java 21 (LTS)</span></td>
+                  <td>Modern Java features (pattern matching, records, sealed types, virtual thread readiness).</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-box text-success me-2"></i>Framework</td>
+                  <td><span class="text-white fw-semibold">Spring Boot 3.2.4</span></td>
+                  <td>Core IoC, dependency injection, REST starters, async task scheduling, and transaction boundaries.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-shield-shaded text-danger me-2"></i>Security &amp; Auth</td>
+                  <td><span class="text-white fw-semibold">Spring Security 6 + JJWT 0.11.5</span></td>
+                  <td>Stateless JWT authentication, RBAC, BCrypt password hashing (cost factor 12), and CORS filters.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-database text-info me-2"></i>Persistence &amp; ORM</td>
+                  <td><span class="text-white fw-semibold">Spring Data JPA &amp; Hibernate</span></td>
+                  <td>15 interconnected domain entities, custom JPQL queries, and HikariCP connection pooling.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-hdd-network text-warning me-2"></i>Database Engine</td>
+                  <td><span class="text-white fw-semibold">MySQL 8+ / 9.x</span></td>
+                  <td>Relational schema with ACID compliance, hosted locally or on Aiven Cloud MySQL.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-arrow-repeat text-primary me-2"></i>Concurrency Control</td>
+                  <td><span class="text-white fw-semibold">Pessimistic Locking (PESSIMISTIC_WRITE)</span></td>
+                  <td>Prevents race conditions and ticket overselling during simultaneous peak checkouts.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-credit-card text-danger me-2"></i>Payment Gateway</td>
+                  <td><span class="text-white fw-semibold">PayHere IPG</span></td>
+                  <td>Sandbox/Live checkout hashes (SHA-256) and server-to-server webhook verification (MD5).</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Media &amp; CDN Storage</td>
+                  <td><span class="text-white fw-semibold">Cloudinary CDN</span></td>
+                  <td>Client-side direct unsigned image uploads for high-resolution event banners with fast edge content delivery.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-stars text-violet me-2" style="color:var(--neon-violet);"></i>Artificial Intelligence</td>
+                  <td><span class="text-white fw-semibold">Google Gemini API</span></td>
+                  <td>Natural language event concierge utilizing native tool / function calling with read-only safety.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-qr-code text-success me-2"></i>QR Code Generation</td>
+                  <td><span class="text-white fw-semibold">Google ZXing 3.5.3</span></td>
+                  <td>Dynamic PNG QR rendering of cryptographically signed HMAC-SHA256 admission tokens.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-envelope text-info me-2"></i>Email Service</td>
+                  <td><span class="text-white fw-semibold">Spring Mail + Brevo SMTP</span></td>
+                  <td>Asynchronous (<span class="code-badge">@Async</span>) delivery of HTML receipts, attendee passes, and 6-digit OTP codes.</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-white"><i class="bi bi-browser-chrome text-light me-2"></i>Client Tier</td>
+                  <td><span class="text-white fw-semibold">HTML5, CSS3 &amp; Vanilla JS (ES6+)</span></td>
+                  <td>Lightweight, responsive dark luxe glassmorphism interface with auto-clearing token expiry wrappers.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Trust, Privacy & Data Security Section (Shared) -->
   <section class="section-sm" id="privacy">
     <div class="container-narrow">
       <div class="filter-bar p-4 p-md-5">
@@ -618,7 +940,7 @@
           </div>
           <div>
             <h3 class="mb-1 text-white">Trust, Security &amp; Data Privacy</h3>
-            <p class="text-muted-soft mb-0 small">Our enterprise commitment to safeguarding attendee data and financial transactions</p>
+            <p class="text-muted-soft mb-0 small">Our commitment to safeguarding attendee data and financial transactions</p>
           </div>
         </div>
 
@@ -692,7 +1014,7 @@
         <div class="col-6 col-lg-3">
           <h6>Company</h6>
           <a href="about.html" class="d-block mb-1">About EventSphere</a>
-          <a href="#privacy" class="d-block mb-1">Privacy</a>
+          <a href="#privacy" class="d-block mb-1">Privacy &amp; Security</a>
         </div>
       </div>
       <div class="footer-bottom d-flex justify-content-between flex-wrap gap-2 mt-4 pt-3 border-top">
@@ -711,6 +1033,45 @@
   <script src="../js/utils/toast.js"></script>
   <script src="../js/utils/nav.js"></script>
   <script src="../js/utils/ai-widget.js"></script>
+
+  <!-- Interactive Tab Switcher Script -->
+  <script>
+    (function () {
+      const btnStory = document.getElementById('tabBtnStory');
+      const btnTech = document.getElementById('tabBtnTech');
+      const paneStory = document.getElementById('paneStory');
+      const paneTech = document.getElementById('paneTech');
+
+      function switchTab(activeBtn, targetPane, hash) {
+        // Reset all buttons
+        [btnStory, btnTech].forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        // Reset all panes
+        [paneStory, paneTech].forEach(p => p.classList.remove('active'));
+
+        // Activate selected
+        activeBtn.classList.add('active');
+        activeBtn.setAttribute('aria-selected', 'true');
+        targetPane.classList.add('active');
+
+        // Update URL hash without jumping
+        if (history.replaceState) {
+          history.replaceState(null, null, hash ? ('#' + hash) : ' ');
+        }
+      }
+
+      btnStory.addEventListener('click', () => switchTab(btnStory, paneStory, 'story'));
+      btnTech.addEventListener('click', () => switchTab(btnTech, paneTech, 'architecture'));
+
+      // Check URL hash on page load (e.g. about.html#architecture or #tech)
+      const currentHash = window.location.hash.toLowerCase();
+      if (currentHash === '#architecture' || currentHash === '#tech' || currentHash === '#engineering') {
+        switchTab(btnTech, paneTech, 'architecture');
+      }
+    })();
+  </script>
 </body>
 
 </html>
