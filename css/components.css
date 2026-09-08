@@ -197,6 +197,13 @@
   background: rgba(255, 46, 116, 0.25);
   color: #FFF;
 }
+.qty-stepper button:disabled{
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
 .qty-stepper .qty-val{ min-width: 22px; text-align: center; font-weight: 700; color: #FFF; }
 
 /* ---------- Step indicator ---------- */

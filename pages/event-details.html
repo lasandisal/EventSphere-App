@@ -101,15 +101,35 @@ function ticketTypeCard(tt) {
       <div>
         <div class="tt-name">${tt.name}</div>
         <div class="tt-price">LKR ${tt.price ? tt.price.toLocaleString() : '0'}</div>
-        <div class="text-muted-soft" style="font-size:0.8rem;">Available: ${availableQty}</div>
+        <div class="avail-status text-muted-soft" style="font-size:0.8rem;">
+          Available: <span class="avail-num fw-bold text-white">${availableQty}</span>
+        </div>
       </div>
       <div class="qty-stepper">
-        <button type="button" class="qty-minus">−</button>
+        <button type="button" class="qty-minus" disabled>−</button>
         <span class="qty-val">0</span>
-        <button type="button" class="qty-plus">+</button>
+        <button type="button" class="qty-plus" ${availableQty <= 0 ? 'disabled' : ''}>+</button>
       </div>
     </div>
   </div>`;
+}
+
+function updateBookingSummary() {
+  let totalQty = 0;
+  let totalPrice = 0;
+  Object.values(selectedTickets).forEach(t => {
+    if (t.qty > 0) {
+      totalQty += t.qty;
+      totalPrice += t.qty * t.price;
+    }
+  });
+
+  const bookBtn = document.getElementById('bookBtn');
+  if (totalQty > 0) {
+    bookBtn.innerHTML = `Book ${totalQty} ${totalQty === 1 ? 'Ticket' : 'Tickets'} • LKR ${totalPrice.toLocaleString()}`;
+  } else {
+    bookBtn.innerHTML = `Book Tickets`;
+  }
 }
 
 function wireTicketCards(types) {
@@ -120,19 +140,46 @@ function wireTicketCards(types) {
 
     const availableQty = tt.availableQuantity ?? tt.available ?? 0;
     const valEl = card.querySelector('.qty-val');
+    const availStatusEl = card.querySelector('.avail-status');
+    const minusBtn = card.querySelector('.qty-minus');
+    const plusBtn = card.querySelector('.qty-plus');
 
-    card.querySelector('.qty-plus').addEventListener('click', () => {
-      const qty = Math.min((selectedTickets[id]?.qty || 0) + 1, availableQty);
-      selectedTickets[id] = { qty, price: tt.price, name: tt.name };
+    function updateCardUI(qty) {
       valEl.textContent = qty;
+      const remaining = availableQty - qty;
+
+      if (qty === 0) {
+        availStatusEl.innerHTML = `Available: <span class="avail-num fw-bold text-white">${availableQty}</span>`;
+        minusBtn.disabled = true;
+        plusBtn.disabled = availableQty <= 0;
+      } else if (remaining > 0) {
+        availStatusEl.innerHTML = `Available: <span class="avail-num fw-bold text-white">${remaining}</span> <span class="badge ms-1" style="background:rgba(16, 185, 129, 0.2); color:#10B981; font-size:0.74rem;">${qty} selected</span>`;
+        minusBtn.disabled = false;
+        plusBtn.disabled = false;
+      } else {
+        availStatusEl.innerHTML = `<span class="text-warning small"><i class="bi bi-exclamation-circle me-1"></i>0 left <span class="badge bg-warning text-dark ms-1" style="font-size:0.72rem;">Max selected</span></span>`;
+        minusBtn.disabled = false;
+        plusBtn.disabled = true;
+      }
+
       card.classList.toggle('selected', qty > 0);
+      updateBookingSummary();
+    }
+
+    plusBtn.addEventListener('click', () => {
+      const currentQty = selectedTickets[id]?.qty || 0;
+      if (currentQty >= availableQty) return;
+      const qty = currentQty + 1;
+      selectedTickets[id] = { qty, price: tt.price, name: tt.name };
+      updateCardUI(qty);
     });
 
-    card.querySelector('.qty-minus').addEventListener('click', () => {
-      const qty = Math.max((selectedTickets[id]?.qty || 0) - 1, 0);
+    minusBtn.addEventListener('click', () => {
+      const currentQty = selectedTickets[id]?.qty || 0;
+      if (currentQty <= 0) return;
+      const qty = currentQty - 1;
       selectedTickets[id] = { qty, price: tt.price, name: tt.name };
-      valEl.textContent = qty;
-      card.classList.toggle('selected', qty > 0);
+      updateCardUI(qty);
     });
   });
 }
