@@ -63,28 +63,60 @@
     background: rgba(255, 255, 255, 0.06);
   }
 
-  /* Dashboard Shell & Sidebar */
-  .dash-shell { flex-direction: column; }
+  /* Dashboard Shell & Sidebar (Horizontal Sticky Tab Bar on Tablet & Mobile) */
+  .dash-shell {
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
   .es-sidebar {
-    width: 100%;
-    min-height: auto;
-    position: static;
-    display: flex;
-    overflow-x: auto;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+    align-self: stretch !important;
+    position: sticky !important;
+    top: 56px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch;
-    gap: 0.5rem;
-    padding: 0.85rem 1rem;
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 0.5rem !important;
+    padding: 0.65rem 1rem !important;
+    background: rgba(14, 18, 28, 0.96) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     scrollbar-width: none;
+    z-index: 995;
   }
-  .es-sidebar::-webkit-scrollbar { display: none; }
+  .es-sidebar::-webkit-scrollbar {
+    display: none;
+  }
   .es-sidebar .side-link {
-    white-space: nowrap;
-    margin-bottom: 0;
-    padding: 0.6rem 1rem;
+    display: inline-flex !important;
+    align-items: center !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    margin-bottom: 0 !important;
+    padding: 0.5rem 0.95rem !important;
+    font-size: 0.85rem !important;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
   }
-  .dash-main { padding: 1.5rem 1rem; }
+  .dash-main {
+    padding: 1.25rem 1rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .table-card {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
 
   /* Auth Visual Split */
   .auth-split { min-height: 100vh; }
@@ -254,6 +286,34 @@
   }
   .stat-card .value {
     font-size: 1.5rem !important;
+  }
+
+  /* Dashboard Adjustments on Mobile Phones */
+  .es-sidebar {
+    top: 56px !important;
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.4rem !important;
+  }
+  .es-sidebar .side-link {
+    padding: 0.45rem 0.8rem !important;
+    font-size: 0.82rem !important;
+    gap: 0.45rem !important;
+  }
+  .dash-main {
+    padding: 1rem 0.75rem !important;
+  }
+  .chart-card {
+    padding: 1.1rem 0.9rem !important;
+  }
+  .bar-chart {
+    height: 140px !important;
+    gap: 0.4rem !important;
+    margin-top: 1rem !important;
+    padding-top: 1.5rem !important;
+  }
+  .bar-chart .bar .bar-label {
+    font-size: 0.68rem !important;
+    bottom: -20px !important;
   }
 
   /* AI Floating Assistant Drawer on Mobile */
