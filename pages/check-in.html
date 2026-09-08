@@ -118,23 +118,23 @@
       <div id="qr-reader"></div>
       <i class="bi bi-qr-code-scan icon-camera" id="cameraPlaceholderIcon"></i>
     </div>
-    <p id="cameraFallbackMsg" class="text-muted-soft mb-4" style="font-size:0.85rem;"></p>
+    <p id="cameraFallbackMsg" class="text-muted-soft mb-2" style="font-size:0.85rem;"></p>
 
-    <!-- Manual Ticket Search -->
-    <div class="text-muted-soft mb-2 mt-3" style="font-size:0.85rem;">or verify manually</div>
-    <div class="hero-search mx-auto mb-4">
-      <i class="bi bi-search text-muted"></i>
-      <input type="text" id="manualCode" placeholder="Paste ticket code or signed payload">
-      <button class="btn btn-primary btn-sm" id="manualSearch">Verify</button>
-    </div>
-
-    <!-- Live Result Card -->
-    <div id="resultCard" class="d-none filter-bar text-start">
+    <!-- Live Result Card: Positioned directly under scanner for immediate visibility! -->
+    <div id="resultCard" class="d-none filter-bar text-start my-3">
       <div class="d-flex align-items-center justify-content-between gap-2 mb-3" id="resultBadgeRow"></div>
       <div id="resultDetails"></div>
       <button class="btn btn-primary w-100 mt-3" id="scanNextBtn">
         <i class="bi bi-qr-code-scan me-1"></i> Scan Next Attendee
       </button>
+    </div>
+
+    <!-- Manual Ticket Search (Below the scanner card) -->
+    <div class="text-muted-soft mb-2 mt-4" style="font-size:0.85rem;">or verify manually</div>
+    <div class="hero-search mx-auto mb-4">
+      <i class="bi bi-search text-muted"></i>
+      <input type="text" id="manualCode" placeholder="Paste ticket code or signed payload">
+      <button class="btn btn-primary btn-sm" id="manualSearch">Verify</button>
     </div>
   </div>
 </section>
@@ -303,7 +303,9 @@ function renderSuccess(data) {
     <div class="text-center text-muted-soft" style="font-size:0.72rem;">Camera auto-resumes in 4.5 seconds...</div>
   `;
 
-  document.getElementById('resultCard').classList.remove('d-none');
+  const card = document.getElementById('resultCard');
+  card.classList.remove('d-none');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   esToast('Entry granted: ' + attendeeName, 'success');
 
   // Auto-resume camera in 4.5s
@@ -338,7 +340,9 @@ function renderRejection(message) {
     <div class="text-center text-muted-soft" style="font-size:0.72rem;">Camera auto-resumes in 6 seconds...</div>
   `;
 
-  document.getElementById('resultCard').classList.remove('d-none');
+  const card = document.getElementById('resultCard');
+  card.classList.remove('d-none');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   esToast(message, 'error');
 
   // Auto-resume camera in 6s
@@ -353,7 +357,8 @@ function unlockAndResume() {
     clearTimeout(autoResetTimer);
     autoResetTimer = null;
   }
-  document.getElementById('resultCard').classList.add('d-none');
+  const card = document.getElementById('resultCard');
+  if (card) card.classList.add('d-none');
   scanLocked = false;
   if (activeScanner) {
     try { activeScanner.resume(); } catch (e) {}
@@ -367,7 +372,30 @@ document.getElementById('scanNextBtn').addEventListener('click', unlockAndResume
 async function processTicket(signedPayload) {
   if (scanLocked) return;
   scanLocked = true;
-  document.getElementById('resultCard').classList.add('d-none');
+
+  if (autoResetTimer) {
+    clearTimeout(autoResetTimer);
+    autoResetTimer = null;
+  }
+
+  // Pause camera scanner during server verification
+  if (activeScanner) {
+    try { activeScanner.pause(); } catch (e) {}
+  }
+
+  // Display immediate loading state on result card
+  const resultCard = document.getElementById('resultCard');
+  resultCard.classList.remove('d-none');
+  document.getElementById('resultBadgeRow').innerHTML = `
+    <span class="badge bg-secondary d-inline-flex align-items-center gap-2 px-3 py-2">
+      <span class="spinner-border spinner-border-sm" role="status"></span>
+      <span>Verifying ticket...</span>
+    </span>
+  `;
+  document.getElementById('resultDetails').innerHTML = `
+    <p class="text-muted-soft small mb-0 mt-2">Checking ticket signature against EventSphere database...</p>
+  `;
+  resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
     const data = await CheckInAPI.scan(signedPayload);
@@ -405,8 +433,6 @@ function initCamera() {
       { fps: 10, qrbox: { width: 220, height: 220 } },
       (decodedText) => {
         if (scanLocked) return;
-        scanLocked = true;
-        try { scanner.pause(); } catch (e) {}
         processTicket(decodedText);
       },
       () => { /* No QR in frame this tick */ }
