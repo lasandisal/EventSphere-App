@@ -1,7 +1,18 @@
-/* Floating "EventSphere Assistant" — injected once per page.
-   Calls AssistantAPI.chat(); falls back to a canned response using
-   EsMock so the widget is fully demoable without a backend. */
+/* Floating "EventSphere Assistant" — powered by Google Gemini API.
+   Communicates with AssistantController (/api/v1/assistant/chat). */
 (function () {
+  // Ensure AssistantAPI is always available even if organizer.js wasn't explicitly loaded on this page
+  if (typeof window !== 'undefined' && !window.AssistantAPI) {
+    window.AssistantAPI = {
+      chat(message, context) {
+        if (typeof esFetch === 'function') {
+          return esFetch('/assistant/chat', { method: 'POST', body: { message, context } });
+        }
+        return Promise.reject(new Error('API fetch wrapper not initialized'));
+      }
+    };
+  }
+
   function injectMarkup() {
     if (document.getElementById('aiFab')) return;
     const wrap = document.createElement('div');
@@ -36,33 +47,63 @@
 
   function eventMiniCard(ev) {
     return `<div class="mini-card">
-      <div class="fw-semibold" style="font-family:var(--font-display);font-size:1rem;">${ev.title}</div>
-      <div class="text-muted-soft" style="font-size:0.78rem;">${ev.date} · ${ev.venue}</div>
+      <div class="fw-semibold" style="font-family:var(--font-display);font-size:1rem;">${ev.title || 'Event'}</div>
+      <div class="text-muted-soft" style="font-size:0.78rem;">${ev.date || ''} · ${ev.venue || ''}</div>
       <a href="${esPathPrefix().toPages}event-details.html?id=${ev.id}" class="btn btn-quiet btn-sm mt-2">View Event</a>
     </div>`;
   }
 
-  function addMessage(text, who) {
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text ?? '';
+    return div.innerHTML;
+  }
+
+  function formatBotReply(reply) {
+    if (!reply) return "Here's what I found ✨";
+    return escapeHtml(reply).replace(/\\n/g, '<br>');
+  }
+
+  function addMessage(htmlContent, who) {
     const body = document.getElementById('aiBody');
+    if (!body) return null;
     const div = document.createElement('div');
     div.className = `ai-msg ${who}`;
-    div.innerHTML = text;
+    div.innerHTML = htmlContent;
     body.appendChild(div);
     body.scrollTop = body.scrollHeight;
+    return div;
   }
 
   async function handlePrompt(prompt) {
-  addMessage(prompt, 'user');
-  document.getElementById('aiInput').value = '';
+    if (!prompt || !prompt.trim()) return;
+    const cleanPrompt = prompt.trim();
+    addMessage(escapeHtml(cleanPrompt), 'user');
+    const input = document.getElementById('aiInput');
+    if (input) input.value = '';
 
-  try {
-    const res = await AssistantAPI.chat(prompt);
-    addMessage(res.reply || "Here's what I found ✨", 'bot');
-    (res.events || []).forEach(ev => addMessage(eventMiniCard(ev), 'bot'));
-  } catch (err) {
-    addMessage("Sorry, I couldn't process your request right now. Please try again later.", 'bot');
+    // Thinking indicator bubble
+    const thinkingEl = addMessage(
+      '<span class="spinner-border spinner-border-sm me-2" role="status" style="width:0.8rem; height:0.8rem;"></span>Thinking...',
+      'bot'
+    );
+
+    try {
+      const res = await window.AssistantAPI.chat(cleanPrompt);
+      if (thinkingEl && thinkingEl.parentNode) thinkingEl.remove();
+      
+      const replyText = (res && typeof res === 'object') ? (res.reply || "Here's what I found ✨") : String(res);
+      addMessage(formatBotReply(replyText), 'bot');
+
+      if (res && Array.isArray(res.events)) {
+        res.events.forEach(ev => addMessage(eventMiniCard(ev), 'bot'));
+      }
+    } catch (err) {
+      if (thinkingEl && thinkingEl.parentNode) thinkingEl.remove();
+      console.error('EventSphere Assistant Error:', err);
+      addMessage("Sorry, I couldn't reach the AI assistant right now. Please check your connection and try again.", 'bot');
+    }
   }
-}
 
   document.addEventListener('DOMContentLoaded', () => {
     injectMarkup();
