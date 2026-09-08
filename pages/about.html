@@ -26,48 +26,72 @@
     
     /* Segmented Tab Switcher */
     .about-tab-nav {
-      background: rgba(18, 22, 34, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(18, 22, 34, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 999px;
       padding: 0.35rem;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 0.35rem;
+      width: 100%;
+      max-width: 480px;
+      margin: 1.5rem auto 0 auto;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      margin: 1.5rem auto 0 auto;
     }
     .about-tab-btn {
+      flex: 1 1 50%;
       border: none;
       background: transparent;
-      color: #9CA3AF;
+      color: #CBD5E1;
       font-weight: 600;
-      font-size: 0.92rem;
-      padding: 0.65rem 1.4rem;
+      font-size: 0.88rem;
+      padding: 0.65rem 0.8rem;
       border-radius: 999px;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: center;
+      gap: 0.4rem;
       white-space: nowrap;
+      text-align: center;
     }
     .about-tab-btn:hover {
       color: #FFFFFF;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.08);
     }
     .about-tab-btn.active {
       background: var(--grad-primary);
       color: #FFFFFF;
-      box-shadow: 0 4px 18px rgba(255, 46, 116, 0.4);
+      box-shadow: 0 4px 18px rgba(255, 46, 116, 0.45);
+      font-weight: 700;
     }
     .about-tab-btn .badge-academic {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.22);
+      color: #FFF;
       font-size: 0.72rem;
-      padding: 0.2rem 0.5rem;
+      font-weight: 700;
+      padding: 0.18rem 0.45rem;
       border-radius: 999px;
-      margin-left: 0.25rem;
+      margin-left: 0.2rem;
+    }
+
+    @media (max-width: 576px) {
+      .about-tab-nav {
+        max-width: 100%;
+        padding: 0.28rem;
+      }
+      .about-tab-btn {
+        font-size: 0.78rem;
+        padding: 0.55rem 0.45rem;
+        gap: 0.25rem;
+      }
+      .about-tab-btn .badge-academic {
+        font-size: 0.64rem;
+        padding: 0.12rem 0.35rem;
+        margin-left: 0.15rem;
+      }
     }
 
     /* Tab Panes */
@@ -312,11 +336,13 @@
         <div class="about-tab-nav" role="tablist">
           <button class="about-tab-btn active" id="tabBtnStory" data-target="#paneStory" role="tab" aria-selected="true">
             <i class="bi bi-heart-fill text-danger"></i>
-            <span>Our Story &amp; Platform</span>
+            <span class="d-none d-sm-inline">Our Story &amp; Platform</span>
+            <span class="d-inline d-sm-none">Our Story</span>
           </button>
           <button class="about-tab-btn" id="tabBtnTech" data-target="#paneTech" role="tab" aria-selected="false">
             <i class="bi bi-cpu text-info"></i>
-            <span>Engineering &amp; Architecture</span>
+            <span class="d-none d-sm-inline">Engineering &amp; Architecture</span>
+            <span class="d-inline d-sm-none">Tech Architecture</span>
             <span class="badge-academic">ITS 1114</span>
           </button>
         </div>
