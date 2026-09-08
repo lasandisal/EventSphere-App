@@ -61,7 +61,54 @@
 
   function formatBotReply(reply) {
     if (!reply) return "Here's what I found ✨";
-    return escapeHtml(reply).replace(/\\n/g, '<br>');
+
+    // 1. Normalize line endings (both actual newlines and escaped \n strings)
+    let text = String(reply).replace(/\r\n/g, '\n').replace(/\\n/g, '\n');
+
+    // 2. Escape HTML entities to prevent XSS
+    text = escapeHtml(text);
+
+    // 3. Parse Markdown inline formatting
+    // Bold: **text** or __text__
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+    // Inline code: `code`
+    text = text.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.12);padding:2px 6px;border-radius:4px;font-size:0.85em;color:#ff79c6;">$1</code>');
+
+    // 4. Parse Markdown bullet points (*, -, •) and paragraphs
+    const lines = text.split('\n');
+    const result = [];
+    let inList = false;
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      const bulletMatch = line.match(/^[*•\-]\s+(.*)$/);
+
+      if (bulletMatch) {
+        if (!inList) {
+          result.push('<ul style="margin:0.4rem 0;padding-left:1.2rem;list-style-type:disc;">');
+          inList = true;
+        }
+        result.push(`<li style="margin-bottom:0.25rem;">${bulletMatch[1]}</li>`);
+      } else {
+        if (inList) {
+          result.push('</ul>');
+          inList = false;
+        }
+        if (line === '') {
+          result.push('<div style="height:0.35rem;"></div>');
+        } else {
+          result.push(`<div>${line}</div>`);
+        }
+      }
+    }
+
+    if (inList) {
+      result.push('</ul>');
+    }
+
+    return result.join('');
   }
 
   function addMessage(htmlContent, who) {
