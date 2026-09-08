@@ -250,7 +250,6 @@ eventsphere_frontend/
 
 ## 🎓 Academic Module Information
 
-* **Course:** Final Coursework
-* **Module:** ITS 1114 – Advanced API Development
+* **Course:** Semester 2 — AAD (Advanced API Development — ITS 1114) Module Coursework
 * **Institution:** IJSE (Institute of Software Engineering)
 * **Author:** Lasandi Salwathura
