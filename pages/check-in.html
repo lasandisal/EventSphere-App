@@ -25,7 +25,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.85rem 1.1rem;
+    padding: 0.9rem 1.1rem;
     border-radius: var(--radius-md);
     margin-bottom: 0.9rem;
     font-weight: 700;
@@ -34,13 +34,36 @@
   .session-counter-badge {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.4rem 1rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 999px;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     color: #9CA3AF;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
+  }
+  .mode-toggle-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #CBD5E1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .mode-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFF;
+  }
+  .mode-toggle-btn.active {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #10B981;
   }
   .gate-granted-badge {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 100%);
@@ -85,6 +108,14 @@
     from { width: 100%; }
     to { width: 0%; }
   }
+  .scan-next-btn-large {
+    padding: 0.85rem 1.25rem !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 4px 20px rgba(255, 46, 116, 0.35);
+  }
 </style>
 </head>
 <body data-page="organizer">
@@ -103,12 +134,17 @@
     <h2 class="mb-2">Gate Check-In & Scanner</h2>
     <p class="text-muted-soft mb-3">Scan attendee ticket QR passes or enter ticket payload manually.</p>
 
-    <!-- Session Counter Badge -->
-    <div class="d-flex justify-content-center align-items-center gap-2 mb-4">
+    <!-- Shift Counter & Auto-Advance Control Toolbar -->
+    <div class="d-flex justify-content-center align-items-center flex-wrap gap-2 mb-4">
       <span class="session-counter-badge" id="sessionCounterBadge">
         <i class="bi bi-person-check-fill text-success"></i>
-        <span>Session: <strong class="text-white" id="sessionCountText">0</strong> checked in</span>
+        <span>Shift: <strong class="text-white" id="sessionCountText">0</strong> admitted</span>
       </span>
+
+      <button class="mode-toggle-btn" id="autoAdvanceToggle" title="Toggle between manual confirmation and auto-resume">
+        <i class="bi bi-hand-index-thumb"></i>
+        <span id="autoAdvanceLabel">Manual Mode (Tap to Next)</span>
+      </button>
     </div>
 
     <!-- Scanner Frame -->
@@ -124,8 +160,8 @@
     <div id="resultCard" class="d-none filter-bar text-start my-3">
       <div class="d-flex align-items-center justify-content-between gap-2 mb-3" id="resultBadgeRow"></div>
       <div id="resultDetails"></div>
-      <button class="btn btn-primary w-100 mt-3" id="scanNextBtn">
-        <i class="bi bi-qr-code-scan me-1"></i> Scan Next Attendee
+      <button class="btn btn-primary w-100 mt-3 scan-next-btn-large" id="scanNextBtn">
+        <i class="bi bi-check2-circle me-2"></i> Done — Scan Next Attendee
       </button>
     </div>
 
@@ -157,11 +193,38 @@ let scanLocked = false;
 let sessionCheckIns = 0;
 let activeScanner = null;
 let autoResetTimer = null;
+let autoAdvanceEnabled = false; // Default: MANUAL confirmation (Industry Best Practice)
 
 function updateSessionCounter() {
   const el = document.getElementById('sessionCountText');
   if (el) el.textContent = sessionCheckIns;
 }
+
+// ---------- Mode Toggle (Manual vs Auto-Advance) ----------
+
+const autoToggleBtn = document.getElementById('autoAdvanceToggle');
+const autoToggleLabel = document.getElementById('autoAdvanceLabel');
+
+autoToggleBtn.addEventListener('click', () => {
+  autoAdvanceEnabled = !autoAdvanceEnabled;
+  if (autoAdvanceEnabled) {
+    autoToggleBtn.classList.add('active');
+    autoToggleBtn.innerHTML = `<i class="bi bi-lightning-charge-fill"></i> <span>Auto-Advance: ON (6s)</span>`;
+    esToast('Auto-advance enabled (6-second timer)', 'info');
+  } else {
+    autoToggleBtn.classList.remove('active');
+    autoToggleBtn.innerHTML = `<i class="bi bi-hand-index-thumb"></i> <span>Manual Mode (Tap to Next)</span>`;
+    esToast('Manual mode active (Results stay until tapped)', 'info');
+    if (autoResetTimer) {
+      clearTimeout(autoResetTimer);
+      autoResetTimer = null;
+      const bar = document.querySelector('.countdown-bar-wrap');
+      if (bar) bar.style.display = 'none';
+      const timerText = document.getElementById('timerNoticeText');
+      if (timerText) timerText.textContent = 'Manual mode: tap button below when ready for next guest.';
+    }
+  }
+});
 
 // ---------- Audio Feedback (Dual-frequency synth chime / alert) ----------
 
@@ -195,7 +258,7 @@ function playChime(success) {
       osc.stop(ctx.currentTime + 0.42);
     }
   } catch (e) {
-    /* AudioContext unavailable or blocked by browser gesture policy */
+    /* AudioContext blocked by gesture policy */
   }
 }
 
@@ -274,7 +337,7 @@ function renderSuccess(data) {
         <span style="font-size:1.4rem;">${wb.icon}</span>
         <div>
           <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.85;">Hand Over Wristband</div>
-          <div style="font-size:1.05rem; font-weight:800; letter-spacing:-0.01em;">${wb.name}</div>
+          <div style="font-size:1.1rem; font-weight:800; letter-spacing:-0.01em;">${wb.name}</div>
         </div>
       </div>
       <span class="pill-badge" style="background:${wb.pillBg}; border: 1px solid ${wb.border}; color:#fff;">${tierName}</span>
@@ -296,11 +359,13 @@ function renderSuccess(data) {
       </div>
     </div>
 
-    <!-- Auto Resume Progress -->
-    <div class="countdown-bar-wrap mb-1">
-      <div class="countdown-bar" style="animation-duration: 4.5s;"></div>
+    <!-- Optional Countdown bar (only active in Auto-Advance mode) -->
+    <div class="countdown-bar-wrap mb-1" style="${autoAdvanceEnabled ? '' : 'display:none;'}">
+      <div class="countdown-bar" style="animation-duration: 6s;"></div>
     </div>
-    <div class="text-center text-muted-soft" style="font-size:0.72rem;">Camera auto-resumes in 4.5 seconds...</div>
+    <div class="text-center text-muted-soft" id="timerNoticeText" style="font-size:0.74rem;">
+      ${autoAdvanceEnabled ? 'Auto-resuming camera in 6 seconds...' : 'Take your time — tap button below when ready for next guest.'}
+    </div>
   `;
 
   const card = document.getElementById('resultCard');
@@ -308,9 +373,11 @@ function renderSuccess(data) {
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   esToast('Entry granted: ' + attendeeName, 'success');
 
-  // Auto-resume camera in 4.5s
+  // If Auto-Advance is toggled ON, schedule 6s auto-resume; otherwise wait for manual tap!
   if (autoResetTimer) clearTimeout(autoResetTimer);
-  autoResetTimer = setTimeout(unlockAndResume, 4500);
+  if (autoAdvanceEnabled) {
+    autoResetTimer = setTimeout(unlockAndResume, 6000);
+  }
 }
 
 function renderRejection(message) {
@@ -333,11 +400,10 @@ function renderRejection(message) {
       <p class="text-white mb-0" style="font-size:0.95rem; line-height:1.5;">${escapeHtml(message)}</p>
     </div>
 
-    <!-- Auto Resume Progress -->
-    <div class="countdown-bar-wrap mb-1">
-      <div class="countdown-bar" style="background:#EF4444; animation-duration: 6s;"></div>
+    <!-- Security alerts NEVER auto-dismiss — staff must inspect and tap Next! -->
+    <div class="text-center text-danger small mt-2">
+      <i class="bi bi-exclamation-triangle me-1"></i> Result locked for security inspection. Tap below to dismiss.
     </div>
-    <div class="text-center text-muted-soft" style="font-size:0.72rem;">Camera auto-resumes in 6 seconds...</div>
   `;
 
   const card = document.getElementById('resultCard');
@@ -345,9 +411,11 @@ function renderRejection(message) {
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   esToast(message, 'error');
 
-  // Auto-resume camera in 6s
-  if (autoResetTimer) clearTimeout(autoResetTimer);
-  autoResetTimer = setTimeout(unlockAndResume, 6000);
+  // Security errors NEVER auto-dismiss — staff must consciously dismiss them
+  if (autoResetTimer) {
+    clearTimeout(autoResetTimer);
+    autoResetTimer = null;
+  }
 }
 
 // ---------- Unlock & Resume Control ----------
