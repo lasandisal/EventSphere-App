@@ -1,71 +1,152 @@
 # 🎟️ EventSphere — Modern Event Discovery & Intelligent Ticketing Platform
 
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.4-brightgreen.svg?logo=springboot)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-21_LTS-orange.svg?logo=openjdk)](https://openjdk.org/projects/jdk/21/)
-[![Frontend](https://img.shields.io/badge/Frontend-Vercel-black.svg?logo=vercel)](https://vercel.com/)
-[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7.svg?logo=render)](https://render.com/)
-[![Database](https://img.shields.io/badge/Database-Aiven_MySQL-blue.svg?logo=mysql)](https://aiven.io/)
-[![Payment](https://img.shields.io/badge/Payment-PayHere_IPG-0052CC.svg)](https://www.payhere.lk/)
-[![AI](https://img.shields.io/badge/AI-Google_Gemini-8E75B2.svg?logo=google)](https://ai.google.dev/)
-[![Media](https://img.shields.io/badge/Media-Cloudinary_CDN-3448C5.svg?logo=cloudinary)](https://cloudinary.com/)
+<div align="center">
 
-**EventSphere** is a centralized, cloud-ready, and concurrent event management and ticketing platform built for **ITS 1114 – Advanced API Development** at **IJSE (Institute of Software Engineering)**.
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.4-10B981.svg?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21_LTS-FF2E74.svg?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
+[![Frontend](https://img.shields.io/badge/Frontend-Vercel_HTTPS-00F2FE.svg?style=for-the-badge&logo=vercel&logoColor=black)](https://eventsphere-webapp.vercel.app)
+[![Backend](https://img.shields.io/badge/Backend-Render_Cloud-8B5CF6.svg?style=for-the-badge&logo=render&logoColor=white)](https://its-1114-eventsphere-booking-platform.onrender.com)
+[![Database](https://img.shields.io/badge/Database-Aiven_MySQL-38BDF8.svg?style=for-the-badge&logo=mysql&logoColor=white)](https://aiven.io/)
+[![Payment](https://img.shields.io/badge/Payment-PayHere_IPG-F59E0B.svg?style=for-the-badge)](https://www.payhere.lk/)
+[![AI](https://img.shields.io/badge/AI-Google_Gemini-FF2E74.svg?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
-It modernizes traditional event coordination (manual bank slip uploads, WhatsApp messaging, and spreadsheets) with an automated, concurrent booking engine, cryptographic QR gate check-ins, automated payment reconciliation, and natural language AI assistance.
+<p align="center">
+  <b>Enterprise-Grade, Cloud-Ready Event Management & Cryptographic Ticketing Engine</b><br/>
+  Built for <b>ITS 1114 – Advanced API Development</b> at <b>IJSE (Institute of Software Engineering)</b>
+</p>
 
----
-
-## 🌟 Key Engineering Highlights
-
-* 🔒 **Anti-Overselling Concurrency Control:** Database-level pessimistic write locking (`LockModeType.PESSIMISTIC_WRITE` / `SELECT ... FOR UPDATE`) prevents race conditions and overselling during simultaneous rush ticket checkouts.
-* ⏱️ **10-Minute Cart Hold & Auto-Release:** Provisional ticket hold TTL managed by an automated background cron (`@Scheduled(fixedRate = 60000)`) in `BookingExpiryScheduler` that restores unpurchased inventory.
-* 🛡️ **Cryptographic Anti-Tamper QR Passes:** Admission tickets signed using HMAC-SHA256 (`Base64Url(ticketCode:signature)`). Gate scanners pre-validate signatures in memory before querying the database, eliminating forgery attacks.
-* 💳 **PayHere IPG & Idempotent Webhooks:** SHA-256 merchant checkout hashes combined with asynchronous server-to-server MD5 webhook callbacks (`/api/v1/payments/notify`) ensuring guaranteed, idempotent ticket confirmation.
-* 📧 **Asynchronous Multi-Recipient Email Delivery:** Spring `@Async` JavaMailSender with Brevo SMTP dispatches master HTML order receipts to buyers and personalized digital passes directly to individual attendee emails.
-* 🤖 **Google Gemini AI Event Concierge:** Integrated `gemini-3.5-flash-lite` conversational assistant utilizing native server-side **Function / Tool Calling** (`search_events`, `get_event_details`, `get_my_bookings`) with read-only safety guardrails.
-* ☁️ **Direct Client-Side Cloudinary Uploads:** Event banners are uploaded directly from the browser to Cloudinary via unsigned presets (`eventsphere_preset`), saving server bandwidth and memory.
-* 🔄 **Frontend Session Resilience:** Auto-detects expired JWT tokens client-side, purges stale browser credentials, and seamlessly re-executes public requests without breaking the UI.
+</div>
 
 ---
 
-## 🏗️ High-Level System Architecture
+## 🌌 Platform Overview & Cyber-Luxe Design System
 
-The platform follows a decoupled, three-tier enterprise architecture:
+**EventSphere** revolutionizes event discovery, real-time ticket reservations, and physical venue gate admission. It eliminates manual bank-slip uploads, WhatsApp coordination, and paper manifests with an automated three-tier architecture:
+
+* 🎨 **Cyber-Luxe Visual Aesthetic**: Deep obsidian backgrounds (`#0E121C`), midnight glass cards (`rgba(18, 22, 34, 0.75)` with backdrop blur), neon rose gradients (`#FF2E74` $\rightarrow$ `#8B5CF6`), and modern typography (Cormorant Garamond & Inter).
+* 🔒 **Anti-Overselling Concurrency Control**: Database-level pessimistic write locking (`LockModeType.PESSIMISTIC_WRITE` / `SELECT ... FOR UPDATE`) guarantees zero overselling during high-demand ticket drops.
+* ⏱️ **10-Minute Cart Hold & Auto-Release**: Automated background scheduler restores unpurchased tickets automatically.
+* 🛡️ **Cryptographic Anti-Tamper QR Passes**: HMAC-SHA256 signed passes pre-validated in memory before database queries, preventing ticket counterfeiting.
+* 🎫 **Gate Check-In & Wristband Intelligence**: Instant venue gate verification on mobile devices with color-coded wristband directives and dual-tone Web Audio chimes.
+
+---
+
+## 🔀 The Hybrid Architecture: Why Vercel + Localhost?
+
+EventSphere utilizes a **dual-environment hybrid workflow** designed to satisfy both payment sandbox domain policies and mobile device security constraints:
 
 ```mermaid
-graph TD
-    Client["Client Web Application<br/>(Vercel / HTML5 / CSS3 / Vanilla JS)"]
-
-    subgraph Backend_Tier ["Spring Boot 3.2.4 REST API on Render (Java 21)"]
-        Security["Spring Security 6 & JWT Filter<br/>(Stateless Auth, RBAC, BCrypt)"]
-        Controllers["Controller Layer<br/>(Validation, DTO Mapping, Routing)"]
-        Services["Service Layer<br/>(Business Logic, Concurrency, Schedulers)"]
-        Repos["Repository Layer<br/>(Spring Data JPA & Hibernate)"]
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1E1B4B', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#FF2E74', 'lineColor': '#00F2FE', 'secondaryColor': '#0E121C', 'tertiaryColor': '#121624'}}}%%
+flowchart TD
+    subgraph Local_Client ["1. Customer Checkout (Desktop Localhost)"]
+        PC["💻 Browser on http://localhost:5500"]
+        Cart["10-Min Cart Hold & Stepper"]
+        PayHere["PayHere Sandbox IPG<br/>(Whitelisted Origin: localhost:5500)"]
+        PC --> Cart --> PayHere
     end
 
-    subgraph Database_Tier ["Database Storage"]
-        DB[(Aiven Cloud MySQL 8+<br/>ACID Transactions & HikariCP)]
+    subgraph Cloud_Backend ["2. Centralized Cloud Infrastructure"]
+        Render["🚀 Spring Boot API on Render<br/>(Business Logic, HMAC Signer, Webhooks)"]
+        Aiven[("🗄️ Aiven Cloud MySQL 8+<br/>(Single Source of Truth)")]
+        Render <--> Aiven
     end
 
-    subgraph Cloud_Integrations ["External Cloud Ecosystem"]
-        PayHere["PayHere IPG<br/>(Checkout Hashes & MD5 Webhooks)"]
-        Cloudinary["Cloudinary CDN<br/>(Direct Image Uploads & Media CDN)"]
-        Gemini["Google Gemini AI<br/>(Tool / Function Calling)"]
-        Brevo["Brevo SMTP<br/>(Async Transactional Emails)"]
-        ZXing["Google ZXing<br/>(Dynamic QR Code Generation)"]
+    subgraph Mobile_Gate ["3. Venue Gate Verification (Mobile Vercel)"]
+        Phone["📱 Smartphone on https://eventsphere-webapp.vercel.app"]
+        Camera["Camera Scanner (HTTPS Required)"]
+        Phone --> Camera
     end
 
-    Client -->|HTTPS / REST API + JWT| Security
-    Client -.->|Direct Unsigned Upload| Cloudinary
-    Security --> Controllers
-    Controllers --> Services
-    Services --> Repos
-    Repos --> DB
-    Services -.-> PayHere
-    Services -.-> Gemini
-    Services -.-> Brevo
-    Services -.-> ZXing
+    PayHere -->|Server Webhook / HTTPS| Render
+    Camera -->|HMAC QR Scan / REST API| Render
+
+    classDef rose stroke:#FF2E74,stroke-width:2px;
+    classDef cyan stroke:#00F2FE,stroke-width:2px;
+    classDef gold stroke:#F59E0B,stroke-width:2px;
+    class Local_Client rose;
+    class Cloud_Backend cyan;
+    class Mobile_Gate gold;
 ```
+
+### 1. Why Customer Booking & Payments Run on `localhost:5500`
+* **PayHere Sandbox Whitelisting**: PayHere's sandbox merchant profile validates the HTTP `Referer` and `Origin` headers against registered domains. The test merchant secret is registered for `localhost:5500`.
+* **Zero Domain Errors**: Running the customer checkout on `http://localhost:5500` ensures that checkout hashes and return redirects work flawlessly without `401 Unauthorized / Domain Mismatch` sandbox rejections.
+
+### 2. Why Gate Check-In Runs on Vercel (`https://eventsphere-webapp.vercel.app`)
+* **Strict Mobile Camera Security (`getUserMedia`)**: Modern smartphone browsers (Chrome on Android, Safari on iOS) strictly forbid camera and hardware sensor access over insecure HTTP. **HTTPS is an absolute browser security requirement**. Vercel provides automatic SSL/TLS certificates and global CDN edge routing.
+* **Gate Mobility**: Event gate staff move around with physical smartphones on cellular data (4G/5G) or venue Wi-Fi. They cannot access a developer's desktop `localhost` without complex reverse tunnels.
+
+### 3. How the Cloud Database Connects Them Seamlessly
+* Both the customer checking out on `http://localhost:5500` and the gate staff scanning on `https://eventsphere-webapp.vercel.app` point to the **exact same cloud backend (Render)** and **centralized database (Aiven MySQL)**.
+* When a ticket is purchased on your PC, it is written to the cloud database.
+* When gate staff scans that ticket from their smartphone on Vercel, the ticket is verified and marked as `USED` in that same cloud database in real time!
+
+---
+
+## ⚡ Step-by-Step Demo Execution Guide
+
+Follow this guide to demonstrate the complete lifecycle from purchase to gate check-in:
+
+### Phase 1: Customer Booking & Payment (On PC / Laptop)
+
+1. **Launch the Local Frontend**:
+   Open the `eventsphere_frontend` folder in VS Code and start **Live Server** on port **`5500`**, or run:
+   ```bash
+   python -m http.server 5500
+   ```
+2. **Access the Web App**:
+   Navigate to **`http://localhost:5500/pages/events.html`** in your browser.
+3. **Select an Event & Reserve Tickets**:
+   * Click on an event (e.g., *"Neon Symphony 2026"* or *"Cyber Beats Festival"*).
+   * Select ticket tiers (VIP, General, etc.) and proceed to checkout.
+   * Notice the live **10-minute hold countdown timer** locking the inventory.
+4. **Complete PayHere Sandbox Checkout**:
+   * Click **"Proceed to Pay"** to launch the PayHere hosted popup/redirect.
+   * Use the PayHere Sandbox test credentials (e.g., Card: `4111 1111 1111 1111`, Expiry: Any future date, CVV: `123`).
+   * Complete payment.
+5. **View Your Digital Ticket Pass**:
+   * You will be redirected to the confirmed order screen and `ticket.html`.
+   * You also receive an itemized email receipt and digital pass via Brevo SMTP.
+   * **Keep this digital ticket QR code displayed on your PC screen** for Phase 2!
+
+---
+
+### Phase 2: Venue Gate Check-In (On Smartphone via Vercel)
+
+1. **Open the Mobile Scanner**:
+   On your smartphone, open:
+   $$\mathbf{\text{https://eventsphere-webapp.vercel.app/pages/check-in.html}}$$
+2. **Log in with Organizer Credentials**:
+   * Log in with an organizer account (e.g., your organizer credentials).
+   * Grant camera permissions when prompted by your phone browser.
+3. **Scan the Ticket from Your PC Screen**:
+   * Aim your phone camera at the QR code displayed on your PC screen (or printed ticket).
+4. **Observe the Gate Intelligence Output**:
+   * 🔔 **Web Audio Chime**: Dual-tone confirmation sound (D5 $\rightarrow$ A5).
+   * 🟢 **Entry Granted Badge**: High-contrast green status pill.
+   * 🎨 **Wristband Directive**: Tells staff exactly which wristband to hand over:
+     * ⭐ **GOLD WRISTBAND** for VIP / Platinum passes
+     * ⚡ **CYAN WRISTBAND** for Backstage / All-Access passes
+     * 🎟️ **GREEN WRISTBAND** for Early Bird / Student passes
+     * 🎫 **ROSE WRISTBAND** for General Admission passes
+   * 📋 **Guest Manifest**: Shows Attendee Name, Seat/Zone allocation, Booking Reference (`ES-...`), and check-in timestamp.
+   * 🖐️ **Manual Confirmation Flow**: The details remain locked on screen so staff has time to hand over the wristband. Tap **"Done — Scan Next Attendee"** when ready for the next guest!
+5. **Test Duplicate Scan Prevention (Security Verification)**:
+   * Scan the exact same QR code a second time.
+   * 🚨 **Red Warning Alert**: Low warning buzz sounds immediately.
+   * 🛑 **Duplicate Ticket Detected**: Shows *"This ticket was already used for entry at [Time] (Attendee: [Name])"*.
+   * Result is permanently locked on screen for security inspection.
+
+---
+
+## 🎨 Color-Coded Wristband Intelligence
+
+| Ticket Tier Pattern | Wristband Color | Accent Color | Visual Icon | Access Directives |
+| :--- | :--- | :--- | :---: | :--- |
+| **VIP / Platinum / Gold** | **GOLD WRISTBAND** | `#FBBF24` (Amber Gold) | ⭐ | VIP Lounge, Front Row, Complimentary Welcome Drink |
+| **Backstage / Artist / Crew** | **CYAN WRISTBAND** | `#38BDF8` (Neon Cyan) | ⚡ | All-Access Pass, Sound Booth, Green Room |
+| **Early Bird / Student** | **GREEN WRISTBAND** | `#34D399` (Emerald) | 🎟️ | Priority Early Entry, Fast-Track Gate |
+| **General Admission / Standard**| **ROSE WRISTBAND** | `#FB7185` (Cyber Rose) | 🎫 | Main Concourse, Standing Arena |
 
 ---
 
@@ -85,6 +166,7 @@ graph TD
 | :--- | :--- | :--- |
 | **Frontend Core** | **HTML5, CSS3, Vanilla JS (ES6+)** | Responsive Dark Luxe & Midnight Glass UI, glassmorphism, micro-animations. |
 | **UI Components** | **Bootstrap 5.3.3 & Bootstrap Icons** | Responsive grid, interactive dropdowns, and modern iconography. |
+| **Gate Scanner** | **`html5-qrcode` + Web Audio API** | Real-time camera feed QR scanning with synthesized dual-tone audio feedback. |
 | **Backend Framework** | **Spring Boot 3.2.4 (Java 21 LTS)** | Core REST API, IoC, transaction boundaries, asynchronous tasks. |
 | **Security & Auth** | **Spring Security 6 + JJWT 0.11.5** | Stateless JWT authentication, role guards, BCrypt password hashing. |
 | **Persistence & ORM**| **Spring Data JPA & Hibernate** | 15 interconnected domain entities, custom JPQL queries, HikariCP. |
@@ -107,7 +189,8 @@ eventsphere_frontend/
 ├── css/
 │   ├── style.css                # Dark Luxe design system (tokens, colors, typography, layout)
 │   ├── components.css           # Glass cards, filter bars, pill badges, ticket steppers
-│   └── responsive.css           # Mobile & tablet breakpoints (clamp, flex layouts)
+│   ├── dashboard.css            # Charts, donuts, and scanner frame styling
+│   └── responsive.css           # Smartphones, foldables, tablets, and desktop breakpoints
 ├── js/
 │   ├── env.js                   # Runtime public config generated from .env
 │   ├── api/
@@ -116,12 +199,12 @@ eventsphere_frontend/
 │   │   ├── events.js            # Public event search, organizer event management
 │   │   ├── bookings.js          # Cart hold, booking creation, attendee ticket lookup
 │   │   ├── payments.js          # PayHere hash checkout & status verification
-│   │   └── organizer.js         # Organizer analytics, applications, attendee lists
+│   │   └── organizer.js         # Organizer analytics, check-in API, attendee lists
 │   └── utils/
 │       ├── nav.js               # Dynamic navbar rendering (auth state, avatar, role links)
 │       ├── ai-widget.js         # Google Gemini floating conversational assistant
 │       ├── otp-modal.js         # 6-digit OTP modal dialog with countdown timer
-│       ├── toast.js             # Toast notifications (success, error, warning)
+│       ├── toast.js             # Cyber-luxe toast notifications (success, error, warning)
 │       └── icons.js             # SVG icon definitions (sparkles, bells, status)
 ├── pages/
 │   ├── events.html              # All events directory with comprehensive filter bar
@@ -134,7 +217,7 @@ eventsphere_frontend/
 │   ├── organizer-apply.html     # Organizer business application (BRN, NIC verification)
 │   ├── organizer-dashboard.html # Organizer portal: event sales, revenues, and controls
 │   ├── create-event.html        # Event creator with Cloudinary unsigned image upload
-│   ├── check-in.html            # Gate scanner verifying cryptographic QR passes
+│   ├── check-in.html            # Gate scanner with wristband directive & audio chimes
 │   ├── admin-dashboard.html     # Administrator panel (approvals, users, categories, venues)
 │   └── about.html               # Platform architecture, technology specs, and trust policy
 ├── scripts/
@@ -142,66 +225,8 @@ eventsphere_frontend/
 ├── dev.bat                      # Windows one-click local development startup script
 ├── dev.sh                       # Linux / macOS local development startup script
 ├── .env.example                 # Example frontend environment variables
-└── vercel.json / project.json   # Vercel project deployment configuration
+└── vercel.json                  # Vercel project deployment configuration
 ```
-
----
-
-## 🚀 Getting Started (Local Development)
-
-### 1. Prerequisites
-* **Python 3.8+** (to run the local static HTTP server)
-* **Modern Web Browser** (Chrome, Edge, Firefox, Safari)
-* **Running Backend:** EventSphere Spring Boot API running locally on `http://localhost:7080` or pointing to the cloud Render URL.
-
-### 2. Environment Configuration
-Copy the example environment configuration:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` as required:
-```properties
-# Backend API Base URL
-API_BASE=http://localhost:7080/api/v1
-# Or Cloud Backend:
-# API_BASE=https://its-1114-eventsphere-booking-platform.onrender.com/api/v1
-
-# PayHere Checkout Gateway URL
-PAYHERE_GATEWAY_URL=https://sandbox.payhere.lk/pay/checkout
-
-# Cloudinary Direct Image Upload Settings
-CLOUDINARY_CLOUD_NAME=ze21miiw
-CLOUDINARY_UPLOAD_PRESET=eventsphere_preset
-
-# Local HTTP Server Port
-PORT=8000
-```
-
-### 3. Run the Frontend
-
-#### On Windows:
-Double-click `dev.bat` or run:
-```cmd
-dev.bat
-```
-
-#### On Linux / macOS:
-```bash
-chmod +x dev.sh
-./dev.sh
-```
-
-The script will automatically validate `.env`, generate `js/env.js`, and start the server at **`http://127.0.0.1:8000`**.
-
----
-
-## 🌐 Live Deployments
-
-* **Frontend Web Application (Vercel):** [eventsphere-webapp](https://eventsphere-webapp.vercel.app)
-* **Backend REST API (Render):** [https://its-1114-eventsphere-booking-platform.onrender.com](https://its-1114-eventsphere-booking-platform.onrender.com)
-* **Cloud Database:** Hosted on Aiven MySQL with connection pooling.
-* **Payment Gateway:** PayHere Merchant Portal (Sandbox / Live Mode).
 
 ---
 
@@ -211,6 +236,15 @@ The script will automatically validate `.env`, generate `js/env.js`, and start t
 * **Salted Password Encryption:** Passwords use BCrypt with a cost factor of 12.
 * **Payment Isolation:** All card data entry occurs on PayHere's hosted PCI-DSS compliant interface. EventSphere never stores or handles credit card numbers.
 * **Single-Use Cryptographic Tickets:** Admission QR passes transition immediately to `USED` upon gate scan with append-only audit trails to prevent reuse.
+
+---
+
+## 🌐 Live Deployments
+
+* **Frontend Web Application (Vercel):** [https://eventsphere-webapp.vercel.app](https://eventsphere-webapp.vercel.app)
+* **Backend REST API (Render):** [https://its-1114-eventsphere-booking-platform.onrender.com](https://its-1114-eventsphere-booking-platform.onrender.com)
+* **Cloud Database:** Hosted on Aiven MySQL with connection pooling.
+* **Payment Gateway:** PayHere Merchant Portal (Sandbox / Live Mode).
 
 ---
 
