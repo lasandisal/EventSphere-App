@@ -662,90 +662,262 @@
       </div>
     </section>
 
-    <!-- Complete Technology Stack Breakdown Table -->
+    <!-- Modern Tech Stack Architecture Matrix (Bento Grid) -->
     <section class="section-sm">
       <div class="container-narrow">
         <div class="filter-bar p-4 p-md-5">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
             <div>
-              <h4 class="text-white mb-1">Technology Stack Specification</h4>
-              <p class="text-muted-soft small mb-0">Comprehensive breakdown of frameworks, libraries, and protocols</p>
+              <p class="eyebrow mb-1">Architecture Matrix</p>
+              <h3 class="text-white mb-1">Technology Stack Specification</h3>
+              <p class="text-muted-soft small mb-0">Engineered across 12 specialized architectural capabilities &amp; cloud services</p>
             </div>
-            <span class="code-badge">Spring Boot 3.2.4 + Java 21 LTS</span>
+            <span class="code-badge">Java 21 LTS &bull; Spring Boot 3.2.4</span>
           </div>
 
-          <div class="table-responsive">
-            <table class="tech-table">
-              <thead>
-                <tr>
-                  <th>Layer / Capability</th>
-                  <th>Technology</th>
-                  <th>Details &amp; Purpose</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-cpu text-primary me-2"></i>Language &amp; Runtime</td>
-                  <td><span class="text-white fw-semibold">Java 21 (LTS)</span></td>
-                  <td>Modern Java features (pattern matching, records, sealed types, virtual thread readiness).</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-box text-success me-2"></i>Framework</td>
-                  <td><span class="text-white fw-semibold">Spring Boot 3.2.4</span></td>
-                  <td>Core IoC, dependency injection, REST starters, async task scheduling, and transaction boundaries.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-shield-shaded text-danger me-2"></i>Security &amp; Auth</td>
-                  <td><span class="text-white fw-semibold">Spring Security 6 + JJWT 0.11.5</span></td>
-                  <td>Stateless JWT authentication, RBAC, BCrypt password hashing (cost factor 12), and CORS filters.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-database text-info me-2"></i>Persistence &amp; ORM</td>
-                  <td><span class="text-white fw-semibold">Spring Data JPA &amp; Hibernate</span></td>
-                  <td>15 interconnected domain entities, custom JPQL queries, and HikariCP connection pooling.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-hdd-network text-warning me-2"></i>Database Engine</td>
-                  <td><span class="text-white fw-semibold">MySQL 8+ / 9.x</span></td>
-                  <td>Relational schema with ACID compliance, hosted locally or on Aiven Cloud MySQL.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-arrow-repeat text-primary me-2"></i>Concurrency Control</td>
-                  <td><span class="text-white fw-semibold">Pessimistic Locking (PESSIMISTIC_WRITE)</span></td>
-                  <td>Prevents race conditions and ticket overselling during simultaneous peak checkouts.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-credit-card text-danger me-2"></i>Payment Gateway</td>
-                  <td><span class="text-white fw-semibold">PayHere IPG</span></td>
-                  <td>Sandbox/Live checkout hashes (SHA-256) and server-to-server webhook verification (MD5).</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Media &amp; CDN Storage</td>
-                  <td><span class="text-white fw-semibold">Cloudinary CDN</span></td>
-                  <td>Client-side direct unsigned image uploads for high-resolution event banners with fast edge content delivery.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-stars text-violet me-2" style="color:var(--neon-violet);"></i>Artificial Intelligence</td>
-                  <td><span class="text-white fw-semibold">Google Gemini API</span></td>
-                  <td>Natural language event concierge utilizing native tool / function calling with read-only safety.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-qr-code text-success me-2"></i>QR Code Generation</td>
-                  <td><span class="text-white fw-semibold">Google ZXing 3.5.3</span></td>
-                  <td>Dynamic PNG QR rendering of cryptographically signed HMAC-SHA256 admission tokens.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-envelope-check text-info me-2"></i>Email Delivery</td>
-                  <td><span class="text-white fw-semibold">Spring Mail + Brevo SMTP Relay</span></td>
-                  <td>Asynchronous (<span class="code-badge">@Async</span>) transactional dispatch with authenticated DKIM/SPF alignment, ensuring receipts, passes, and OTPs reach the primary inbox rather than Spam folders.</td>
-                </tr>
-                <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-browser-chrome text-light me-2"></i>Client Tier</td>
-                  <td><span class="text-white fw-semibold">HTML5, CSS3 &amp; Vanilla JS (ES6+)</span></td>
-                  <td>Lightweight, responsive dark luxe glassmorphism interface with auto-clearing token expiry wrappers.</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Bento Grid of Tech Capabilities -->
+          <div class="tech-bento-grid">
+            
+            <!-- 1. Java 21 -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-cyan);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Runtime &amp; Language</span>
+                  <div class="tech-card-icon" style="background: rgba(0, 242, 254, 0.14); color: #38BDF8;">
+                    <i class="bi bi-cpu-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Java 21 LTS</div>
+                <div class="tech-card-desc">
+                  Modern enterprise language features including pattern matching, records, sealed interfaces, and virtual thread readiness.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">OpenJDK 21</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-info me-1"></i>LTS Core</span>
+              </div>
+            </div>
+
+            <!-- 2. Spring Boot 3.2.4 -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-emerald);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Enterprise Framework</span>
+                  <div class="tech-card-icon" style="background: rgba(16, 185, 129, 0.14); color: #34D399;">
+                    <i class="bi bi-box-seam-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Spring Boot 3.2.4</div>
+                <div class="tech-card-desc">
+                  Core IoC dependency injection, REST starters, background scheduler engine, and declarative transaction boundaries.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">Spring 6 Core</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-success me-1"></i>IoC / MVC</span>
+              </div>
+            </div>
+
+            <!-- 3. Spring Security 6 & JJWT -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-rose);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Security &amp; Auth</span>
+                  <div class="tech-card-icon" style="background: rgba(255, 46, 116, 0.14); color: #FB7185;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Spring Security 6 + JJWT</div>
+                <div class="tech-card-desc">
+                  Stateless JWT authentication filter chain, Role-Based Access Control (RBAC), and BCrypt (cost 12) credential hashing.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">JJWT 0.11.5</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-danger me-1"></i>Stateless RBAC</span>
+              </div>
+            </div>
+
+            <!-- 4. Spring Data JPA & Hibernate -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-violet);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Persistence &amp; ORM</span>
+                  <div class="tech-card-icon" style="background: rgba(139, 92, 246, 0.14); color: #A78BFA;">
+                    <i class="bi bi-database-fill-check"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Spring Data JPA &amp; Hibernate</div>
+                <div class="tech-card-desc">
+                  15 domain entities with JPA lifecycle hooks, transactional integrity, and optimized HikariCP connection pooling.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">HikariCP</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-violet me-1"></i>JPQL Queries</span>
+              </div>
+            </div>
+
+            <!-- 5. MySQL Relational Engine -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-amber);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Database Engine</span>
+                  <div class="tech-card-icon" style="background: rgba(245, 158, 11, 0.14); color: #FBBF24;">
+                    <i class="bi bi-hdd-network-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">MySQL 8+ / 9.x Relational</div>
+                <div class="tech-card-desc">
+                  ACID-compliant relational schema with foreign key cascades and row-level indexing, hosted locally and on Aiven Cloud.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">InnoDB Engine</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-warning me-1"></i>ACID Compliant</span>
+              </div>
+            </div>
+
+            <!-- 6. Pessimistic Concurrency -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-rose);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Concurrency Control</span>
+                  <div class="tech-card-icon" style="background: rgba(239, 68, 68, 0.14); color: #F87171;">
+                    <i class="bi bi-lock-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Pessimistic Locking</div>
+                <div class="tech-card-desc">
+                  PESSIMISTIC_WRITE locks inventory rows at the engine level (SELECT FOR UPDATE) to eliminate race conditions and overselling.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">PESSIMISTIC_WRITE</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-danger me-1"></i>Zero Overselling</span>
+              </div>
+            </div>
+
+            <!-- 7. PayHere IPG Pipeline -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-emerald);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Payment Gateway</span>
+                  <div class="tech-card-icon" style="background: rgba(16, 185, 129, 0.14); color: #34D399;">
+                    <i class="bi bi-credit-card-2-front-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">PayHere IPG Pipeline</div>
+                <div class="tech-card-desc">
+                  SHA-256 checkout merchant hashing with server-to-server asynchronous webhook verification via MD5 signatures.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">PCI-DSS Hosted</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-success me-1"></i>MD5 Webhooks</span>
+              </div>
+            </div>
+
+            <!-- 8. Cloudinary Edge CDN -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-cyan);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Media &amp; CDN Storage</span>
+                  <div class="tech-card-icon" style="background: rgba(14, 165, 233, 0.14); color: #38BDF8;">
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Cloudinary Edge CDN</div>
+                <div class="tech-card-desc">
+                  Direct client-side unsigned media uploads for high-resolution event banners with edge caching and responsive image delivery.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">REST Direct Upload</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-info me-1"></i>Edge CDN</span>
+              </div>
+            </div>
+
+            <!-- 9. Google Gemini AI -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-violet);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Artificial Intelligence</span>
+                  <div class="tech-card-icon" style="background: rgba(139, 92, 246, 0.14); color: #C084FC;">
+                    <i class="bi bi-stars"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Google Gemini 1.5</div>
+                <div class="tech-card-desc">
+                  Conversational assistant powered by Gemini API with native function / tool calling and read-only enterprise guardrails.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">Tool Calling</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-violet me-1"></i>Read-Only</span>
+              </div>
+            </div>
+
+            <!-- 10. Google ZXing QR Engine -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-emerald);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Anti-Tamper QR Passes</span>
+                  <div class="tech-card-icon" style="background: rgba(16, 185, 129, 0.14); color: #10B981;">
+                    <i class="bi bi-qr-code-scan"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Google ZXing 3.5.3</div>
+                <div class="tech-card-desc">
+                  Dynamic server-side PNG rendering of HMAC-SHA256 cryptographically signed tokens for real-time mobile door check-in.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">HMAC-SHA256</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-success me-1"></i>Instant Verification</span>
+              </div>
+            </div>
+
+            <!-- 11. Brevo Transactional SMTP -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-cyan);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Transactional Email</span>
+                  <div class="tech-card-icon" style="background: rgba(6, 182, 212, 0.14); color: #22D3EE;">
+                    <i class="bi bi-envelope-check-fill"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Brevo SMTP Relay</div>
+                <div class="tech-card-desc">
+                  Asynchronous (@Async) email dispatch with DKIM and SPF alignment, ensuring passes and 6-digit OTPs land in the Primary Inbox.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">SPF &bull; DKIM Verified</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-info me-1"></i>No Spam Folder</span>
+              </div>
+            </div>
+
+            <!-- 12. Client Presentation Tier -->
+            <div class="tech-bento-card" style="--card-glow: var(--neon-rose);">
+              <div>
+                <div class="tech-card-header">
+                  <span class="tech-domain-tag">Client Application</span>
+                  <div class="tech-card-icon" style="background: rgba(255, 46, 116, 0.14); color: #FB7185;">
+                    <i class="bi bi-window-fullscreen"></i>
+                  </div>
+                </div>
+                <div class="tech-card-title">Vanilla ES6+ &amp; CSS3</div>
+                <div class="tech-card-desc">
+                  High-performance dark luxe glassmorphism architecture with Web Audio synthesizer feedback and zero framework overhead.
+                </div>
+              </div>
+              <div class="tech-card-footer">
+                <span class="tech-card-badge">Zero Framework Bloat</span>
+                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-danger me-1"></i>60fps Responsive</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
