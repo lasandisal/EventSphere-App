@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Check In Attendees — EventSphere</title>
+<title>Gate Check-In & Verification — EventSphere</title>
 <link rel="icon" type="image/png" href="../assets/images/logo.png">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -15,13 +15,76 @@
 <link rel="stylesheet" href="../css/dashboard.css">
 <link rel="stylesheet" href="../css/responsive.css">
 <style>
-  /* Camera preview lives inside the existing .scanner-frame so the
-     corner-bracket/scan-line decoration you already built still frames it —
-     html5-qrcode injects a <video> we just need to size and round to match. */
   #qr-reader { width: 100%; height: 100%; }
   #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: inherit; }
   .scanner-frame { position: relative; overflow: hidden; }
   #cameraFallbackMsg { display: none; }
+
+  /* Cyber-Luxe Wristband & Gate Badges */
+  .wristband-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  }
+  .session-counter-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    color: #9CA3AF;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .gate-granted-badge {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    color: #10B981;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .gate-denied-badge {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.12) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.6);
+    color: #EF4444;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .countdown-bar-wrap {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+  }
+  .countdown-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--grad-primary);
+    animation: shrinkBar linear forwards;
+  }
+  @keyframes shrinkBar {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
 </style>
 </head>
 <body data-page="organizer">
@@ -35,11 +98,20 @@
 </nav>
 
 <section class="section text-center">
-  <div class="container-narrow" style="max-width:520px;">
-    <p class="eyebrow">Gate check-in</p>
-    <h2 class="mb-2">Check In Attendees</h2>
-    <p class="text-muted-soft mb-4">Point the camera at the attendee's EventSphere ticket QR code.</p>
+  <div class="container-narrow" style="max-width:540px;">
+    <p class="eyebrow">Gate operations</p>
+    <h2 class="mb-2">Gate Check-In & Scanner</h2>
+    <p class="text-muted-soft mb-3">Scan attendee ticket QR passes or enter ticket payload manually.</p>
 
+    <!-- Session Counter Badge -->
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-4">
+      <span class="session-counter-badge" id="sessionCounterBadge">
+        <i class="bi bi-person-check-fill text-success"></i>
+        <span>Session: <strong class="text-white" id="sessionCountText">0</strong> checked in</span>
+      </span>
+    </div>
+
+    <!-- Scanner Frame -->
     <div class="scanner-frame mb-2">
       <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
       <div class="scan-line" id="scanLine"></div>
@@ -48,17 +120,21 @@
     </div>
     <p id="cameraFallbackMsg" class="text-muted-soft mb-4" style="font-size:0.85rem;"></p>
 
-    <div class="text-muted-soft mb-2 mt-3" style="font-size:0.85rem;">or search manually</div>
+    <!-- Manual Ticket Search -->
+    <div class="text-muted-soft mb-2 mt-3" style="font-size:0.85rem;">or verify manually</div>
     <div class="hero-search mx-auto mb-4">
       <i class="bi bi-search text-muted"></i>
-      <input type="text" id="manualCode" placeholder="Paste the scanned ticket payload">
-      <button class="btn btn-primary btn-sm" id="manualSearch">Search</button>
+      <input type="text" id="manualCode" placeholder="Paste ticket code or signed payload">
+      <button class="btn btn-primary btn-sm" id="manualSearch">Verify</button>
     </div>
 
+    <!-- Live Result Card -->
     <div id="resultCard" class="d-none filter-bar text-start">
-      <div class="d-flex align-items-center gap-2 mb-3" id="resultBadgeRow"></div>
+      <div class="d-flex align-items-center justify-content-between gap-2 mb-3" id="resultBadgeRow"></div>
       <div id="resultDetails"></div>
-      <button class="btn btn-primary w-100 mt-3" id="scanNextBtn">Scan next attendee</button>
+      <button class="btn btn-primary w-100 mt-3" id="scanNextBtn">
+        <i class="bi bi-qr-code-scan me-1"></i> Scan Next Attendee
+      </button>
     </div>
   </div>
 </section>
@@ -78,37 +154,215 @@ if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 if (!EsAuthStore.isLoggedIn()) window.location.href = 'login.html?redirect=' + encodeURIComponent('check-in.html' + window.location.search);
 
 let scanLocked = false;
+let sessionCheckIns = 0;
+let activeScanner = null;
+let autoResetTimer = null;
 
-// ---------- Result rendering (single source of truth for both camera and manual paths) ----------
-
-function renderSuccess(data) {
-  document.getElementById('resultBadgeRow').innerHTML =
-    `<span class="status-badge status-confirmed">✓ Entry granted</span>`;
-  document.getElementById('resultDetails').innerHTML = `
-    <div class="tk-row"><span>Attendee</span><b>${escapeHtml(data.attendeeName)}</b></div>
-    <div class="tk-row"><span>Event</span><b>${escapeHtml(data.eventTitle)}</b></div>
-    ${data.seatNumber ? `<div class="tk-row"><span>Seat</span><b>${escapeHtml(data.seatNumber)}</b></div>` : ''}
-    <div class="tk-row"><span>Checked in</span><b>${new Date(data.checkedInAt).toLocaleTimeString()}</b></div>`;
-  document.getElementById('resultCard').classList.remove('d-none');
-  esToast('Checked in: ' + data.attendeeName, 'success');
+function updateSessionCounter() {
+  const el = document.getElementById('sessionCountText');
+  if (el) el.textContent = sessionCheckIns;
 }
 
-function renderRejection(message) {
-  // Deliberately a DIFFERENT visual state from success — this ticket was
-  // NOT admitted, and that must never be ambiguous at a gate.
-  document.getElementById('resultBadgeRow').innerHTML =
-    `<span class="status-badge status-cancelled">✕ Entry not granted</span>`;
-  document.getElementById('resultDetails').innerHTML =
-    `<p class="mb-0">${escapeHtml(message)}</p>`;
-  document.getElementById('resultCard').classList.remove('d-none');
-  esToast(message, 'error');
+// ---------- Audio Feedback (Dual-frequency synth chime / alert) ----------
+
+function playChime(success) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (success) {
+      // Crisp high chime (D5 -> A5)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.09);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.32);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.32);
+    } else {
+      // Low dual warning buzz
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(190, ctx.currentTime);
+      osc.frequency.setValueAtTime(140, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.42);
+    }
+  } catch (e) {
+    /* AudioContext unavailable or blocked by browser gesture policy */
+  }
+}
+
+// ---------- Wristband & Badge Intelligence ----------
+
+function getWristbandStyle(tierName) {
+  const name = String(tierName || '').toLowerCase();
+  if (name.includes('vip') || name.includes('platinum') || name.includes('gold') || name.includes('executive')) {
+    return {
+      name: 'GOLD WRISTBAND',
+      icon: '⭐',
+      bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.12) 100%)',
+      border: 'rgba(245, 158, 11, 0.65)',
+      color: '#FBBF24',
+      pillBg: 'rgba(245, 158, 11, 0.3)'
+    };
+  } else if (name.includes('backstage') || name.includes('all access') || name.includes('artist') || name.includes('crew')) {
+    return {
+      name: 'CYAN WRISTBAND',
+      icon: '⚡',
+      bg: 'linear-gradient(135deg, rgba(0, 242, 254, 0.22) 0%, rgba(79, 70, 229, 0.12) 100%)',
+      border: 'rgba(0, 242, 254, 0.65)',
+      color: '#38BDF8',
+      pillBg: 'rgba(0, 242, 254, 0.3)'
+    };
+  } else if (name.includes('early') || name.includes('student') || name.includes('member') || name.includes('green')) {
+    return {
+      name: 'GREEN WRISTBAND',
+      icon: '🎟️',
+      bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.12) 100%)',
+      border: 'rgba(16, 185, 129, 0.65)',
+      color: '#34D399',
+      pillBg: 'rgba(16, 185, 129, 0.3)'
+    };
+  } else {
+    return {
+      name: 'ROSE WRISTBAND',
+      icon: '🎫',
+      bg: 'linear-gradient(135deg, rgba(255, 46, 116, 0.22) 0%, rgba(225, 29, 72, 0.12) 100%)',
+      border: 'rgba(255, 46, 116, 0.65)',
+      color: '#FB7185',
+      pillBg: 'rgba(255, 46, 116, 0.3)'
+    };
+  }
 }
 
 function escapeHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ---------- Real scan path — the call itself performs the check-in server-side ----------
+// ---------- Result Rendering (Single source of truth) ----------
+
+function renderSuccess(data) {
+  sessionCheckIns++;
+  updateSessionCounter();
+  playChime(true);
+
+  const wb = getWristbandStyle(data.ticketTypeName);
+  const tierName = escapeHtml(data.ticketTypeName || 'Standard Admission');
+  const attendeeName = escapeHtml(data.attendeeName || 'Attendee');
+  const eventTitle = escapeHtml(data.eventTitle || 'Event');
+  const seatInfo = data.seatNumber ? escapeHtml(data.seatNumber) : 'General Admission (Floor)';
+  const bookingRef = escapeHtml(data.bookingReference || 'N/A');
+  const email = escapeHtml(data.attendeeEmail || '');
+  const checkInTime = new Date(data.checkedInAt).toLocaleTimeString();
+
+  document.getElementById('resultBadgeRow').innerHTML = `
+    <span class="gate-granted-badge"><i class="bi bi-check-circle-fill"></i> ENTRY GRANTED</span>
+    <span class="text-muted-soft small"><i class="bi bi-clock me-1"></i>${checkInTime}</span>
+  `;
+
+  document.getElementById('resultDetails').innerHTML = `
+    <!-- Wristband directive -->
+    <div class="wristband-banner" style="background:${wb.bg}; border: 1px solid ${wb.border}; color:${wb.color};">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size:1.4rem;">${wb.icon}</span>
+        <div>
+          <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.85;">Hand Over Wristband</div>
+          <div style="font-size:1.05rem; font-weight:800; letter-spacing:-0.01em;">${wb.name}</div>
+        </div>
+      </div>
+      <span class="pill-badge" style="background:${wb.pillBg}; border: 1px solid ${wb.border}; color:#fff;">${tierName}</span>
+    </div>
+
+    <!-- Attendee & Seat Info Box -->
+    <div class="card p-3 mb-2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md);">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="text-muted-soft small">Attendee</span>
+        <span class="badge font-monospace" style="background:rgba(255,255,255,0.08); color:#E0E7FF; font-size:0.76rem;">${bookingRef}</span>
+      </div>
+      <h4 class="text-white fw-bold mb-1">${attendeeName}</h4>
+      ${email ? `<div class="text-muted-soft small mb-2"><i class="bi bi-envelope me-1"></i>${email}</div>` : ''}
+
+      <div class="border-top pt-2 mt-2" style="border-color: rgba(255,255,255,0.08) !important;">
+        <div class="tk-row"><span>Event</span><b>${eventTitle}</b></div>
+        <div class="tk-row"><span>Pass Type</span><b style="color:${wb.color};">${tierName}</b></div>
+        <div class="tk-row"><span>Seating / Zone</span><b>${seatInfo}</b></div>
+      </div>
+    </div>
+
+    <!-- Auto Resume Progress -->
+    <div class="countdown-bar-wrap mb-1">
+      <div class="countdown-bar" style="animation-duration: 4.5s;"></div>
+    </div>
+    <div class="text-center text-muted-soft" style="font-size:0.72rem;">Camera auto-resumes in 4.5 seconds...</div>
+  `;
+
+  document.getElementById('resultCard').classList.remove('d-none');
+  esToast('Entry granted: ' + attendeeName, 'success');
+
+  // Auto-resume camera in 4.5s
+  if (autoResetTimer) clearTimeout(autoResetTimer);
+  autoResetTimer = setTimeout(unlockAndResume, 4500);
+}
+
+function renderRejection(message) {
+  playChime(false);
+
+  const isDuplicate = message && message.toLowerCase().includes('already used');
+  const headerText = isDuplicate ? 'DUPLICATE TICKET' : 'ENTRY REJECTED';
+
+  document.getElementById('resultBadgeRow').innerHTML = `
+    <span class="gate-denied-badge"><i class="bi bi-x-circle-fill"></i> ${headerText}</span>
+    <span class="text-muted-soft small"><i class="bi bi-shield-x me-1"></i>Security Alert</span>
+  `;
+
+  document.getElementById('resultDetails').innerHTML = `
+    <div class="card p-3 mt-1 mb-2" style="background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.35); border-radius:var(--radius-md);">
+      <div class="d-flex align-items-center gap-2 mb-2 text-danger fw-bold">
+        <i class="bi bi-shield-slash fs-5"></i>
+        <span>${isDuplicate ? 'Ticket Previously Redeemed' : 'Verification Rejected'}</span>
+      </div>
+      <p class="text-white mb-0" style="font-size:0.95rem; line-height:1.5;">${escapeHtml(message)}</p>
+    </div>
+
+    <!-- Auto Resume Progress -->
+    <div class="countdown-bar-wrap mb-1">
+      <div class="countdown-bar" style="background:#EF4444; animation-duration: 6s;"></div>
+    </div>
+    <div class="text-center text-muted-soft" style="font-size:0.72rem;">Camera auto-resumes in 6 seconds...</div>
+  `;
+
+  document.getElementById('resultCard').classList.remove('d-none');
+  esToast(message, 'error');
+
+  // Auto-resume camera in 6s
+  if (autoResetTimer) clearTimeout(autoResetTimer);
+  autoResetTimer = setTimeout(unlockAndResume, 6000);
+}
+
+// ---------- Unlock & Resume Control ----------
+
+function unlockAndResume() {
+  if (autoResetTimer) {
+    clearTimeout(autoResetTimer);
+    autoResetTimer = null;
+  }
+  document.getElementById('resultCard').classList.add('d-none');
+  scanLocked = false;
+  if (activeScanner) {
+    try { activeScanner.resume(); } catch (e) {}
+  }
+}
+
+document.getElementById('scanNextBtn').addEventListener('click', unlockAndResume);
+
+// ---------- Process Ticket via CheckInAPI ----------
 
 async function processTicket(signedPayload) {
   if (scanLocked) return;
@@ -116,36 +370,29 @@ async function processTicket(signedPayload) {
   document.getElementById('resultCard').classList.add('d-none');
 
   try {
-    // NOTE: field name must be signedPayload, matching ScanRequestDTO.
     const data = await CheckInAPI.scan(signedPayload);
     renderSuccess(data);
   } catch (e) {
-    // No fallback to placeholder/mock data here — a request that fails
-    // means the ticket was NOT checked in, and the UI must say exactly that.
     renderRejection(e.message || 'This ticket could not be verified.');
   }
 }
 
-document.getElementById('scanNextBtn').addEventListener('click', () => {
-  document.getElementById('resultCard').classList.add('d-none');
-  scanLocked = false;
-});
-
 document.getElementById('manualSearch').addEventListener('click', () => {
   const val = document.getElementById('manualCode').value.trim();
   if (!val) return;
-  scanLocked = false;
+  unlockAndResume();
   processTicket(val);
 });
 
-// ---------- Camera ----------
+// ---------- Camera Scanner Lifecycle ----------
 
 function initCamera() {
   if (typeof Html5Qrcode === 'undefined') {
-    showCameraFallback('Camera scanner failed to load — use manual entry below.');
+    showCameraFallback('Camera scanner library failed to load — use manual entry below.');
     return;
   }
   const scanner = new Html5Qrcode("qr-reader");
+  activeScanner = scanner;
 
   Html5Qrcode.getCameras().then(cameras => {
     if (!cameras || cameras.length === 0) {
@@ -158,12 +405,11 @@ function initCamera() {
       { fps: 10, qrbox: { width: 220, height: 220 } },
       (decodedText) => {
         if (scanLocked) return;
-        scanner.pause();
-        processTicket(decodedText).finally(() => {
-          setTimeout(() => { scanner.resume(); }, 2200);
-        });
+        scanLocked = true;
+        try { scanner.pause(); } catch (e) {}
+        processTicket(decodedText);
       },
-      () => { /* no QR in frame this tick — expected, not an error */ }
+      () => { /* No QR in frame this tick */ }
     ).catch(() => showCameraFallback('Could not start the camera — use manual entry below.'));
   }).catch(() => {
     showCameraFallback('Camera access was blocked — allow camera permission for this site, or use manual entry below.');
