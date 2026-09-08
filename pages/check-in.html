@@ -116,6 +116,30 @@
     border-radius: var(--radius-md) !important;
     box-shadow: 0 4px 20px rgba(255, 46, 116, 0.35);
   }
+
+  /* Table-like row layout for ticket pass details */
+  .tk-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.45rem 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.88rem !important;
+    color: #9CA3AF !important;
+  }
+  .tk-row:last-child {
+    border-bottom: none !important;
+  }
+  .tk-row span {
+    flex-shrink: 0;
+  }
+  .tk-row b {
+    color: #F3F4F6 !important;
+    font-weight: 700 !important;
+    text-align: right;
+    word-break: break-word;
+    margin-left: 1rem;
+  }
 </style>
 </head>
 <body data-page="organizer">
@@ -193,7 +217,7 @@ let scanLocked = false;
 let sessionCheckIns = 0;
 let activeScanner = null;
 let autoResetTimer = null;
-let autoAdvanceEnabled = false; // Default: MANUAL confirmation (Industry Best Practice)
+let autoAdvanceEnabled = false; // Default: MANUAL confirmation
 
 function updateSessionCounter() {
   const el = document.getElementById('sessionCountText');
@@ -262,13 +286,14 @@ function playChime(success) {
   }
 }
 
-// ---------- Wristband & Badge Intelligence ----------
+// ---------- Access Level & Pass Tier Directives ----------
 
 function getWristbandStyle(tierName) {
   const name = String(tierName || '').toLowerCase();
   if (name.includes('vip') || name.includes('platinum') || name.includes('gold') || name.includes('executive')) {
     return {
-      name: 'GOLD WRISTBAND',
+      title: 'VIP / PLATINUM ACCESS',
+      subtitle: 'VIP Lounge • Front Row • Gold Pass',
       icon: '⭐',
       bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.12) 100%)',
       border: 'rgba(245, 158, 11, 0.65)',
@@ -277,7 +302,8 @@ function getWristbandStyle(tierName) {
     };
   } else if (name.includes('backstage') || name.includes('all access') || name.includes('artist') || name.includes('crew')) {
     return {
-      name: 'CYAN WRISTBAND',
+      title: 'ALL ACCESS / BACKSTAGE',
+      subtitle: 'Staff • Artists • Full Venue Access',
       icon: '⚡',
       bg: 'linear-gradient(135deg, rgba(0, 242, 254, 0.22) 0%, rgba(79, 70, 229, 0.12) 100%)',
       border: 'rgba(0, 242, 254, 0.65)',
@@ -286,7 +312,8 @@ function getWristbandStyle(tierName) {
     };
   } else if (name.includes('early') || name.includes('student') || name.includes('member') || name.includes('green')) {
     return {
-      name: 'GREEN WRISTBAND',
+      title: 'PRIORITY ENTRY',
+      subtitle: 'Early Bird Passholder',
       icon: '🎟️',
       bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.12) 100%)',
       border: 'rgba(16, 185, 129, 0.65)',
@@ -295,14 +322,28 @@ function getWristbandStyle(tierName) {
     };
   } else {
     return {
-      name: 'ROSE WRISTBAND',
+      title: 'GENERAL ADMISSION',
+      subtitle: 'Standard Entry • Main Area',
       icon: '🎫',
-      bg: 'linear-gradient(135deg, rgba(255, 46, 116, 0.22) 0%, rgba(225, 29, 72, 0.12) 100%)',
-      border: 'rgba(255, 46, 116, 0.65)',
+      bg: 'linear-gradient(135deg, rgba(255, 46, 116, 0.18) 0%, rgba(139, 92, 246, 0.14) 100%)',
+      border: 'rgba(255, 46, 116, 0.55)',
       color: '#FB7185',
-      pillBg: 'rgba(255, 46, 116, 0.3)'
+      pillBg: 'rgba(255, 46, 116, 0.25)'
     };
   }
+}
+
+// Time formatter converting UTC server timestamps to local device time (e.g. 12:42 PM)
+function formatLocalTime(isoStr) {
+  if (!isoStr) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  let str = String(isoStr).trim();
+  if (!str.endsWith('Z') && !str.includes('+') && !str.includes('Z')) {
+    str += 'Z';
+  }
+  const date = new Date(str);
+  return isNaN(date.getTime()) 
+    ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 function escapeHtml(s) {
@@ -317,13 +358,14 @@ function renderSuccess(data) {
   playChime(true);
 
   const wb = getWristbandStyle(data.ticketTypeName);
-  const tierName = escapeHtml(data.ticketTypeName || 'Standard Admission');
+  const tierName = escapeHtml(data.ticketTypeName || 'General Admission');
   const attendeeName = escapeHtml(data.attendeeName || 'Attendee');
   const eventTitle = escapeHtml(data.eventTitle || 'Event');
   const seatInfo = data.seatNumber ? escapeHtml(data.seatNumber) : 'General Admission (Floor)';
   const bookingRef = escapeHtml(data.bookingReference || 'N/A');
+  const shortRef = bookingRef.length > 8 ? bookingRef.substring(0, 8).toUpperCase() : bookingRef;
   const email = escapeHtml(data.attendeeEmail || '');
-  const checkInTime = new Date(data.checkedInAt).toLocaleTimeString();
+  const checkInTime = formatLocalTime(data.checkedInAt);
 
   document.getElementById('resultBadgeRow').innerHTML = `
     <span class="gate-granted-badge"><i class="bi bi-check-circle-fill"></i> ENTRY GRANTED</span>
@@ -331,13 +373,14 @@ function renderSuccess(data) {
   `;
 
   document.getElementById('resultDetails').innerHTML = `
-    <!-- Wristband directive -->
+    <!-- Access Level Directive -->
     <div class="wristband-banner" style="background:${wb.bg}; border: 1px solid ${wb.border}; color:${wb.color};">
       <div class="d-flex align-items-center gap-2">
         <span style="font-size:1.4rem;">${wb.icon}</span>
         <div>
-          <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.85;">Hand Over Wristband</div>
-          <div style="font-size:1.1rem; font-weight:800; letter-spacing:-0.01em;">${wb.name}</div>
+          <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.85;">Access Level</div>
+          <div style="font-size:1.05rem; font-weight:800; letter-spacing:-0.01em;">${wb.title}</div>
+          <div style="font-size:0.72rem; opacity:0.85;">${wb.subtitle}</div>
         </div>
       </div>
       <span class="pill-badge" style="background:${wb.pillBg}; border: 1px solid ${wb.border}; color:#fff;">${tierName}</span>
@@ -347,15 +390,16 @@ function renderSuccess(data) {
     <div class="card p-3 mb-2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md);">
       <div class="d-flex justify-content-between align-items-center mb-1">
         <span class="text-muted-soft small">Attendee</span>
-        <span class="badge font-monospace" style="background:rgba(255,255,255,0.08); color:#E0E7FF; font-size:0.76rem;">${bookingRef}</span>
+        <span class="badge font-monospace" style="background:rgba(255,255,255,0.08); color:#E0E7FF; font-size:0.74rem;">REF: ${shortRef}</span>
       </div>
       <h4 class="text-white fw-bold mb-1">${attendeeName}</h4>
-      ${email ? `<div class="text-muted-soft small mb-2"><i class="bi bi-envelope me-1"></i>${email}</div>` : ''}
+      ${email ? `<div class="text-muted-soft small mb-3"><i class="bi bi-envelope me-1"></i>${email}</div>` : ''}
 
-      <div class="border-top pt-2 mt-2" style="border-color: rgba(255,255,255,0.08) !important;">
+      <div class="border-top pt-1" style="border-color: rgba(255,255,255,0.08) !important;">
         <div class="tk-row"><span>Event</span><b>${eventTitle}</b></div>
         <div class="tk-row"><span>Pass Type</span><b style="color:${wb.color};">${tierName}</b></div>
         <div class="tk-row"><span>Seating / Zone</span><b>${seatInfo}</b></div>
+        <div class="tk-row"><span>Booking Ref</span><b class="font-monospace" style="font-size:0.78rem;">${bookingRef}</b></div>
       </div>
     </div>
 
