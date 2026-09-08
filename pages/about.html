@@ -43,7 +43,7 @@
       <div class="d-flex align-items-center gap-2 ms-auto">
         <div id="navAuthSlot" class="d-flex align-items-center gap-2"></div>
         <button class="navbar-toggler d-lg-none border-0 p-0 ms-2" type="button" data-bs-toggle="collapse"
-          data-bs-target="#navLinks">
+          data-bs-target="#navLinks" aria-label="Toggle navigation">
           <i class="bi bi-list fs-3"></i>
         </button>
       </div>
@@ -54,29 +54,29 @@
   <header class="about-hero text-center">
     <div class="hero-glow-1"></div>
     <div class="hero-glow-2"></div>
-    <div class="container-narrow position-relative" style="z-index: 2; max-width: 950px;">
+    <div class="container-narrow position-relative about-container-readable">
       
       <!-- Primary Business Badge -->
       <span class="pill-badge pill-badge-rose mb-3">
         <i class="bi bi-stars me-1"></i> Sri Lanka's Premier Event Ticketing Platform
       </span>
 
-      <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.03em;">
+      <h1 class="display-4 text-white mb-3 about-hero-title">
         Connecting People with Unforgettable Live Experiences
       </h1>
-      <p class="text-muted-soft fs-5 mx-auto mb-3" style="max-width: 780px; line-height: 1.65;">
-        EventSphere is built to eliminate the stress of finding and attending live gatherings. No more messy bank slip uploads, WhatsApp queues, or gate delays — just effortless discovery, instant passes, and authentic community connections.
+      <p class="text-muted-soft fs-5 mx-auto mb-3 about-hero-subtitle">
+        EventSphere eliminates the friction of finding and attending live gatherings. No more messy bank slip uploads, manual WhatsApp queues, or gate delays — just effortless discovery, instant passes, and authentic community connections.
       </p>
 
       <!-- DUAL TAB SWITCHER (Business vs Academic Tech) -->
       <div class="d-flex justify-content-center">
-        <div class="about-tab-nav" role="tablist">
-          <button class="about-tab-btn active" id="tabBtnStory" data-target="#paneStory" role="tab" aria-selected="true">
+        <div class="about-tab-nav" role="tablist" aria-label="About page tabs">
+          <button class="about-tab-btn active" id="tabBtnStory" data-target="#paneStory" role="tab" aria-selected="true" aria-controls="paneStory">
             <i class="bi bi-heart-fill text-danger"></i>
             <span class="d-none d-sm-inline">Our Story &amp; Platform</span>
             <span class="d-inline d-sm-none">Our Story</span>
           </button>
-          <button class="about-tab-btn" id="tabBtnTech" data-target="#paneTech" role="tab" aria-selected="false">
+          <button class="about-tab-btn" id="tabBtnTech" data-target="#paneTech" role="tab" aria-selected="false" aria-controls="paneTech">
             <i class="bi bi-cpu text-info"></i>
             <span class="d-none d-sm-inline">Engineering &amp; Architecture</span>
             <span class="d-inline d-sm-none">Architecture</span>
@@ -90,11 +90,11 @@
   <!-- ================================================================= -->
   <!-- TAB PANE 1: OUR STORY & BUSINESS PLATFORM (Default User-Facing)   -->
   <!-- ================================================================= -->
-  <div class="about-tab-pane active" id="paneStory">
+  <main class="about-tab-pane active" id="paneStory" role="tabpanel" aria-labelledby="tabBtnStory">
 
     <!-- Platform Highlights / Key Metrics -->
     <section class="section-sm pt-2">
-      <div class="container-narrow" style="max-width: 950px;">
+      <div class="container-narrow about-container-readable">
         <div class="row g-3 justify-content-center align-items-stretch">
           <div class="col-6 col-md-3 d-flex">
             <div class="stat-box w-100">
@@ -110,8 +110,8 @@
           </div>
           <div class="col-6 col-md-3 d-flex">
             <div class="stat-box w-100">
-              <div class="stat-number"><i class="bi bi-shield-check me-2 text-success"></i>Zero</div>
-              <div class="stat-label">Overselling / Concurrency</div>
+              <div class="stat-number"><i class="bi bi-shield-check me-2 text-success"></i>10-Min</div>
+              <div class="stat-label">Cart Hold Guarantee</div>
             </div>
           </div>
           <div class="col-6 col-md-3 d-flex">
@@ -129,24 +129,24 @@
       <div class="container-narrow">
         <div class="row g-4 align-items-stretch">
           <div class="col-md-6">
-            <div class="pillar-box" style="border-left: 4px solid var(--neon-rose);">
-              <div class="feature-icon-box" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
+            <div class="pillar-box border-accent-rose">
+              <div class="feature-icon-box icon-accent-rose">
                 <i class="bi bi-compass-fill"></i>
               </div>
-              <h4 class="text-white fw-bold mb-3">Our Mission</h4>
-              <p class="text-muted-soft mb-0" style="line-height: 1.75; font-size: 0.98rem;">
+              <h2 class="h4 text-white fw-bold mb-3">Our Mission</h2>
+              <p class="text-muted-soft mb-0 text-tall-height">
                 To bridge passionate audiences with creators, performers, and organizers through transparent, frictionless, and secure ticketing. We empower local event creators with modern digital tools while giving attendees a peaceful, reliable way to celebrate life together.
               </p>
             </div>
           </div>
 
           <div class="col-md-6">
-            <div class="pillar-box" style="border-left: 4px solid var(--neon-violet);">
-              <div class="feature-icon-box" style="background: rgba(139, 92, 246, 0.15); color: var(--neon-violet);">
+            <div class="pillar-box border-accent-violet">
+              <div class="feature-icon-box icon-accent-violet">
                 <i class="bi bi-eye-fill"></i>
               </div>
-              <h4 class="text-white fw-bold mb-3">Our Vision</h4>
-              <p class="text-muted-soft mb-0" style="line-height: 1.75; font-size: 0.98rem;">
+              <h2 class="h4 text-white fw-bold mb-3">Our Vision</h2>
+              <p class="text-muted-soft mb-0 text-tall-height">
                 To cultivate Sri Lanka’s most vibrant cultural and entertainment ecosystem — where discovering an unforgettable concert, indie performance, tech summit, or wellness retreat is as seamless, instant, and trusted as streaming your favourite music.
               </p>
             </div>
@@ -161,7 +161,7 @@
         <div class="text-center mb-5">
           <p class="eyebrow mb-1">The EventSphere Difference</p>
           <h2 class="text-white">Say Goodbye to the Old Way of Ticketing</h2>
-          <p class="text-muted-soft mx-auto small" style="max-width: 600px;">
+          <p class="text-muted-soft mx-auto small section-subtitle-max">
             Traditional event management in Sri Lanka has long relied on manual bank slips and social media DMs. Here is how EventSphere transforms the experience.
           </p>
         </div>
@@ -169,14 +169,14 @@
         <div class="row g-4 align-items-stretch">
           <!-- The Legacy Way -->
           <div class="col-lg-6">
-            <div class="filter-bar h-100 p-4 p-md-5" style="border-left: 4px solid var(--error);">
+            <div class="filter-bar h-100 p-4 p-md-5 border-accent-danger">
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="feature-icon-box mb-0" style="background: rgba(239, 68, 68, 0.15); color: var(--error);">
+                <div class="feature-icon-box mb-0 icon-accent-danger">
                   <i class="bi bi-x-octagon-fill"></i>
                 </div>
-                <h4 class="mb-0 text-white">The Old Frustration</h4>
+                <h3 class="h4 mb-0 text-white">The Old Frustration</h3>
               </div>
-              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-3 mb-0" style="line-height: 1.6;">
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-3 mb-0 text-relaxed-height">
                 <li class="d-flex align-items-start gap-2">
                   <i class="bi bi-dash-circle text-danger mt-1"></i>
                   <span><strong>Manual Bank Slips:</strong> Attendees must make transfers, take screenshots, and wait 24–48 hours for someone to confirm.</span>
@@ -199,14 +199,14 @@
 
           <!-- The EventSphere Way -->
           <div class="col-lg-6">
-            <div class="filter-bar h-100 p-4 p-md-5" style="border-left: 4px solid var(--neon-emerald);">
+            <div class="filter-bar h-100 p-4 p-md-5 border-accent-emerald">
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="feature-icon-box mb-0" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
+                <div class="feature-icon-box mb-0 icon-accent-emerald">
                   <i class="bi bi-check2-circle"></i>
                 </div>
-                <h4 class="mb-0 text-white">The EventSphere Standard</h4>
+                <h3 class="h4 mb-0 text-white">The EventSphere Standard</h3>
               </div>
-              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-3 mb-0" style="line-height: 1.6;">
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-3 mb-0 text-relaxed-height">
                 <li class="d-flex align-items-start gap-2">
                   <i class="bi bi-check2-circle text-success mt-1"></i>
                   <span><strong>Instant Digital Confirmation:</strong> Pay via Visa, Mastercard, or Genie on PayHere and receive tickets instantly.</span>
@@ -243,15 +243,15 @@
           <div class="col-lg-6">
             <div class="pillar-box">
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="feature-icon-box mb-0" style="background: rgba(0, 242, 254, 0.15); color: var(--neon-cyan);">
+                <div class="feature-icon-box mb-0 icon-accent-cyan">
                   <i class="bi bi-ticket-perforated-fill"></i>
                 </div>
                 <div>
-                  <h4 class="text-white fw-bold mb-0">For Attendees &amp; Fans</h4>
+                  <h3 class="h4 text-white fw-bold mb-0">For Attendees &amp; Fans</h3>
                   <span class="text-muted-soft small">Simple, transparent, and memorable</span>
                 </div>
               </div>
-              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-2 mb-0" style="line-height: 1.7;">
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-2 mb-0 text-tall-height">
                 <li><i class="bi bi-check2 text-info me-2"></i><strong>Effortless Discovery:</strong> Browse concerts, theatre, technology festivals, and lifestyle workshops.</li>
                 <li><i class="bi bi-check2 text-info me-2"></i><strong>Group Bookings Made Easy:</strong> Enter names and emails for every friend; each receives their own pass.</li>
                 <li><i class="bi bi-check2 text-info me-2"></i><strong>Offline-Ready QR Passes:</strong> Passes save directly to your phone dashboard and email inbox.</li>
@@ -264,15 +264,15 @@
           <div class="col-lg-6">
             <div class="pillar-box">
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="feature-icon-box mb-0" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
+                <div class="feature-icon-box mb-0 icon-accent-rose">
                   <i class="bi bi-megaphone-fill"></i>
                 </div>
                 <div>
-                  <h4 class="text-white fw-bold mb-0">For Event Organizers</h4>
+                  <h3 class="h4 text-white fw-bold mb-0">For Event Organizers</h3>
                   <span class="text-muted-soft small">Full control from ticketing to the door</span>
                 </div>
               </div>
-              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-2 mb-0" style="line-height: 1.7;">
+              <ul class="list-unstyled text-muted-soft d-flex flex-column gap-2 mb-0 text-tall-height">
                 <li><i class="bi bi-check2 text-danger me-2"></i><strong>Rapid Event Launch:</strong> Publish events with multiple ticket tiers (VIP, Early Bird, General Admission).</li>
                 <li><i class="bi bi-check2 text-danger me-2"></i><strong>Mobile Gate Check-In:</strong> Turn any team member's smartphone into a fast door scanner in seconds.</li>
                 <li><i class="bi bi-check2 text-danger me-2"></i><strong>Live Attendee Manifests:</strong> Monitor tickets sold, pending revenue, and real-time gate attendance.</li>
@@ -292,19 +292,19 @@
             <div class="col-md-auto text-center text-md-start">
               <div class="position-relative mx-auto d-inline-block">
                 <img src="../assets/images/lasandi.jpg" alt="Lasandi Salwathura — Creator & Software Developer"
-                  style="width: 108px; height: 108px; object-fit: cover; object-position: center 18%; border-radius: 50%; border: 3px solid rgba(255, 46, 116, 0.7); box-shadow: 0 8px 28px rgba(255, 46, 116, 0.45), 0 0 16px rgba(139, 92, 246, 0.35); display: block;">
-                <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success p-1 border border-dark" title="Verified Creator" style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
-                  <i class="bi bi-check2 text-white" style="font-size: 0.8rem;"></i>
+                  class="creator-avatar-lg">
+                <span class="creator-verified-badge" title="Verified Creator">
+                  <i class="bi bi-check2"></i>
                 </span>
               </div>
             </div>
             <div class="col-md">
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="pill-badge pill-badge-rose">Creator &amp; Software Developer</span>
-                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3);">IJSE Semester 2</span>
+                <span class="academic-badge">IJSE Semester 2</span>
               </div>
               <h3 class="text-white fw-bold mb-1">Lasandi Salwathura</h3>
-              <p class="text-muted-soft mb-3" style="line-height: 1.65; font-size: 0.95rem;">
+              <p class="text-muted-soft mb-3 text-relaxed-height">
                 Software Engineering undergraduate at the <strong>Institute of Software Engineering (IJSE)</strong>. Built EventSphere as the <strong>Semester 2 AAD (Advanced API Development — ITS 1114)</strong> module coursework, combining modern concurrent distributed architecture with an intuitive, human-centered event discovery and gate check-in experience.
               </p>
               <div class="d-flex align-items-center gap-3 flex-wrap">
@@ -327,7 +327,7 @@
         <div class="filter-bar p-4 p-md-5">
           <div class="text-center mb-5">
             <p class="eyebrow mb-1">What Guides Us</p>
-            <h3 class="text-white">Our Foundational Values</h3>
+            <h2 class="h3 text-white">Our Foundational Values</h2>
           </div>
 
           <div class="row g-4 text-start">
@@ -336,7 +336,7 @@
                 <i class="bi bi-shield-shaded text-primary fs-5"></i>
                 <span>Trust &amp; Transparency</span>
               </div>
-              <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
+              <p class="text-muted-soft small mb-0 text-relaxed-height">
                 Zero hidden booking markups, verified event organizers, and bank-grade payment security protect both fans and creators.
               </p>
             </div>
@@ -346,7 +346,7 @@
                 <i class="bi bi-speedometer2 text-danger fs-5"></i>
                 <span>Speed &amp; Reliability</span>
               </div>
-              <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
+              <p class="text-muted-soft small mb-0 text-relaxed-height">
                 From 60-second mobile checkouts to rapid gate scanning, our technology is engineered to keep queues moving and parties starting on time.
               </p>
             </div>
@@ -356,7 +356,7 @@
                 <i class="bi bi-people-fill text-success fs-5"></i>
                 <span>Community &amp; Culture</span>
               </div>
-              <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
+              <p class="text-muted-soft small mb-0 text-relaxed-height">
                 We are proud to celebrate Sri Lanka’s burgeoning music, arts, technology, and startup ecosystems by giving every voice a stage.
               </p>
             </div>
@@ -365,24 +365,24 @@
       </div>
     </section>
 
-  </div>
+  </main>
 
   <!-- ================================================================= -->
   <!-- TAB PANE 2: SYSTEM ARCHITECTURE & TECH SPECS (ITS 1114 Coursework)-->
   <!-- ================================================================= -->
-  <div class="about-tab-pane" id="paneTech">
+  <main class="about-tab-pane" id="paneTech" role="tabpanel" aria-labelledby="tabBtnTech">
 
     <!-- Academic Banner -->
     <section class="section-sm pt-2">
-      <div class="container-narrow" style="max-width: 950px;">
-        <div class="p-3 text-center filter-bar" style="background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.35);">
+      <div class="container-narrow about-container-readable">
+        <div class="academic-banner">
           <div class="d-flex align-items-center justify-content-center gap-2 text-white mb-2 flex-wrap">
             <i class="bi bi-mortarboard-fill text-warning fs-5"></i>
             <span class="fw-bold fs-6">Semester 2 — AAD (Advanced API Development — ITS 1114) Module Coursework</span>
             <span class="pill-badge pill-badge-rose ms-1">IJSE</span>
           </div>
           <p class="text-muted-soft small mb-2 d-flex align-items-center justify-content-center flex-wrap gap-2">
-            <img src="../assets/images/lasandi.jpg" alt="Lasandi Salwathura" style="width:24px; height:24px; border-radius:50%; object-fit:cover; object-position:center 18%; border:1px solid rgba(255,46,116,0.6);">
+            <img src="../assets/images/lasandi.jpg" alt="Lasandi Salwathura" class="creator-avatar-sm">
             <span>Developed by <strong>Lasandi Salwathura</strong></span> &bull; 
             <a href="https://github.com/lasandisal" target="_blank" rel="noopener noreferrer" class="text-info text-decoration-none me-2"><i class="bi bi-github"></i> lasandisal</a>
             <a href="https://www.linkedin.com/in/lasandi-salwathura/details/education/" target="_blank" rel="noopener noreferrer" class="text-info text-decoration-none"><i class="bi bi-linkedin"></i> LinkedIn Profile</a>
@@ -394,55 +394,55 @@
       </div>
     </section>
 
-    <!-- Key Engineering Highlights Badges -->
+    <!-- Key Engineering Highlights Badges (Distinct Quantitative Metrics) -->
     <section class="section-sm">
-      <div class="container-narrow" style="max-width: 950px;">
+      <div class="container-narrow about-container-readable">
         <div class="row g-3 justify-content-center align-items-stretch">
           <div class="col-6 col-md-3 d-flex">
             <div class="stat-box w-100">
-              <div class="stat-number">Pessimistic Locking</div>
-              <div class="stat-label">Zero Overselling / Concurrency</div>
+              <div class="stat-number">15</div>
+              <div class="stat-label">JPA Domain Entities</div>
             </div>
           </div>
           <div class="col-6 col-md-3 d-flex">
             <div class="stat-box w-100">
-              <div class="stat-number">10-Min Hold TTL</div>
-              <div class="stat-label">Auto-Release Scheduler</div>
+              <div class="stat-number">Zero</div>
+              <div class="stat-label">Concurrency Overselling</div>
             </div>
           </div>
           <div class="col-6 col-md-3 d-flex">
             <div class="stat-box w-100">
-              <div class="stat-number">HMAC-SHA256</div>
-              <div class="stat-label">Anti-Tamper QR Passes</div>
+              <div class="stat-number">60s</div>
+              <div class="stat-label">TTL Eviction Interval</div>
             </div>
           </div>
           <div class="col-6 col-md-3 d-flex">
             <div class="stat-box w-100">
-              <div class="stat-number">Gemini AI</div>
-              <div class="stat-label">Tool / Function Calling</div>
+              <div class="stat-number">256-Bit</div>
+              <div class="stat-label">HMAC Signed Passes</div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Deep Dive: Core Engineering Capabilities -->
+    <!-- Deep Dive: Core Engineering Innovations & Solutions -->
     <section class="section-sm">
       <div class="container-narrow">
         <div class="text-center mb-5">
-          <p class="eyebrow mb-1">Under The Hood</p>
-          <h2 class="text-white">Core Technical Systems &amp; Engineering Highlights</h2>
+          <p class="eyebrow mb-1">Algorithmic Solutions</p>
+          <h2 class="text-white">Core Engineering Innovations &amp; Implementations</h2>
         </div>
 
         <div class="row g-4">
           <!-- 1. Pessimistic Concurrency -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
-              <div class="feature-icon-box" style="background: rgba(255, 46, 116, 0.15); color: var(--neon-rose);">
+              <div class="feature-icon-box icon-accent-rose">
                 <i class="bi bi-lock-fill"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">Pessimistic Concurrency</h5>
+                <h3 class="h5 text-white fw-bold mb-0">Pessimistic Concurrency</h3>
                 <span class="code-badge">SELECT FOR UPDATE</span>
               </div>
               <p class="text-muted-soft small mb-0">
@@ -454,12 +454,12 @@
           <!-- 2. 10-Minute Cart Hold & Auto-Release -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
-              <div class="feature-icon-box" style="background: rgba(255, 183, 3, 0.15); color: var(--neon-amber);">
+              <div class="feature-icon-box icon-accent-amber">
                 <i class="bi bi-hourglass-split"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">10-Min Cart Hold &amp; TTL</h5>
-                <span class="code-badge">@Scheduled(60s)</span>
+                <h3 class="h5 text-white fw-bold mb-0">10-Min Cart Hold &amp; TTL</h3>
+                <span class="code-badge code-badge-amber">@Scheduled(60s)</span>
               </div>
               <p class="text-muted-soft small mb-0">
                 When an attendee selects tickets, the system provisionally holds them with a 10-minute TTL. The background <span class="text-white">BookingExpiryScheduler</span> runs every 60s, releasing abandoned tickets back to the public pool so seats are never locked indefinitely.
@@ -470,15 +470,15 @@
           <!-- 3. Cryptographic HMAC-SHA256 QR Passes -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
-              <div class="feature-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
+              <div class="feature-icon-box icon-accent-emerald">
                 <i class="bi bi-qr-code-scan"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">Anti-Tamper QR Passes</h5>
-                <span class="code-badge">HMAC-SHA256</span>
+                <h3 class="h5 text-white fw-bold mb-0">Anti-Tamper QR Passes</h3>
+                <span class="code-badge code-badge-emerald">HMAC-SHA256</span>
               </div>
               <p class="text-muted-soft small mb-0">
-                Admission passes do not expose raw sequential IDs. Instead, <span class="text-white">TicketSigningUtil</span> generates URL-safe tokens encoded as <span class="code-badge">Base64Url(ticketCode:signature)</span>. Gate scanners pre-verify signatures in memory before querying the DB.
+                Admission passes do not expose raw sequential IDs. Instead, <span class="text-white">TicketSigningUtil</span> generates URL-safe tokens encoded as <span class="code-badge code-badge-emerald">Base64Url(ticketCode:signature)</span>. Gate scanners pre-verify signatures in memory before querying the DB.
               </p>
             </div>
           </div>
@@ -486,15 +486,15 @@
           <!-- 4. PayHere IPG & Webhooks -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
-              <div class="feature-icon-box" style="background: rgba(0, 242, 254, 0.15); color: var(--neon-cyan);">
+              <div class="feature-icon-box icon-accent-cyan">
                 <i class="bi bi-credit-card-2-front-fill"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">PayHere IPG Pipeline</h5>
-                <span class="code-badge">MD5 Webhook Sig</span>
+                <h3 class="h5 text-white fw-bold mb-0">PayHere IPG Pipeline</h3>
+                <span class="code-badge code-badge-cyan">MD5 Webhook Sig</span>
               </div>
               <p class="text-muted-soft small mb-0">
-                Checkouts are secured using SHA-256 merchant hashes. Asynchronous server-to-server webhook callbacks (<span class="code-badge">/api/v1/payments/notify</span>) validate PayHere’s MD5 signature, idempotently confirm bookings, issue tickets, and log audit payloads.
+                Checkouts are secured using SHA-256 merchant hashes. Asynchronous server-to-server webhook callbacks (<span class="code-badge code-badge-cyan">/api/v1/payments/notify</span>) validate PayHere’s MD5 signature, idempotently confirm bookings, issue tickets, and log audit payloads.
               </p>
             </div>
           </div>
@@ -502,12 +502,12 @@
           <!-- 5. High-Deliverability Transactional Emailing -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
-              <div class="feature-icon-box" style="background: rgba(56, 189, 248, 0.15); color: var(--powder-blue);">
+              <div class="feature-icon-box icon-accent-sky">
                 <i class="bi bi-envelope-check-fill"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">Inbox Deliverability (No Spam)</h5>
-                <span class="code-badge">Brevo Relay + @Async</span>
+                <h3 class="h5 text-white fw-bold mb-0">Inbox Deliverability (No Spam)</h3>
+                <span class="code-badge code-badge-cyan">Brevo + @Async</span>
               </div>
               <p class="text-muted-soft small mb-0">
                 Standard consumer SMTP (like Gmail) frequently routes cloud-sent emails straight into Spam folders. EventSphere utilizes <span class="text-white">Brevo’s authenticated transactional SMTP relay</span> with SPF/DKIM alignment, guaranteeing that 6-digit OTPs, itemized receipts, and QR passes land directly in the attendee's <span class="text-white">Primary Inbox</span> rather than Spam.
@@ -518,15 +518,15 @@
           <!-- 6. Google Gemini AI Function Calling -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
-              <div class="feature-icon-box" style="background: rgba(139, 92, 246, 0.15); color: var(--neon-violet);">
+              <div class="feature-icon-box icon-accent-violet">
                 <i class="bi bi-robot"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">Gemini Function Calling</h5>
-                <span class="code-badge">Read-Only Guardrails</span>
+                <h3 class="h5 text-white fw-bold mb-0">Gemini Function Calling</h3>
+                <span class="code-badge code-badge-violet">Read-Only Guardrails</span>
               </div>
               <p class="text-muted-soft small mb-0">
-                Powered by Google Gemini API with native tool calling (<span class="code-badge">search_events</span>, <span class="code-badge">get_event_details</span>, <span class="code-badge">get_my_bookings</span>). Safety guardrails keep the assistant strictly read-only, preventing unauthorized state alterations.
+                Powered by Google Gemini API with native tool calling (<span class="code-badge code-badge-violet">search_events</span>, <span class="code-badge code-badge-violet">get_event_details</span>, <span class="code-badge code-badge-violet">get_my_bookings</span>). Safety guardrails keep the assistant strictly read-only, preventing unauthorized state alterations.
               </p>
             </div>
           </div>
@@ -534,49 +534,57 @@
       </div>
     </section>
 
-    <!-- 3-Tier Layered Architecture Diagram -->
+    <!-- 4-Tier Decoupled System Architecture -->
     <section class="section-sm">
       <div class="container-narrow">
         <div class="filter-bar p-4 p-md-5">
           <div class="text-center mb-4">
             <span class="pill-badge pill-badge-lavender mb-2">Clean Enterprise Architecture</span>
-            <h3 class="text-white">Three-Tier Decoupled System Architecture</h3>
-            <p class="text-muted-soft mx-auto small" style="max-width: 650px;">
-              Adhering to strict separation of concerns across presentation, business logic, persistence, and external service layers.
+            <h2 class="h3 text-white">Four-Tier Decoupled System Flow</h2>
+            <p class="text-muted-soft mx-auto small section-subtitle-max">
+              Adhering to strict separation of concerns across presentation, security, business logic, and persistence layers.
             </p>
           </div>
 
           <div class="row g-3 text-start">
             <div class="col-md-3">
-              <div class="arch-flow-node h-100">
-                <div class="text-primary fs-3 mb-2"><i class="bi bi-laptop"></i></div>
-                <h6 class="text-white fw-bold mb-1">Presentation Tier</h6>
-                <p class="text-muted-soft small mb-2">Responsive Web, Mobile &amp; Gate Scanner</p>
-                <span class="code-badge">HTML5 / Vanilla JS / CSS</span>
+              <div class="arch-flow-node">
+                <div>
+                  <div class="text-primary fs-3 mb-2"><i class="bi bi-laptop"></i></div>
+                  <h3 class="h6 text-white fw-bold mb-1">Presentation Tier</h3>
+                  <p class="text-muted-soft small mb-2">Responsive Web UI, Mobile Gate Scanner &amp; AI Widget</p>
+                </div>
+                <span class="code-badge code-badge-cyan">HTML5 / Vanilla JS / CSS3</span>
               </div>
             </div>
             <div class="col-md-3">
-              <div class="arch-flow-node h-100" style="border-color: rgba(255, 46, 116, 0.4);">
-                <div class="text-danger fs-3 mb-2"><i class="bi bi-shield-check"></i></div>
-                <h6 class="text-white fw-bold mb-1">Security &amp; API</h6>
-                <p class="text-muted-soft small mb-2">Stateless JWT Auth, CORS, RBAC &amp; DTOs</p>
-                <span class="code-badge">Spring Security 6</span>
+              <div class="arch-flow-node arch-node-rose">
+                <div>
+                  <div class="text-danger fs-3 mb-2"><i class="bi bi-shield-check"></i></div>
+                  <h3 class="h6 text-white fw-bold mb-1">Security &amp; Gateway</h3>
+                  <p class="text-muted-soft small mb-2">Stateless JWT Auth, CORS Filter, BCrypt &amp; DTO Validations</p>
+                </div>
+                <span class="code-badge">Spring Security 6 + JJWT</span>
               </div>
             </div>
             <div class="col-md-3">
-              <div class="arch-flow-node h-100" style="border-color: rgba(139, 92, 246, 0.4);">
-                <div class="text-violet fs-3 mb-2" style="color:var(--neon-violet);"><i class="bi bi-gear-wide-connected"></i></div>
-                <h6 class="text-white fw-bold mb-1">Core Logic &amp; Services</h6>
-                <p class="text-muted-soft small mb-2">Concurrency Control, TTL Jobs, QR Engine</p>
-                <span class="code-badge">Spring Boot 3.2.4</span>
+              <div class="arch-flow-node arch-node-violet">
+                <div>
+                  <div class="fs-3 mb-2 icon-violet-color"><i class="bi bi-gear-wide-connected"></i></div>
+                  <h3 class="h6 text-white fw-bold mb-1">Core Logic &amp; Services</h3>
+                  <p class="text-muted-soft small mb-2">Pessimistic Locks, 60s TTL Schedulers, QR Token Engine</p>
+                </div>
+                <span class="code-badge code-badge-violet">Spring Boot 3.2.4 Services</span>
               </div>
             </div>
             <div class="col-md-3">
-              <div class="arch-flow-node h-100" style="border-color: rgba(0, 242, 254, 0.4);">
-                <div class="text-info fs-3 mb-2"><i class="bi bi-database-fill-check"></i></div>
-                <h6 class="text-white fw-bold mb-1">Persistence &amp; Cloud</h6>
-                <p class="text-muted-soft small mb-2">MySQL, PayHere, Gemini, Cloudinary &amp; Brevo</p>
-                <span class="code-badge">Hibernate &amp; Cloud Services</span>
+              <div class="arch-flow-node arch-node-cyan">
+                <div>
+                  <div class="text-info fs-3 mb-2"><i class="bi bi-database-fill-check"></i></div>
+                  <h3 class="h6 text-white fw-bold mb-1">Persistence &amp; Cloud</h3>
+                  <p class="text-muted-soft small mb-2">MySQL Relational, PayHere IPG, Brevo SMTP &amp; Gemini AI</p>
+                </div>
+                <span class="code-badge code-badge-emerald">Hibernate &amp; Cloud Integrations</span>
               </div>
             </div>
           </div>
@@ -584,78 +592,95 @@
       </div>
     </section>
 
-    <!-- Three-Tier User Roles & Capabilities -->
+    <!-- Role-Based Access Control (RBAC) & API Security Matrix -->
     <section class="section-sm">
       <div class="container-narrow">
         <div class="text-center mb-5">
-          <p class="eyebrow mb-1">Role-Based Access Control (RBAC)</p>
-          <h2 class="text-white">Designed For Every Event Participant</h2>
+          <p class="eyebrow mb-1">API Security Matrix</p>
+          <h2 class="text-white">Role-Based Access Control (RBAC) &amp; Privilege Scopes</h2>
+          <p class="text-muted-soft mx-auto small section-subtitle-max">
+            Every REST endpoint is strictly guarded using Spring Security method-level annotations and stateless JWT token claims.
+          </p>
         </div>
 
         <div class="row g-4">
-          <!-- Role 1: Attendee -->
-          <div class="col-lg-4">
-            <div class="role-card role-user">
-              <div class="d-flex align-items-center gap-2 mb-3">
-                <div class="avatar-circle" style="width:36px; height:36px; background:var(--grad-cyan); font-size:0.85rem;">
-                  <i class="bi bi-person"></i>
+          <!-- Role 0: Public -->
+          <div class="col-lg-3 col-md-6">
+            <div class="rbac-card rbac-public">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="code-badge code-badge-amber">permitAll()</span>
+                  <i class="bi bi-globe2 text-warning fs-5"></i>
                 </div>
-                <div>
-                  <h5 class="text-white fw-bold mb-0">Attendees</h5>
-                  <span class="code-badge">ROLE_USER</span>
+                <h3 class="h5 text-white fw-bold mb-1">Anonymous / Public</h3>
+                <p class="text-muted-soft small mb-3">Unauthenticated callers accessing public discovery and callbacks.</p>
+                <div class="d-flex flex-column gap-1 mb-3">
+                  <span class="rbac-endpoint-tag">GET /api/v1/events</span>
+                  <span class="rbac-endpoint-tag">POST /api/v1/auth/**</span>
+                  <span class="rbac-endpoint-tag">POST /api/v1/payments/notify</span>
                 </div>
               </div>
-              <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
-                <li><i class="bi bi-check2 text-info me-2"></i>Explore published events by category &amp; city</li>
-                <li><i class="bi bi-check2 text-info me-2"></i>Select ticket tiers with 10-minute reservation hold</li>
-                <li><i class="bi bi-check2 text-info me-2"></i>Checkout via PayHere Sandbox / Live gateway</li>
-                <li><i class="bi bi-check2 text-info me-2"></i>Receive anti-tamper QR passes and email receipts</li>
-                <li><i class="bi bi-check2 text-info me-2"></i>Ask natural language questions to Gemini AI</li>
-              </ul>
+              <span class="text-muted-soft card-meta-caption"><i class="bi bi-shield-check text-warning me-1"></i>IPN Signature Validation</span>
+            </div>
+          </div>
+
+          <!-- Role 1: Attendee -->
+          <div class="col-lg-3 col-md-6">
+            <div class="rbac-card rbac-user">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="code-badge code-badge-cyan">ROLE_USER</span>
+                  <i class="bi bi-person-fill text-info fs-5"></i>
+                </div>
+                <h3 class="h5 text-white fw-bold mb-1">Authenticated Attendee</h3>
+                <p class="text-muted-soft small mb-3">Bearer token context for reserving tickets, checkout, and pass access.</p>
+                <div class="d-flex flex-column gap-1 mb-3">
+                  <span class="rbac-endpoint-tag">POST /api/v1/bookings</span>
+                  <span class="rbac-endpoint-tag">GET /api/v1/bookings/my</span>
+                  <span class="rbac-endpoint-tag">POST /api/v1/ai/assistant</span>
+                </div>
+              </div>
+              <span class="text-muted-soft card-meta-caption"><i class="bi bi-lock text-info me-1"></i>Scoped to Token Subject</span>
             </div>
           </div>
 
           <!-- Role 2: Organizer -->
-          <div class="col-lg-4">
-            <div class="role-card role-organizer">
-              <div class="d-flex align-items-center gap-2 mb-3">
-                <div class="avatar-circle" style="width:36px; height:36px; background:var(--grad-primary); font-size:0.85rem;">
-                  <i class="bi bi-briefcase"></i>
-                </div>
-                <div>
-                  <h5 class="text-white fw-bold mb-0">Organizers</h5>
+          <div class="col-lg-3 col-md-6">
+            <div class="rbac-card rbac-organizer">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
                   <span class="code-badge">ROLE_ORGANIZER</span>
+                  <i class="bi bi-briefcase-fill text-danger fs-5"></i>
+                </div>
+                <h3 class="h5 text-white fw-bold mb-1">Event Organizer</h3>
+                <p class="text-muted-soft small mb-3">Verified creators managing events, inventories, and gate check-in.</p>
+                <div class="d-flex flex-column gap-1 mb-3">
+                  <span class="rbac-endpoint-tag">POST /api/v1/events</span>
+                  <span class="rbac-endpoint-tag">POST /api/v1/tickets/verify</span>
+                  <span class="rbac-endpoint-tag">GET /api/v1/organizer/manifest</span>
                 </div>
               </div>
-              <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
-                <li><i class="bi bi-check2 text-danger me-2"></i>Submit verified business applications (BRN, NIC)</li>
-                <li><i class="bi bi-check2 text-danger me-2"></i>Publish events with Cloudinary media banners</li>
-                <li><i class="bi bi-check2 text-danger me-2"></i>Configure tiered pricing (VIP, General, Early Bird)</li>
-                <li><i class="bi bi-check2 text-danger me-2"></i>Monitor live ticket sales &amp; attendee manifests</li>
-                <li><i class="bi bi-check2 text-danger me-2"></i>Gate scanner tool to validate cryptographic QR passes</li>
-              </ul>
+              <span class="text-muted-soft card-meta-caption"><i class="bi bi-shield-lock text-danger me-1"></i>PreAuthorize Enforced</span>
             </div>
           </div>
 
           <!-- Role 3: Admin -->
-          <div class="col-lg-4">
-            <div class="role-card role-admin">
-              <div class="d-flex align-items-center gap-2 mb-3">
-                <div class="avatar-circle" style="width:36px; height:36px; background:linear-gradient(135deg,#8B5CF6,#EC4899); font-size:0.85rem;">
-                  <i class="bi bi-shield-lock"></i>
+          <div class="col-lg-3 col-md-6">
+            <div class="rbac-card rbac-admin">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="code-badge code-badge-violet">ROLE_ADMIN</span>
+                  <i class="bi bi-shield-lock-fill fs-5 icon-violet-color"></i>
                 </div>
-                <div>
-                  <h5 class="text-white fw-bold mb-0">Administrators</h5>
-                  <span class="code-badge">ROLE_ADMIN</span>
+                <h3 class="h5 text-white fw-bold mb-1">Platform Administrator</h3>
+                <p class="text-muted-soft small mb-3">Global governance, organizer vetting, user lifecycle, and audit logs.</p>
+                <div class="d-flex flex-column gap-1 mb-3">
+                  <span class="rbac-endpoint-tag">PUT /api/v1/admin/organizers/**</span>
+                  <span class="rbac-endpoint-tag">PUT /api/v1/admin/users/status</span>
+                  <span class="rbac-endpoint-tag">GET /api/v1/admin/analytics</span>
                 </div>
               </div>
-              <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-2">
-                <li><i class="bi bi-check2 text-warning me-2"></i>Review, approve, or reject organizer credentials</li>
-                <li><i class="bi bi-check2 text-warning me-2"></i>Manage user statuses (Active, Suspended, Roles)</li>
-                <li><i class="bi bi-check2 text-warning me-2"></i>Oversee categories, venues, and platform audit logs</li>
-                <li><i class="bi bi-check2 text-warning me-2"></i>Inspect live platform metrics and total gross revenue</li>
-                <li><i class="bi bi-check2 text-warning me-2"></i>System-wide maintenance and emergency event controls</li>
-              </ul>
+              <span class="text-muted-soft card-meta-caption"><i class="bi bi-award text-violet me-1"></i>Full Audit Logging</span>
             </div>
           </div>
         </div>
@@ -669,8 +694,8 @@
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
             <div>
               <p class="eyebrow mb-1">Architecture Matrix</p>
-              <h3 class="text-white mb-1">Technology Stack Specification</h3>
-              <p class="text-muted-soft small mb-0">Engineered across 12 specialized architectural capabilities &amp; cloud services</p>
+              <h2 class="h3 text-white mb-1">Technology Stack Specification</h2>
+              <p class="text-muted-soft small mb-0">Complete inventory of enterprise frameworks, runtime environments, and external cloud services</p>
             </div>
             <span class="code-badge">Java 21 LTS &bull; Spring Boot 3.2.4</span>
           </div>
@@ -679,242 +704,242 @@
           <div class="tech-bento-grid">
             
             <!-- 1. Java 21 -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-cyan);">
+            <div class="tech-bento-card glow-cyan">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Runtime &amp; Language</span>
-                  <div class="tech-card-icon" style="background: rgba(0, 242, 254, 0.14); color: #38BDF8;">
+                  <div class="tech-card-icon icon-accent-cyan">
                     <i class="bi bi-cpu-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Java 21 LTS</div>
+                <h3 class="tech-card-title">Java 21 LTS</h3>
                 <div class="tech-card-desc">
                   Modern enterprise language features including pattern matching, records, sealed interfaces, and virtual thread readiness.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">OpenJDK 21</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-info me-1"></i>LTS Core</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-info me-1"></i>LTS Core</span>
               </div>
             </div>
 
             <!-- 2. Spring Boot 3.2.4 -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-emerald);">
+            <div class="tech-bento-card glow-emerald">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Enterprise Framework</span>
-                  <div class="tech-card-icon" style="background: rgba(16, 185, 129, 0.14); color: #34D399;">
+                  <div class="tech-card-icon icon-accent-emerald">
                     <i class="bi bi-box-seam-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Spring Boot 3.2.4</div>
+                <h3 class="tech-card-title">Spring Boot 3.2.4</h3>
                 <div class="tech-card-desc">
                   Core IoC dependency injection, REST starters, background scheduler engine, and declarative transaction boundaries.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">Spring 6 Core</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-success me-1"></i>IoC / MVC</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-success me-1"></i>IoC / MVC</span>
               </div>
             </div>
 
             <!-- 3. Spring Security 6 & JJWT -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-rose);">
+            <div class="tech-bento-card glow-rose">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Security &amp; Auth</span>
-                  <div class="tech-card-icon" style="background: rgba(255, 46, 116, 0.14); color: #FB7185;">
+                  <div class="tech-card-icon icon-accent-rose">
                     <i class="bi bi-shield-lock-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Spring Security 6 + JJWT</div>
+                <h3 class="tech-card-title">Spring Security 6 + JJWT</h3>
                 <div class="tech-card-desc">
                   Stateless JWT authentication filter chain, Role-Based Access Control (RBAC), and BCrypt (cost 12) credential hashing.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">JJWT 0.11.5</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-danger me-1"></i>Stateless RBAC</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-danger me-1"></i>Stateless RBAC</span>
               </div>
             </div>
 
             <!-- 4. Spring Data JPA & Hibernate -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-violet);">
+            <div class="tech-bento-card glow-violet">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Persistence &amp; ORM</span>
-                  <div class="tech-card-icon" style="background: rgba(139, 92, 246, 0.14); color: #A78BFA;">
+                  <div class="tech-card-icon icon-accent-violet">
                     <i class="bi bi-database-fill-check"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Spring Data JPA &amp; Hibernate</div>
+                <h3 class="tech-card-title">Spring Data JPA &amp; Hibernate</h3>
                 <div class="tech-card-desc">
-                  15 domain entities with JPA lifecycle hooks, transactional integrity, and optimized HikariCP connection pooling.
+                  15 domain entities with JPA lifecycle hooks, transactional integrity, custom JPQL queries, and repository abstractions.
                 </div>
               </div>
               <div class="tech-card-footer">
-                <span class="tech-card-badge">HikariCP</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-violet me-1"></i>JPQL Queries</span>
+                <span class="tech-card-badge">Hibernate ORM</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-violet me-1"></i>JPQL Queries</span>
               </div>
             </div>
 
             <!-- 5. MySQL Relational Engine -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-amber);">
+            <div class="tech-bento-card glow-amber">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Database Engine</span>
-                  <div class="tech-card-icon" style="background: rgba(245, 158, 11, 0.14); color: #FBBF24;">
+                  <div class="tech-card-icon icon-accent-amber">
                     <i class="bi bi-hdd-network-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">MySQL 8+ / 9.x Relational</div>
+                <h3 class="tech-card-title">MySQL 8+ Relational</h3>
                 <div class="tech-card-desc">
-                  ACID-compliant relational schema with foreign key cascades and row-level indexing, hosted locally and on Aiven Cloud.
+                  ACID-compliant relational schema with foreign key cascades, row-level indexes, and production deployment on Aiven Cloud.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">InnoDB Engine</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-warning me-1"></i>ACID Compliant</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-warning me-1"></i>ACID Compliant</span>
               </div>
             </div>
 
-            <!-- 6. Pessimistic Concurrency -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-rose);">
+            <!-- 6. HikariCP Connection Pool -->
+            <div class="tech-bento-card glow-emerald">
               <div>
                 <div class="tech-card-header">
-                  <span class="tech-domain-tag">Concurrency Control</span>
-                  <div class="tech-card-icon" style="background: rgba(239, 68, 68, 0.14); color: #F87171;">
-                    <i class="bi bi-lock-fill"></i>
+                  <span class="tech-domain-tag">Connection Pooling</span>
+                  <div class="tech-card-icon icon-accent-emerald">
+                    <i class="bi bi-plug-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Pessimistic Locking</div>
+                <h3 class="tech-card-title">HikariCP High-Throughput</h3>
                 <div class="tech-card-desc">
-                  PESSIMISTIC_WRITE locks inventory rows at the engine level (SELECT FOR UPDATE) to eliminate race conditions and overselling.
+                  Zero-overhead JDBC connection pooling with aggressive leak detection, statement caching, and sub-millisecond acquisition.
                 </div>
               </div>
               <div class="tech-card-footer">
-                <span class="tech-card-badge">PESSIMISTIC_WRITE</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-danger me-1"></i>Zero Overselling</span>
+                <span class="tech-card-badge">HikariPool</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-success me-1"></i>Low-Latency</span>
               </div>
             </div>
 
             <!-- 7. PayHere IPG Pipeline -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-emerald);">
+            <div class="tech-bento-card glow-emerald">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Payment Gateway</span>
-                  <div class="tech-card-icon" style="background: rgba(16, 185, 129, 0.14); color: #34D399;">
+                  <div class="tech-card-icon icon-accent-emerald">
                     <i class="bi bi-credit-card-2-front-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">PayHere IPG Pipeline</div>
+                <h3 class="tech-card-title">PayHere IPG</h3>
                 <div class="tech-card-desc">
-                  SHA-256 checkout merchant hashing with server-to-server asynchronous webhook verification via MD5 signatures.
+                  Central Bank of Sri Lanka compliant internet payment gateway supporting Visa, Mastercard, Genie, and FriMi wallets.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">PCI-DSS Hosted</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-success me-1"></i>MD5 Webhooks</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-success me-1"></i>CBSL Approved</span>
               </div>
             </div>
 
             <!-- 8. Cloudinary Edge CDN -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-cyan);">
+            <div class="tech-bento-card glow-cyan">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Media &amp; CDN Storage</span>
-                  <div class="tech-card-icon" style="background: rgba(14, 165, 233, 0.14); color: #38BDF8;">
+                  <div class="tech-card-icon icon-accent-cyan">
                     <i class="bi bi-cloud-arrow-up-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Cloudinary Edge CDN</div>
+                <h3 class="tech-card-title">Cloudinary Edge CDN</h3>
                 <div class="tech-card-desc">
                   Direct client-side unsigned media uploads for high-resolution event banners with edge caching and responsive image delivery.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">REST Direct Upload</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-info me-1"></i>Edge CDN</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-info me-1"></i>Edge CDN</span>
               </div>
             </div>
 
             <!-- 9. Google Gemini AI -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-violet);">
+            <div class="tech-bento-card glow-violet">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Artificial Intelligence</span>
-                  <div class="tech-card-icon" style="background: rgba(139, 92, 246, 0.14); color: #C084FC;">
+                  <div class="tech-card-icon icon-accent-violet">
                     <i class="bi bi-stars"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Google Gemini 1.5</div>
+                <h3 class="tech-card-title">Google Gemini 1.5 Flash</h3>
                 <div class="tech-card-desc">
-                  Conversational assistant powered by Gemini API with native function / tool calling and read-only enterprise guardrails.
+                  High-speed multimodal LLM invoked via REST API with native tool/function calling schemas for natural language event concierge.
                 </div>
               </div>
               <div class="tech-card-footer">
-                <span class="tech-card-badge">Tool Calling</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-violet me-1"></i>Read-Only</span>
+                <span class="tech-card-badge">Tool Calling API</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-violet me-1"></i>Read-Only</span>
               </div>
             </div>
 
             <!-- 10. Google ZXing QR Engine -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-emerald);">
+            <div class="tech-bento-card glow-emerald">
               <div>
                 <div class="tech-card-header">
-                  <span class="tech-domain-tag">Anti-Tamper QR Passes</span>
-                  <div class="tech-card-icon" style="background: rgba(16, 185, 129, 0.14); color: #10B981;">
+                  <span class="tech-domain-tag">Barcode &amp; QR Engine</span>
+                  <div class="tech-card-icon icon-accent-emerald">
                     <i class="bi bi-qr-code-scan"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Google ZXing 3.5.3</div>
+                <h3 class="tech-card-title">Google ZXing 3.5.3</h3>
                 <div class="tech-card-desc">
-                  Dynamic server-side PNG rendering of HMAC-SHA256 cryptographically signed tokens for real-time mobile door check-in.
+                  Server-side 2D barcode matrix generation producing optimized PNG streams for instant camera scanning at venue admission gates.
                 </div>
               </div>
               <div class="tech-card-footer">
-                <span class="tech-card-badge">HMAC-SHA256</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-success me-1"></i>Instant Verification</span>
+                <span class="tech-card-badge">ZXing Core</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-success me-1"></i>High-Density QR</span>
               </div>
             </div>
 
             <!-- 11. Brevo Transactional SMTP -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-cyan);">
+            <div class="tech-bento-card glow-cyan">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Transactional Email</span>
-                  <div class="tech-card-icon" style="background: rgba(6, 182, 212, 0.14); color: #22D3EE;">
+                  <div class="tech-card-icon icon-accent-cyan">
                     <i class="bi bi-envelope-check-fill"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Brevo SMTP Relay</div>
+                <h3 class="tech-card-title">Brevo SMTP Relay</h3>
                 <div class="tech-card-desc">
-                  Asynchronous (@Async) email dispatch with DKIM and SPF alignment, ensuring passes and 6-digit OTPs land in the Primary Inbox.
+                  Enterprise mail transfer agent with authenticated SPF, DKIM, and DMARC alignment, ensuring OTPs and PDF passes bypass Spam filters.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">SPF &bull; DKIM Verified</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-info me-1"></i>No Spam Folder</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-info me-1"></i>Primary Inbox</span>
               </div>
             </div>
 
             <!-- 12. Client Presentation Tier -->
-            <div class="tech-bento-card" style="--card-glow: var(--neon-rose);">
+            <div class="tech-bento-card glow-rose">
               <div>
                 <div class="tech-card-header">
                   <span class="tech-domain-tag">Client Application</span>
-                  <div class="tech-card-icon" style="background: rgba(255, 46, 116, 0.14); color: #FB7185;">
+                  <div class="tech-card-icon icon-accent-rose">
                     <i class="bi bi-window-fullscreen"></i>
                   </div>
                 </div>
-                <div class="tech-card-title">Vanilla ES6+ &amp; CSS3</div>
+                <h3 class="tech-card-title">Vanilla ES6+ &amp; CSS3</h3>
                 <div class="tech-card-desc">
-                  High-performance dark luxe glassmorphism architecture with Web Audio synthesizer feedback and zero framework overhead.
+                  High-performance dark luxe glassmorphic UI with Web Audio scanner chimes, Bootstrap 5 grid, and zero client-framework bloat.
                 </div>
               </div>
               <div class="tech-card-footer">
                 <span class="tech-card-badge">Zero Framework Bloat</span>
-                <span class="text-muted-soft" style="font-size:0.75rem;"><i class="bi bi-check2 text-danger me-1"></i>60fps Responsive</span>
+                <span class="text-muted-soft card-meta-caption"><i class="bi bi-check2 text-danger me-1"></i>60fps Responsive</span>
               </div>
             </div>
 
@@ -923,39 +948,39 @@
       </div>
     </section>
 
-  </div>
+  </main>
 
-  <!-- Trust, Privacy & Data Security Section (Shared) -->
+  <!-- Privacy, Trust & Data Security (Streamlined Anchor) -->
   <section class="section-sm" id="privacy">
     <div class="container-narrow">
       <div class="filter-bar p-4 p-md-5">
         <div class="d-flex align-items-center gap-3 mb-4">
-          <div class="feature-icon-box mb-0" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
+          <div class="feature-icon-box mb-0 icon-accent-emerald">
             <i class="bi bi-shield-lock-fill"></i>
           </div>
           <div>
-            <h3 class="mb-1 text-white">Trust, Security &amp; Data Privacy</h3>
-            <p class="text-muted-soft mb-0 small">Our commitment to safeguarding attendee data and financial transactions</p>
+            <h2 class="h3 mb-1 text-white">Trust, Security &amp; Data Privacy</h2>
+            <p class="text-muted-soft mb-0 small">Our strict commitment to safeguarding attendee data and financial transactions</p>
           </div>
         </div>
 
         <div class="row g-4">
           <div class="col-md-4">
-            <h6 class="text-white fw-bold mb-2"><i class="bi bi-file-earmark-lock me-1 text-primary"></i> BCrypt Credential Protection</h6>
-            <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
-              User credentials and passwords are encrypted using BCrypt with a cost factor of 12 before persistence. Personal attendee information is never shared or sold to third parties.
+            <h3 class="h6 text-white fw-bold mb-2"><i class="bi bi-file-earmark-lock me-1 text-primary"></i> Data Confidentiality</h3>
+            <p class="text-muted-soft small mb-0 text-relaxed-height">
+              Attendee personal data and contact details are used exclusively for ticket issuance and admission manifest verification. Data is never sold, shared, or monetized.
             </p>
           </div>
           <div class="col-md-4">
-            <h6 class="text-white fw-bold mb-2"><i class="bi bi-credit-card-2-front me-1 text-success"></i> PCI-DSS Payment Isolation</h6>
-            <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
-              Card payments are handled entirely on PayHere's hosted, PCI-DSS certified gateway. EventSphere never stores or processes credit card numbers, relying on secure tokenized notifications.
+            <h3 class="h6 text-white fw-bold mb-2"><i class="bi bi-credit-card-2-front me-1 text-success"></i> Payment Isolation</h3>
+            <p class="text-muted-soft small mb-0 text-relaxed-height">
+              Card payments are handled entirely on PayHere's hosted, PCI-DSS certified gateway. EventSphere never stores, touches, or logs credit card numbers.
             </p>
           </div>
           <div class="col-md-4">
-            <h6 class="text-white fw-bold mb-2"><i class="bi bi-qr-code me-1 text-info"></i> Anti-Forgery Admission Verification</h6>
-            <p class="text-muted-soft small mb-0" style="line-height: 1.65;">
-              Every ticket pass contains a secret HMAC-SHA256 signature. Upon scanning at the gate, the pass transitions to <span class="code-badge">USED</span> instantly with audit logging to prevent reuse.
+            <h3 class="h6 text-white fw-bold mb-2"><i class="bi bi-qr-code me-1 text-info"></i> Anti-Scalping &amp; Audit Trail</h3>
+            <p class="text-muted-soft small mb-0 text-relaxed-height">
+              Every pass transition from reserved to issued to used is permanently recorded in system audit logs, protecting genuine buyers from fraudulent scalpers.
             </p>
           </div>
         </div>
@@ -966,9 +991,9 @@
   <!-- CTA Section -->
   <section class="section-sm">
     <div class="container-narrow text-center">
-      <div class="filter-bar p-4 p-md-5" style="border-color: rgba(255, 46, 116, 0.3) !important; background: radial-gradient(ellipse at center, rgba(255, 46, 116, 0.08), rgba(18, 22, 34, 0.85));">
+      <div class="filter-bar p-4 p-md-5 about-cta-card">
         <h2 class="text-white fw-bold mb-3">Ready to Experience EventSphere?</h2>
-        <p class="text-muted-soft fs-6 mx-auto mb-4" style="max-width: 580px;">
+        <p class="text-muted-soft fs-6 mx-auto mb-4 about-cta-desc">
           Explore upcoming concerts, workshops, and gatherings. Or join as an organizer to schedule events and leverage real-time admission scanning.
         </p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
@@ -992,22 +1017,22 @@
             <img src="../assets/images/logo.png" alt="EventSphere Logo" class="brand-logo me-2">
             EventSphere
           </a>
-          <p class="text-muted-soft" style="font-size:0.85rem;">
+          <p class="text-muted-soft footer-brand-desc">
             A calmer way to find, book, and keep your favourite experiences.
           </p>
         </div>
         <div class="col-6 col-lg-3">
-          <h6>Explore</h6>
+          <h3 class="h6 text-white fw-bold mb-2">Explore</h3>
           <a href="events.html" class="d-block mb-1">Discover Events</a>
           <a href="my-bookings.html" class="d-block mb-1">My Bookings</a>
         </div>
         <div class="col-6 col-lg-3">
-          <h6>Organizers</h6>
+          <h3 class="h6 text-white fw-bold mb-2">Organizers</h3>
           <a href="organizer-apply.html" class="d-block mb-1">Become an Organizer</a>
           <a href="create-event.html" class="d-block mb-1">Create an Event</a>
         </div>
         <div class="col-6 col-lg-3">
-          <h6>Company &amp; Creator</h6>
+          <h3 class="h6 text-white fw-bold mb-2">Company &amp; Creator</h3>
           <a href="about.html" class="d-block mb-1">About EventSphere</a>
           <a href="https://github.com/lasandisal" target="_blank" rel="noopener noreferrer" class="d-block mb-1">Lasandi Salwathura (GitHub)</a>
           <a href="#privacy" class="d-block mb-1">Privacy &amp; Security</a>
@@ -1025,7 +1050,6 @@
   <script src="../js/env.js"></script>
   <script src="../js/api/config.js"></script>
   <script src="../js/api/auth.js"></script>
-  <script src="../js/api/organizer.js"></script>
   <script src="../js/utils/icons.js"></script>
   <script src="../js/utils/toast.js"></script>
   <script src="../js/utils/nav.js"></script>
