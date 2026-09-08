@@ -737,18 +737,18 @@
             </div>
           </div>
 
-          <!-- 5. Asynchronous Multi-Recipient Emailing -->
+          <!-- 5. High-Deliverability Transactional Emailing -->
           <div class="col-md-6 col-lg-4">
             <div class="feature-card">
               <div class="feature-icon-box" style="background: rgba(56, 189, 248, 0.15); color: var(--powder-blue);">
-                <i class="bi bi-envelope-paper-heart-fill"></i>
+                <i class="bi bi-envelope-check-fill"></i>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h5 class="text-white fw-bold mb-0">Multi-Recipient Delivery</h5>
-                <span class="code-badge">@Async + Brevo</span>
+                <h5 class="text-white fw-bold mb-0">Inbox Deliverability (No Spam)</h5>
+                <span class="code-badge">Brevo Relay + @Async</span>
               </div>
               <p class="text-muted-soft small mb-0">
-                Leveraging Spring’s <span class="text-white">@Async</span> task execution with Brevo SMTP, the system sends an itemized master order receipt to the buyer, while simultaneously dispatching personalized digital admission passes directly to individual guest attendee emails.
+                Standard consumer SMTP (like Gmail) frequently routes cloud-sent emails straight into Spam folders. EventSphere utilizes <span class="text-white">Brevo’s authenticated transactional SMTP relay</span> with SPF/DKIM alignment, guaranteeing that 6-digit OTPs, itemized receipts, and QR passes land directly in the attendee's <span class="text-white">Primary Inbox</span> rather than Spam.
               </p>
             </div>
           </div>
@@ -973,9 +973,9 @@
                   <td>Dynamic PNG QR rendering of cryptographically signed HMAC-SHA256 admission tokens.</td>
                 </tr>
                 <tr>
-                  <td class="fw-bold text-white"><i class="bi bi-envelope text-info me-2"></i>Email Service</td>
-                  <td><span class="text-white fw-semibold">Spring Mail + Brevo SMTP</span></td>
-                  <td>Asynchronous (<span class="code-badge">@Async</span>) delivery of HTML receipts, attendee passes, and 6-digit OTP codes.</td>
+                  <td class="fw-bold text-white"><i class="bi bi-envelope-check text-info me-2"></i>Email Delivery</td>
+                  <td><span class="text-white fw-semibold">Spring Mail + Brevo SMTP Relay</span></td>
+                  <td>Asynchronous (<span class="code-badge">@Async</span>) transactional dispatch with authenticated DKIM/SPF alignment, ensuring receipts, passes, and OTPs reach the primary inbox rather than Spam folders.</td>
                 </tr>
                 <tr>
                   <td class="fw-bold text-white"><i class="bi bi-browser-chrome text-light me-2"></i>Client Tier</td>

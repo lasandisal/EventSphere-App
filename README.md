@@ -106,7 +106,7 @@ Follow this guide to demonstrate the complete lifecycle from purchase to gate ch
    * Complete payment.
 5. **View Your Digital Ticket Pass**:
    * You will be redirected to the confirmed order screen and `ticket.html`.
-   * You also receive an itemized email receipt and digital pass via Brevo SMTP.
+   * You also receive an itemized email receipt and digital pass via **Brevo Transactional SMTP** (configured with authenticated SPF/DKIM alignment so emails land directly in the recipient's **Primary Inbox**, preventing tickets and OTPs from dropping into the Spam folder).
    * **Keep this digital ticket QR code displayed on your PC screen** for Phase 2!
 
 ---
@@ -123,14 +123,14 @@ Follow this guide to demonstrate the complete lifecycle from purchase to gate ch
    * Aim your phone camera at the QR code displayed on your PC screen (or printed ticket).
 4. **Observe the Gate Intelligence Output**:
    * 🔔 **Web Audio Chime**: Dual-tone confirmation sound (D5 $\rightarrow$ A5).
-   * 🟢 **Entry Granted Badge**: High-contrast green status pill.
-   * 🎨 **Wristband Directive**: Tells staff exactly which wristband to hand over:
-     * ⭐ **GOLD WRISTBAND** for VIP / Platinum passes
-     * ⚡ **CYAN WRISTBAND** for Backstage / All-Access passes
-     * 🎟️ **GREEN WRISTBAND** for Early Bird / Student passes
-     * 🎫 **ROSE WRISTBAND** for General Admission passes
-   * 📋 **Guest Manifest**: Shows Attendee Name, Seat/Zone allocation, Booking Reference (`ES-...`), and check-in timestamp.
-   * 🖐️ **Manual Confirmation Flow**: The details remain locked on screen so staff has time to hand over the wristband. Tap **"Done — Scan Next Attendee"** when ready for the next guest!
+   * 🟢 **Entry Granted Badge**: High-contrast green status pill with localized scan timestamp.
+   * 🎫 **Access Level Directive**: Tells door staff the exact tier and venue access zone:
+     * ⭐ **VIP / PLATINUM ACCESS** (VIP Lounge • Front Row • Gold Pass)
+     * ⚡ **ALL ACCESS / BACKSTAGE** (Staff • Artists • Full Venue Access)
+     * 🎟️ **PRIORITY ENTRY** (Early Bird Passholder)
+     * 🎫 **GENERAL ADMISSION** (Standard Entry • Main Area)
+   * 📋 **Guest Manifest**: Shows Attendee Name, Seat/Zone allocation, Booking Reference (`REF: #...`), and check-in timestamp.
+   * 🖐️ **Manual Confirmation Flow**: The details remain locked on screen so staff has time to admit the attendee. Tap **"Done — Scan Next Attendee"** when ready for the next guest!
 5. **Test Duplicate Scan Prevention (Security Verification)**:
    * Scan the exact same QR code a second time.
    * 🚨 **Red Warning Alert**: Low warning buzz sounds immediately.
