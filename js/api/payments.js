@@ -1,16 +1,19 @@
-/* Payments API — matches PaymentController (/api/v1/payments/**) */
-const PAYHERE_MERCHANT_ID = '1237371';
-const PAYHERE_MERCHANT_SECRET = 'MTU4NDUyMzI2NDE3OTc3NTYzMzIyODA0MzkyNjU0MTM0OTc3MjEw';
+/* Payments API — matches PaymentController (/api/v1/payments/**)
+   NOTE: Merchant Secret is a confidential backend credential and is NEVER stored in frontend code. */
 
 const PaymentsAPI = {
   initiate(bookingId) {
     return esFetch(`/payments/initiate/${bookingId}`, { method: 'POST' });
   },
 
-  // Generates genuine PayHere MD5 signature and calls the backend webhook
+  // Sandbox simulation helper — prompts for developer secret in browser session only if needed, never committed
   async simulateNotify(bookingId, amount = 0, currency = 'LKR', bookingRef = null) {
-    const merchantId = PAYHERE_MERCHANT_ID;
-    const merchantSecret = PAYHERE_MERCHANT_SECRET;
+    let merchantSecret = sessionStorage.getItem('es_test_merchant_secret') || '';
+    if (!merchantSecret) {
+      merchantSecret = prompt('Enter Sandbox Merchant Secret to calculate test signature (stored only in your local browser session):') || '';
+      if (merchantSecret) sessionStorage.setItem('es_test_merchant_secret', merchantSecret.trim());
+    }
+    const merchantId = '1237371';
     
     // Format order_id: Matches backend ES-{id} pattern
     let orderId = bookingRef || ('ES-' + bookingId);
