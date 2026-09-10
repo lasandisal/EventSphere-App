@@ -1,39 +1,22 @@
-// =========================================================
-// EventSphere — Organizer Attendees Module
-// =========================================================
-
 let orgAttendeesCache = [];
 
 // Load Attendees across all organizer events
-async function loadOrganizerAttendees() {
+async function loadOrganizerAttendees(forceRefresh = false) {
   const tbody = document.getElementById('attendeesBody');
   if (!tbody) return;
 
-  tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading attendees...</td></tr>`;
+  if (!orgAttendeesCache.length || forceRefresh) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading attendees...</td></tr>`;
+  }
 
   try {
-    const res = await EventsAPI.myEvents({ page: 0, size: 50 });
-    const events = Array.isArray(res) ? res : (res?.data || res?.content || []);
-
-    if (!events.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4">No events found yet.</td></tr>`;
-      orgAttendeesCache = [];
-      return;
-    }
-
-    const bookingPromises = events.map(async (ev) => {
-      try {
-        const raw = await EventsAPI.getEventBookings(ev.id);
-        const bList = Array.isArray(raw) ? raw : (raw?.data || raw?.content || []);
-        return bList.map(b => ({ ...b, eventTitle: ev.title }));
-      } catch (err) {
-        console.warn(`Could not load attendees for event ${ev.id}:`, err);
-        return [];
-      }
+    const getBookingsFn = window.getSharedOrganizerBookings || (async () => {
+      const res = await EventsAPI.myEvents({ page: 0, size: 50 });
+      return [];
     });
 
-    const results = await Promise.all(bookingPromises);
-    orgAttendeesCache = results.flat();
+    const bList = await getBookingsFn(forceRefresh);
+    orgAttendeesCache = bList || [];
 
     renderOrganizerAttendeesTable();
   } catch (e) {

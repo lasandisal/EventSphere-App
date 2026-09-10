@@ -3,6 +3,32 @@
 // =========================================================
 
 let myEventsCache = [];
+let myEventsPromise = null;
+
+// Shared loader so all organizer modules reuse the same event list without duplicate HTTP calls
+async function getSharedOrganizerEvents(forceRefresh = false) {
+  if (!forceRefresh && myEventsCache && myEventsCache.length > 0) {
+    return myEventsCache;
+  }
+  if (!forceRefresh && myEventsPromise) {
+    return myEventsPromise;
+  }
+  myEventsPromise = (async () => {
+    try {
+      const res = await EventsAPI.myEvents({ page: 0, size: 50 });
+      const list = Array.isArray(res) ? res : (res?.data || res?.content || []);
+      myEventsCache = list;
+      window.myEventsCache = list;
+      return list;
+    } finally {
+      myEventsPromise = null;
+    }
+  })();
+  return myEventsPromise;
+}
+
+window.getSharedOrganizerEvents = getSharedOrganizerEvents;
+window.myEventsCache = myEventsCache;
 
 function statusBadge(s) {
   const map = { 
@@ -16,16 +42,18 @@ function statusBadge(s) {
 }
 
 // Load Organizer's Own Events
-async function loadMyEvents(keyword = '') {
+async function loadMyEvents(keyword = '', forceRefresh = false) {
   const tbody = document.getElementById('myEventsBody');
   if (!tbody) return;
 
-  tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading your events...</td></tr>`;
+  if (!myEventsCache.length || forceRefresh) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading your events...</td></tr>`;
+  }
 
   try {
-    const res = await EventsAPI.myEvents({ page: 0, size: 50 });
-    const list = Array.isArray(res) ? res : (res?.data || res?.content || []);
+    const list = await getSharedOrganizerEvents(forceRefresh);
     myEventsCache = list;
+    window.myEventsCache = list;
 
     renderMyEventsTable(keyword);
   } catch (e) {

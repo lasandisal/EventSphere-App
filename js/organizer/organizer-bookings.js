@@ -1,39 +1,77 @@
-// =========================================================
-// EventSphere — Organizer Bookings Module
-// =========================================================
+let orgBookingsCache = window.orgBookingsCache || [];
+let orgBookingsPromise = null;
 
-let orgBookingsCache = [];
+// Shared loader so Bookings, Attendees, and Analytics reuse one bookings list
+async function getSharedOrganizerBookings(forceRefresh = false) {
+  if (!forceRefresh && window.orgBookingsCache && window.orgBookingsCache.length > 0) {
+    orgBookingsCache = window.orgBookingsCache;
+    return orgBookingsCache;
+  }
+  if (!forceRefresh && orgBookingsPromise) {
+    return orgBookingsPromise;
+  }
+
+  orgBookingsPromise = (async () => {
+    try {
+      const getEventsFn = window.getSharedOrganizerEvents || (async () => {
+        const res = await EventsAPI.myEvents({ page: 0, size: 50 });
+        return Array.isArray(res) ? res : (res?.data || res?.content || []);
+      });
+
+      const events = await getEventsFn(forceRefresh);
+      if (!events || !events.length) {
+        orgBookingsCache = [];
+        window.orgBookingsCache = [];
+        return [];
+      }
+
+      // Fetch in gentle batches of 2 to avoid overwhelming cloud backend connection pools
+      const allBookings = [];
+      const batchSize = 2;
+      for (let i = 0; i < events.length; i += batchSize) {
+        const batch = events.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(async (ev) => {
+            try {
+              const raw = await EventsAPI.getEventBookings(ev.id);
+              const bList = Array.isArray(raw) ? raw : (raw?.data || raw?.content || []);
+              return bList.map(b => ({ ...b, eventTitle: ev.title }));
+            } catch (err) {
+              console.warn(`Could not load bookings for event ${ev.id}:`, err);
+              return [];
+            }
+          })
+        );
+        allBookings.push(...batchResults.flat());
+      }
+
+      orgBookingsCache = allBookings;
+      window.orgBookingsCache = allBookings;
+      return allBookings;
+    } finally {
+      orgBookingsPromise = null;
+    }
+  })();
+
+  return orgBookingsPromise;
+}
+
+window.getSharedOrganizerBookings = getSharedOrganizerBookings;
+window.orgBookingsCache = orgBookingsCache;
 
 // Load Bookings across all organizer events
-async function loadOrganizerBookings() {
+async function loadOrganizerBookings(forceRefresh = false) {
   const tbody = document.getElementById('bookingsBody');
   if (!tbody) return;
 
-  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading bookings...</td></tr>`;
+  if (!orgBookingsCache.length || forceRefresh) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading bookings...</td></tr>`;
+  }
 
   try {
-    const res = await EventsAPI.myEvents({ page: 0, size: 50 });
-    const events = Array.isArray(res) ? res : (res?.data || res?.content || []);
-
-    if (!events.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4">No events found yet.</td></tr>`;
-      orgBookingsCache = [];
-      return;
-    }
-
-    const bookingPromises = events.map(async (ev) => {
-      try {
-        const raw = await EventsAPI.getEventBookings(ev.id);
-        const bList = Array.isArray(raw) ? raw : (raw?.data || raw?.content || []);
-        return bList.map(b => ({ ...b, eventTitle: ev.title }));
-      } catch (err) {
-        console.warn(`Could not load bookings for event ${ev.id}:`, err);
-        return [];
-      }
-    });
-
-    const results = await Promise.all(bookingPromises);
-    orgBookingsCache = results.flat();
+    const list = await getSharedOrganizerBookings(forceRefresh);
+    orgBookingsCache = list;
+    window.orgBookingsCache = list;
 
     renderOrganizerBookingsTable();
   } catch (e) {

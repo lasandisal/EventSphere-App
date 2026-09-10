@@ -92,7 +92,9 @@ function renderAttendanceMix(ticketCounts = {}) {
 }
 
 // Load Organizer Executive Analytics
-async function loadOrganizerOverview() {
+let backendAnalyticsEndpointFailed = false;
+
+async function loadOrganizerOverview(forceRefresh = false) {
   const totalEventsEl = document.getElementById('orgTotalEvents');
   const totalTicketsEl = document.getElementById('orgTotalTickets');
   const totalRevenueEl = document.getElementById('orgTotalRevenue');
@@ -100,59 +102,65 @@ async function loadOrganizerOverview() {
   const topEventsBody = document.getElementById('orgTopEventsBody');
 
   // 1. Try fetching from Backend Organizer Analytics endpoint (/api/v1/organizer/analytics/overview)
-  try {
-    const raw = await OrganizerAPI.getAnalyticsOverview();
-    const overview = raw?.data || raw;
+  if (!backendAnalyticsEndpointFailed || forceRefresh) {
+    try {
+      const raw = await OrganizerAPI.getAnalyticsOverview();
+      const overview = raw?.data || raw;
 
-    if (overview && (overview.totalEvents != null || overview.totalRevenue != null)) {
-      console.log('Loaded backend organizer analytics overview:', overview);
+      if (overview && (overview.totalEvents != null || overview.totalRevenue != null)) {
+        backendAnalyticsEndpointFailed = false;
 
-      if (totalEventsEl) totalEventsEl.textContent = Number(overview.totalEvents || 0).toLocaleString();
-      if (totalTicketsEl) totalTicketsEl.textContent = Number(overview.totalTicketsSold || 0).toLocaleString();
-      
-      const rev = Number(overview.totalRevenue || overview.totalGrossRevenue || 0);
-      if (totalRevenueEl) totalRevenueEl.textContent = rev > 0 ? `LKR ${rev.toLocaleString()}` : 'LKR 0';
+        if (totalEventsEl) totalEventsEl.textContent = Number(overview.totalEvents || 0).toLocaleString();
+        if (totalTicketsEl) totalTicketsEl.textContent = Number(overview.totalTicketsSold || 0).toLocaleString();
+        
+        const rev = Number(overview.totalRevenue || overview.totalGrossRevenue || 0);
+        if (totalRevenueEl) totalRevenueEl.textContent = rev > 0 ? `LKR ${rev.toLocaleString()}` : 'LKR 0';
 
-      if (upcomingEventsEl) upcomingEventsEl.textContent = Number(overview.upcomingEvents || 0).toLocaleString();
+        if (upcomingEventsEl) upcomingEventsEl.textContent = Number(overview.upcomingEvents || 0).toLocaleString();
 
-      // Top Events
-      if (topEventsBody && overview.topEvents) {
-        if (!overview.topEvents.length) {
-          topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events with ticket sales yet.</td></tr>`;
-        } else {
-          topEventsBody.innerHTML = overview.topEvents.slice(0, 5).map(e => `
-            <tr>
-              <td data-label="Event"><span class="fw-bold text-white">${e.title}</span></td>
-              <td data-label="Date" class="small text-muted-soft">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
-              <td data-label="Tickets Sold"><span class="fw-semibold text-white">${e.ticketsSold || 0}</span></td>
-              <td data-label="Revenue"><strong class="text-white">LKR ${Number(e.revenue || 0).toLocaleString()}</strong></td>
-            </tr>`).join('');
+        // Top Events
+        if (topEventsBody && overview.topEvents) {
+          if (!overview.topEvents.length) {
+            topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events with ticket sales yet.</td></tr>`;
+          } else {
+            topEventsBody.innerHTML = overview.topEvents.slice(0, 5).map(e => `
+              <tr>
+                <td data-label="Event"><span class="fw-bold text-white">${e.title}</span></td>
+                <td data-label="Date" class="small text-muted-soft">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
+                <td data-label="Tickets Sold"><span class="fw-semibold text-white">${e.ticketsSold || 0}</span></td>
+                <td data-label="Revenue"><strong class="text-white">LKR ${Number(e.revenue || 0).toLocaleString()}</strong></td>
+              </tr>`).join('');
+          }
         }
-      }
 
-      // Ticket Type Mix
-      if (overview.ticketTypeDistribution) {
-        renderAttendanceMix(overview.ticketTypeDistribution);
-      }
+        // Ticket Type Mix
+        if (overview.ticketTypeDistribution) {
+          renderAttendanceMix(overview.ticketTypeDistribution);
+        }
 
-      // Monthly sales chart
-      renderOrganizerSalesChart('orgRevenueChartBars', orgBookingsCache, overview.monthlySales);
-      return;
+        // Monthly sales chart
+        renderOrganizerSalesChart('orgRevenueChartBars', window.orgBookingsCache || [], overview.monthlySales);
+        return;
+      }
+    } catch (err) {
+      backendAnalyticsEndpointFailed = true;
+      console.warn('Backend organizer analytics endpoint not available, falling back to local aggregator:', err.message || err);
     }
-  } catch (err) {
-    console.warn('Backend organizer analytics endpoint not yet available, falling back to local aggregator:', err);
   }
 
-  // 2. Real Local Aggregator Fallback
+  // 2. Resilient Local Aggregator Fallback (using shared cached events & safe batching)
   try {
-    const res = await EventsAPI.myEvents({ page: 0, size: 50 });
-    const events = Array.isArray(res) ? res : (res?.data || res?.content || []);
+    const getEventsFn = window.getSharedOrganizerEvents || (async () => {
+      const res = await EventsAPI.myEvents({ page: 0, size: 50 });
+      return Array.isArray(res) ? res : (res?.data || res?.content || []);
+    });
 
-    if (totalEventsEl) totalEventsEl.textContent = events.length.toLocaleString();
+    const events = await getEventsFn(forceRefresh);
+    if (totalEventsEl) totalEventsEl.textContent = (events ? events.length : 0).toLocaleString();
 
     // Upcoming events count
     const now = new Date();
-    const upcomingCount = events.filter(e => {
+    const upcomingCount = (events || []).filter(e => {
       if (e.status === 'CANCELLED') return false;
       if (!e.startDatetime) return false;
       const d = new Date(e.startDatetime);
@@ -161,53 +169,62 @@ async function loadOrganizerOverview() {
 
     if (upcomingEventsEl) upcomingEventsEl.textContent = upcomingCount.toLocaleString();
 
-    // Fetch bookings for each event
+    if (!events || !events.length) {
+      if (totalTicketsEl) totalTicketsEl.textContent = '0';
+      if (totalRevenueEl) totalRevenueEl.textContent = 'LKR 0';
+      if (topEventsBody) {
+        topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events found.</td></tr>`;
+      }
+      renderAttendanceMix({});
+      renderOrganizerSalesChart('orgRevenueChartBars', []);
+      return;
+    }
+
+    // Load bookings safely using shared loader
+    const getBookingsFn = window.getSharedOrganizerBookings || (async () => []);
+    const allBookings = await getBookingsFn(forceRefresh);
+
     let totalTickets = 0;
     let totalRevenue = 0;
     const ticketTypeCounts = {};
     const eventSalesRankings = [];
 
-    const bookingPromises = events.map(async (ev) => {
-      try {
-        const raw = await EventsAPI.getEventBookings(ev.id);
-        const bookings = Array.isArray(raw) ? raw : (raw?.data || raw?.content || []);
-
-        let evTickets = 0;
-        let evRevenue = 0;
-
-        bookings.forEach(b => {
-          if (b.status === 'CANCELLED') return;
-          const qty = b.ticketCount || b.quantity || 1;
-          const price = Number(b.totalPrice || b.totalAmount || 0);
-          const tType = b.ticketTypeName || b.ticketType || 'General';
-
-          evTickets += qty;
-          evRevenue += price;
-          ticketTypeCounts[tType] = (ticketTypeCounts[tType] || 0) + qty;
-        });
-
-        totalTickets += evTickets;
-        totalRevenue += evRevenue;
-
-        eventSalesRankings.push({
-          id: ev.id,
-          title: ev.title,
-          startDatetime: ev.startDatetime,
-          ticketsSold: evTickets,
-          revenue: evRevenue
-        });
-      } catch (err) {
-        eventSalesRankings.push({
-          id: ev.id,
-          title: ev.title,
-          startDatetime: ev.startDatetime,
-          ticketsSold: 0,
-          revenue: 0
-        });
-      }
+    // Map bookings by event
+    const bookingsByEvent = {};
+    (allBookings || []).forEach(b => {
+      if (b.status === 'CANCELLED') return;
+      const evId = b.eventId || (b.event && b.event.id);
+      if (!evId) return;
+      if (!bookingsByEvent[evId]) bookingsByEvent[evId] = [];
+      bookingsByEvent[evId].push(b);
     });
 
-    await Promise.all(bookingPromises);
+    events.forEach(ev => {
+      const bList = bookingsByEvent[ev.id] || [];
+      let evTickets = 0;
+      let evRevenue = 0;
+
+      bList.forEach(b => {
+        const qty = Number(b.ticketCount || b.quantity || 1);
+        const price = Number(b.totalPrice || b.totalAmount || 0);
+        const tType = b.ticketTypeName || b.ticketType || 'General';
+
+        evTickets += qty;
+        evRevenue += price;
+        ticketTypeCounts[tType] = (ticketTypeCounts[tType] || 0) + qty;
+      });
+
+      totalTickets += evTickets;
+      totalRevenue += evRevenue;
+
+      eventSalesRankings.push({
+        id: ev.id,
+        title: ev.title,
+        startDatetime: ev.startDatetime,
+        ticketsSold: evTickets,
+        revenue: evRevenue
+      });
+    });
 
     if (totalTicketsEl) totalTicketsEl.textContent = totalTickets.toLocaleString();
     if (totalRevenueEl) totalRevenueEl.textContent = totalRevenue > 0 ? `LKR ${totalRevenue.toLocaleString()}` : 'LKR 0';
@@ -216,8 +233,8 @@ async function loadOrganizerOverview() {
     if (topEventsBody) {
       eventSalesRankings.sort((a, b) => b.revenue - a.revenue || b.ticketsSold - a.ticketsSold);
       const top5 = eventSalesRankings.slice(0, 5);
-      if (!top5.length) {
-        topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events found.</td></tr>`;
+      if (!top5.length || totalTickets === 0) {
+        topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events with ticket sales yet.</td></tr>`;
       } else {
         topEventsBody.innerHTML = top5.map(e => `
           <tr>
@@ -230,7 +247,7 @@ async function loadOrganizerOverview() {
     }
 
     renderAttendanceMix(ticketTypeCounts);
-    renderOrganizerSalesChart('orgRevenueChartBars', orgBookingsCache);
+    renderOrganizerSalesChart('orgRevenueChartBars', allBookings);
   } catch (e) {
     console.error('Failed to load organizer analytics:', e);
   }
