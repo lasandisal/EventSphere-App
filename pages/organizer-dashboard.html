@@ -177,11 +177,16 @@
           <h2 class="mb-0">Bookings</h2>
           <p class="text-muted-soft small mb-0">Orders placed across your active and past events</p>
         </div>
-        <input class="form-control" id="orgBookingSearchInput" placeholder="Search bookings..." style="max-width:240px;">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <select class="form-select text-white" id="orgBookingEventFilter" style="max-width:280px; background:#1b1e2c; border-color:rgba(255,255,255,0.15); font-size:0.85rem;">
+            <option value="ALL">All Events</option>
+          </select>
+          <input class="form-control" id="orgBookingSearchInput" placeholder="Search by name, ref, event date, ID..." style="max-width:260px;">
+        </div>
       </div>
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Booking Ref</th><th>Event</th><th>Attendee</th><th>Tickets</th><th>Total Paid</th><th>Status</th></tr></thead>
+          <thead><tr><th>Booking Ref</th><th>Event (Date & Venue)</th><th>Attendee</th><th>Tickets</th><th>Total Paid</th><th>Status</th></tr></thead>
           <tbody id="bookingsBody"></tbody>
         </table>
       </div>
@@ -191,14 +196,38 @@
     <section id="sec-attendees" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
-          <h2 class="mb-0">Attendees</h2>
-          <p class="text-muted-soft small mb-0">Full guest list and ticket verification status</p>
+          <h2 class="mb-0">Attendees & Gate Check-In</h2>
+          <p class="text-muted-soft small mb-0">Full guest list, ticket verification, and desk check-in controls</p>
         </div>
-        <input class="form-control" id="orgAttendeeSearchInput" placeholder="Search attendees..." style="max-width:240px;">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <select class="form-select text-white" id="orgAttendeeEventFilter" style="max-width:280px; background:#1b1e2c; border-color:rgba(255,255,255,0.15); font-size:0.85rem;">
+            <option value="ALL">All Events</option>
+          </select>
+          <select class="form-select text-white" id="orgAttendeeStatusFilter" style="max-width:170px; background:#1b1e2c; border-color:rgba(255,255,255,0.15); font-size:0.85rem;">
+            <option value="ALL">All Statuses</option>
+            <option value="CHECKED_IN">Checked-in</option>
+            <option value="NOT_CHECKED_IN">Not Checked-in</option>
+          </select>
+          <input class="form-control" id="orgAttendeeSearchInput" placeholder="Search attendee, ticket, date, ID..." style="max-width:260px;">
+        </div>
       </div>
+
+      <!-- Quick Metrics Counter for Attendees -->
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="session-counter-badge" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); padding:0.35rem 0.85rem; border-radius:999px; font-size:0.8rem;">
+          <i class="bi bi-people text-primary me-1"></i> Total Guests: <strong class="text-white ms-1" id="orgAttendeeCountTotal">0</strong>
+        </span>
+        <span class="session-counter-badge" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.35rem 0.85rem; border-radius:999px; font-size:0.8rem; color:#10B981;">
+          <i class="bi bi-check-circle-fill text-success me-1"></i> Admitted: <strong class="text-white ms-1" id="orgAttendeeCountCheckedIn">0</strong>
+        </span>
+        <span class="session-counter-badge" style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); padding:0.35rem 0.85rem; border-radius:999px; font-size:0.8rem; color:#F59E0B;">
+          <i class="bi bi-hourglass-split text-warning me-1"></i> Awaiting Entry: <strong class="text-white ms-1" id="orgAttendeeCountPending">0</strong>
+        </span>
+      </div>
+
       <div class="table-card">
         <table class="es-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Event</th><th>Ticket Type</th><th>Ticket ID</th><th>Booking</th><th>Check-in</th></tr></thead>
+          <thead><tr><th>Attendee</th><th>Contact</th><th>Event (Date & Venue)</th><th>Ticket Type</th><th>Ticket ID</th><th>Booking Ref</th><th>Check-in Action</th></tr></thead>
           <tbody id="attendeesBody"></tbody>
         </table>
       </div>

@@ -46,6 +46,8 @@ async function loadAllAttendees() {
           ...b,
           eventId: ev.id,
           eventTitle: ev.title,
+          eventStartDatetime: ev.startDatetime,
+          eventVenue: ev.venueName || (ev.venue && ev.venue.name) || (ev.venue && ev.venue.city) || '',
           organizerName: ev.organizerName || '—'
         }));
       } catch (err) {
@@ -70,13 +72,17 @@ async function loadAllAttendees() {
   }
 }
 
-// Populate Event dropdown filter
+// Populate Event dropdown filter with distinct date/venue/#ID
 function populateEventFilterDropdown(events) {
   const select = document.getElementById('adminAttendeeEventFilter');
   if (!select) return;
 
   const currentVal = select.value || 'ALL';
-  const eventOptions = events.map(ev => `<option value="${ev.id}">${ev.title}</option>`).join('');
+  const eventOptions = events.map(ev => {
+    const dateStr = ev.startDatetime ? new Date(ev.startDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Date TBA';
+    const venue = ev.venueName || (ev.venue && ev.venue.name) || '';
+    return `<option value="${ev.id}">${escapeHtml(ev.title)} — ${dateStr} (#${ev.id})${venue ? ` [${escapeHtml(venue)}]` : ''}</option>`;
+  }).join('');
 
   select.innerHTML = `
     <option value="ALL">All Events</option>
@@ -141,16 +147,30 @@ function renderAllAttendeesTable() {
       }
     }
 
-    // 3. Search Query Filter
+    // 3. Search Query Filter across Name, Email, Ref, Title, Date, ID, Venue, Org, Ticket
     if (q) {
       const name = (b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || '').toLowerCase();
       const email = (b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '').toLowerCase();
       const evTitle = (b.eventTitle || '').toLowerCase();
+      const evId = String(b.eventId || '');
+      const evDate = b.eventStartDatetime ? new Date(b.eventStartDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
+      const evDateIso = b.eventStartDatetime ? String(b.eventStartDatetime).toLowerCase() : '';
+      const evVenue = (b.eventVenue || '').toLowerCase();
       const ref = (b.bookingReference || b.bookingId || `#${b.id}`).toLowerCase();
       const org = (b.organizerName || '').toLowerCase();
       const ticket = (b.ticketTypeName || b.ticketType || '').toLowerCase();
 
-      return name.includes(q) || email.includes(q) || evTitle.includes(q) || ref.includes(q) || org.includes(q) || ticket.includes(q);
+      return name.includes(q) ||
+        email.includes(q) ||
+        evTitle.includes(q) ||
+        evId === q ||
+        (`#${evId}`) === q ||
+        evDate.includes(q) ||
+        evDateIso.includes(q) ||
+        evVenue.includes(q) ||
+        ref.includes(q) ||
+        org.includes(q) ||
+        ticket.includes(q);
     }
 
     return true;
@@ -190,15 +210,23 @@ function renderAllAttendeesTable() {
       statusBadge = '<span class="status-badge status-cancelled">Cancelled</span>';
     }
 
+    const evDateStr = b.eventStartDatetime ? new Date(b.eventStartDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Date TBA';
+    const evVenue = b.eventVenue || '';
+
     return `
       <tr>
         <td data-label="Attendee & Contact">
-          <div class="fw-semibold text-white">${name}</div>
-          <div class="small text-muted-soft">${email}</div>
+          <div class="fw-semibold text-white">${escapeHtml(name)}</div>
+          <div class="small text-muted-soft">${escapeHtml(email)}</div>
         </td>
         <td data-label="Event & Organizer">
-          <div class="fw-semibold text-white">${evTitle}</div>
-          <div class="small text-muted-soft">${org}</div>
+          <div class="fw-bold text-white">${escapeHtml(evTitle)}</div>
+          <div class="small text-muted-soft d-flex flex-wrap align-items-center gap-2 mt-1">
+            <span><i class="bi bi-calendar3 text-primary me-1"></i>${evDateStr}</span>
+            ${evVenue ? `<span><i class="bi bi-geo-alt text-primary me-1"></i>${escapeHtml(evVenue)}</span>` : ''}
+            <span class="badge font-monospace" style="background:rgba(255,255,255,0.08); font-size:0.7rem; color:#E0E7FF;">#${b.eventId || '—'}</span>
+          </div>
+          <div class="small text-muted-soft mt-1"><i class="bi bi-person me-1"></i>${escapeHtml(org)}</div>
         </td>
         <td data-label="Booking Ref"><code>${ref}</code></td>
         <td data-label="Tickets & Type">

@@ -76,12 +76,21 @@ async function loadAllEvents(keyword = '') {
   }
 }
 
-// Open Event Attendees Modal
+// Open Event Attendees Modal with distinct date/venue/ID
 async function openEventAttendeesModal(eventId, eventTitle) {
-  document.getElementById('attModalEventTitle').textContent = eventTitle || 'Event Attendees';
+  const ev = allEventsMap[eventId];
+  const dateStr = ev?.startDatetime ? new Date(ev.startDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  const venue = ev?.venueName || '';
+  const detailBadge = [dateStr, venue, `ID: #${eventId}`].filter(Boolean).join(' · ');
+
+  const titleEl = document.getElementById('attModalEventTitle');
+  if (titleEl) {
+    titleEl.innerHTML = `${eventTitle || 'Event Attendees'} <span class="badge font-monospace text-primary ms-2" style="background:rgba(99,102,241,0.15); font-size:0.8rem;">#${eventId}</span>`;
+  }
+
   const summaryEl = document.getElementById('attModalSummary');
   const tbody = document.getElementById('attModalTableBody');
-  summaryEl.textContent = 'Loading registered guest list...';
+  if (summaryEl) summaryEl.textContent = detailBadge ? `Show: ${detailBadge} — Loading bookings...` : 'Loading registered guest list...';
   tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted-soft py-4"><i class="bi bi-arrow-repeat spin"></i> Loading bookings...</td></tr>`;
 
   const modalEl = document.getElementById('adminEventAttendeesModal');
@@ -92,7 +101,7 @@ async function openEventAttendeesModal(eventId, eventTitle) {
     const bookings = Array.isArray(raw) ? raw : (raw?.data || raw?.content || []);
 
     if (!bookings.length) {
-      summaryEl.textContent = '0 Attendees registered so far.';
+      if (summaryEl) summaryEl.textContent = `${detailBadge ? `${detailBadge} — ` : ''}0 Attendees registered so far.`;
       tbody.innerHTML = `
         <tr>
           <td colspan="6" class="text-center text-muted-soft py-5">
@@ -104,7 +113,7 @@ async function openEventAttendeesModal(eventId, eventTitle) {
     }
 
     const totalTickets = bookings.reduce((sum, b) => sum + (b.ticketCount || b.quantity || 1), 0);
-    summaryEl.textContent = `${bookings.length} Bookings (${totalTickets} Total Tickets)`;
+    if (summaryEl) summaryEl.textContent = `${detailBadge ? `${detailBadge} — ` : ''}${bookings.length} Bookings (${totalTickets} Total Tickets)`;
 
     tbody.innerHTML = bookings.map(b => {
       const ref = b.bookingReference || b.bookingId || `#${b.id}`;
