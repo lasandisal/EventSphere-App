@@ -83,9 +83,182 @@ function unwrap(res) {
   return res.data || res;
 }
 
-async function loadTicket() {
+function renderTickets(booking, eventDetails) {
   const container = document.getElementById('ticketsWrapper');
   const actions = document.getElementById('ticketActions');
+  if (!booking) return;
+
+  const eventTitle = booking.eventTitle || eventDetails?.title || 'EventSphere Experience';
+  const dt = eventDetails?.startDatetime ? new Date(eventDetails.startDatetime) : null;
+  const dateText = dt ? dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBA';
+  const timeText = dt ? dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : 'Time TBA';
+  const venueText = eventDetails?.venueName || eventDetails?.venue?.name || 'Venue TBA';
+
+  // Collect all individual ticket passes across booking items
+  const ticketsList = [];
+  (booking.items || []).forEach(item => {
+    if (item.tickets && item.tickets.length > 0) {
+      item.tickets.forEach(t => {
+        ticketsList.push({
+          ...t,
+          ticketTypeName: item.ticketTypeName || 'Standard Admission'
+        });
+      });
+    } else {
+      for (let i = 0; i < (item.quantity || 1); i++) {
+        ticketsList.push({
+          ticketCode: `${booking.bookingReference || 'TK'}-${i + 1}`,
+          attendeeName: EsAuthStore.getUser()?.fullName || 'Attendee',
+          ticketTypeName: item.ticketTypeName || 'General Admission'
+        });
+      }
+    }
+  });
+
+  const isBookingConfirmed = booking.status === 'CONFIRMED';
+  const isEventPast = dt && dt < new Date();
+
+  container.innerHTML = ticketsList.map((t, idx) => {
+    const code = t.ticketCode || `${booking.bookingReference}-${idx + 1}`;
+    const qrPayload = t.qrPayload || t.signedPayload || t.signedQrPayload || code;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(qrPayload)}`;
+
+    // Resolve effective ticket status (VALID, USED, CANCELLED, EXPIRED, PENDING)
+    let statusKey = (t.status || (isBookingConfirmed ? 'VALID' : booking.status)).toUpperCase();
+    if (booking.status === 'CANCELLED' || statusKey === 'CANCELLED') {
+      statusKey = 'CANCELLED';
+    } else if (statusKey === 'USED') {
+      statusKey = 'USED';
+    } else if (isEventPast) {
+      statusKey = 'EXPIRED';
+    } else if (isBookingConfirmed || statusKey === 'VALID') {
+      statusKey = 'VALID';
+    }
+
+    // Status Badge Configuration
+    let badgeHtml = '';
+    let ticketCardClass = 'digital-ticket';
+    let qrStubHtml = '';
+
+    if (statusKey === 'VALID') {
+      badgeHtml = `<span class="badge bg-success text-white" style="font-size:0.75rem;"><i class="bi bi-check-circle-fill me-1"></i>VALID</span>`;
+      qrStubHtml = `
+        <div class="qr-img-box">
+          <img src="${qrUrl}" alt="Admission QR Code" loading="lazy">
+        </div>
+        <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Scan at Entrance</div>
+        <div class="code-label fw-bold text-white" title="${code}"><code>${code}</code></div>
+      `;
+    } else if (statusKey === 'USED') {
+      ticketCardClass += ' ticket-used';
+      badgeHtml = `<span class="badge text-white" style="background:#6366f1; font-size:0.75rem;"><i class="bi bi-shield-check me-1"></i>USED / ADMITTED</span>`;
+      qrStubHtml = `
+        <div class="qr-img-box">
+          <img src="${qrUrl}" alt="Admission QR Code" style="opacity:0.25; filter:grayscale(1);">
+          <div class="qr-used-overlay">
+            <i class="bi bi-check2-circle fs-1 text-success d-block mb-1"></i>
+            <span class="badge bg-dark text-white fw-bold" style="font-size:0.68rem; letter-spacing:0.5px;">ADMITTED</span>
+          </div>
+        </div>
+        <div class="text-success small fw-semibold mb-1" style="font-size:0.75rem;"><i class="bi bi-check2 me-1"></i>Ticket Checked In</div>
+        <div class="code-label text-muted" title="${code}"><code>${code}</code></div>
+      `;
+    } else if (statusKey === 'EXPIRED') {
+      ticketCardClass += ' ticket-expired';
+      badgeHtml = `<span class="badge bg-secondary text-white" style="font-size:0.75rem;"><i class="bi bi-clock-history me-1"></i>EXPIRED</span>`;
+      qrStubHtml = `
+        <div class="qr-img-box">
+          <img src="${qrUrl}" alt="Admission QR Code" style="opacity:0.2; filter:grayscale(1);">
+          <div class="qr-used-overlay">
+            <i class="bi bi-hourglass-bottom fs-2 text-warning d-block mb-1"></i>
+            <span class="badge bg-dark text-white fw-bold" style="font-size:0.68rem;">EVENT CONCLUDED</span>
+          </div>
+        </div>
+        <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Pass Expired</div>
+        <div class="code-label text-muted" title="${code}"><code>${code}</code></div>
+      `;
+    } else if (statusKey === 'CANCELLED') {
+      ticketCardClass += ' ticket-cancelled';
+      badgeHtml = `<span class="badge bg-danger text-white" style="font-size:0.75rem;"><i class="bi bi-x-circle me-1"></i>CANCELLED</span>`;
+      qrStubHtml = `
+        <div class="text-danger py-4">
+          <i class="bi bi-x-octagon fs-1 d-block mb-1"></i>
+          <span class="fw-bold small d-block">Cancelled</span>
+          <span class="text-muted" style="font-size:0.7rem;">This ticket is void</span>
+        </div>
+      `;
+    } else {
+      badgeHtml = `<span class="badge bg-warning text-dark" style="font-size:0.75rem;"><i class="bi bi-hourglass-split me-1"></i>PENDING</span>`;
+      qrStubHtml = `
+        <div class="text-warning py-3">
+          <i class="bi bi-clock-history fs-2 d-block mb-1"></i>
+          <span class="fw-bold small d-block">Pending Payment</span>
+          <span class="text-muted" style="font-size:0.7rem;">QR codes activate on confirmation</span>
+        </div>
+      `;
+    }
+
+    return `
+    <div class="${ticketCardClass}">
+      <!-- Header -->
+      <div class="tk-header">
+        <div class="d-flex align-items-center">
+          <span class="sparkle me-1">${EsIcons.sparkle}</span> EventSphere Pass
+        </div>
+        ${badgeHtml}
+      </div>
+
+      <!-- Horizontal Content Split -->
+      <div class="tk-content-split">
+        
+        <!-- Left: Event & Attendee Details -->
+        <div class="tk-details">
+          <h4 class="fw-bold text-white mb-2" style="font-size:1.25rem;">${eventTitle}</h4>
+          
+          <div class="d-flex flex-wrap gap-3 mb-3 text-muted-soft small">
+            <div><i class="bi bi-calendar3 me-1 text-primary"></i> ${dateText}</div>
+            <div><i class="bi bi-clock me-1 text-primary"></i> ${timeText}</div>
+            <div><i class="bi bi-geo-alt me-1 text-primary"></i> ${venueText}</div>
+          </div>
+
+          <div class="p-2 px-3 rounded-2 mb-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="text-muted-soft" style="font-size:0.72rem; letter-spacing:0.5px;">ATTENDEE</div>
+            <div class="fw-bold text-white fs-6">${t.attendeeName || t.name || 'Ticket Holder'}</div>
+            <div class="text-muted-soft" style="font-size:0.78rem;">${t.attendeeEmail || t.email || ''}</div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-1 border-top border-secondary border-opacity-25">
+            <div>
+              <span class="text-muted-soft" style="font-size:0.72rem;">TIER</span>
+              <div class="fw-semibold text-white small">${t.ticketTypeName || 'Standard'}</div>
+            </div>
+            <div class="text-end">
+              <span class="text-muted-soft" style="font-size:0.72rem;">REF</span>
+              <div class="fw-bold text-muted" style="font-size:0.8rem;"><code>${booking.bookingReference || booking.id}</code></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle: Vertical Perforation Line with Semicircle Cutouts -->
+        <div class="ticket-perforation-v">
+          <div class="cutout-top"></div>
+          <div class="cutout-bottom"></div>
+        </div>
+
+        <!-- Right: Scannable QR Code Stub -->
+        <div class="tk-qr-stub">
+          ${qrStubHtml}
+        </div>
+
+      </div>
+    </div>`;
+  }).join('');
+
+  if (actions) actions.style.removeProperty('display');
+}
+
+async function loadTicket() {
+  const container = document.getElementById('ticketsWrapper');
 
   if (!bookingId) {
     container.innerHTML = `
@@ -97,208 +270,52 @@ async function loadTicket() {
     return;
   }
 
+  // STEP 1: INSTANT SYNCHRONOUS HYDRATION (0ms from cache)
+  let cachedBooking = window.EsCache?.getBooking(bookingId);
+  cachedBooking = unwrap(cachedBooking);
+  if (cachedBooking) {
+    const cachedEvent = cachedBooking.eventId ? unwrap(window.EsCache?.getEvent(cachedBooking.eventId)) : null;
+    renderTickets(cachedBooking, cachedEvent);
+  }
+
+  // STEP 2: SWR FETCH FROM SERVER
   try {
-    const rawBooking = await BookingsAPI.getById(bookingId);
-    const booking = unwrap(rawBooking);
-
-    if (!booking) throw new Error('Booking record not found');
-
-    // Fetch complementary event details (date/time/venue)
-    let eventDetails = null;
-    try {
-      if (booking.eventId) {
-        const rawEvent = await EventsAPI.getById(booking.eventId);
-        eventDetails = unwrap(rawEvent);
-      }
-    } catch (e) {
-      console.warn('Could not fetch extra event details:', e);
-    }
-
-    const eventTitle = booking.eventTitle || eventDetails?.title || 'EventSphere Experience';
-    const dt = eventDetails?.startDatetime ? new Date(eventDetails.startDatetime) : null;
-    const dateText = dt ? dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBA';
-    const timeText = dt ? dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : 'Time TBA';
-    const venueText = eventDetails?.venueName || eventDetails?.venue?.name || 'Venue TBA';
-
-    // Collect all individual ticket passes across booking items
-    const ticketsList = [];
-    (booking.items || []).forEach(item => {
-      if (item.tickets && item.tickets.length > 0) {
-        item.tickets.forEach(t => {
-          ticketsList.push({
-            ...t,
-            ticketTypeName: item.ticketTypeName || 'Standard Admission'
-          });
-        });
-      } else {
-        for (let i = 0; i < (item.quantity || 1); i++) {
-          ticketsList.push({
-            ticketCode: `${booking.bookingReference || 'TK'}-${i + 1}`,
-            attendeeName: EsAuthStore.getUser()?.fullName || 'Attendee',
-            ticketTypeName: item.ticketTypeName || 'General Admission'
-          });
+    const rawBooking = await BookingsAPI.getById(bookingId, {
+      onRevalidate: async (fresh) => {
+        const b = unwrap(fresh);
+        if (b) {
+          let ev = b.eventId ? unwrap(window.EsCache?.getEvent(b.eventId)) : null;
+          if (!ev && b.eventId) {
+            try { ev = unwrap(await EventsAPI.getById(b.eventId)); } catch (e) {}
+          }
+          renderTickets(b, ev);
         }
       }
     });
+    const booking = unwrap(rawBooking);
+    if (!booking) throw new Error('Booking record not found');
 
-    const isBookingConfirmed = booking.status === 'CONFIRMED';
-    const isEventPast = dt && dt < new Date();
-
-    container.innerHTML = ticketsList.map((t, idx) => {
-      const code = t.ticketCode || `${booking.bookingReference}-${idx + 1}`;
-      const qrPayload = t.qrPayload || t.signedPayload || t.signedQrPayload || code;
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(qrPayload)}`;
-
-      // Resolve effective ticket status (VALID, USED, CANCELLED, EXPIRED, PENDING)
-      let statusKey = (t.status || (isBookingConfirmed ? 'VALID' : booking.status)).toUpperCase();
-      if (booking.status === 'CANCELLED' || statusKey === 'CANCELLED') {
-        statusKey = 'CANCELLED';
-      } else if (statusKey === 'USED') {
-        statusKey = 'USED';
-      } else if (isEventPast) {
-        statusKey = 'EXPIRED';
-      } else if (isBookingConfirmed || statusKey === 'VALID') {
-        statusKey = 'VALID';
+    let eventDetails = booking.eventId ? unwrap(window.EsCache?.getEvent(booking.eventId)) : null;
+    if (!eventDetails && booking.eventId) {
+      try {
+        const rawEvent = await EventsAPI.getById(booking.eventId);
+        eventDetails = unwrap(rawEvent);
+      } catch (e) {
+        console.warn('Could not fetch extra event details:', e);
       }
+    }
 
-      // Status Badge Configuration
-      let badgeHtml = '';
-      let ticketCardClass = 'digital-ticket';
-      let qrStubHtml = '';
-
-      if (statusKey === 'VALID') {
-        badgeHtml = `<span class="badge bg-success text-white" style="font-size:0.75rem;"><i class="bi bi-check-circle-fill me-1"></i>VALID</span>`;
-        qrStubHtml = `
-          <div class="qr-img-box">
-            <img src="${qrUrl}" alt="Admission QR Code" loading="lazy">
-          </div>
-          <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Scan at Entrance</div>
-          <div class="code-label fw-bold text-white" title="${code}"><code>${code}</code></div>
-        `;
-      } else if (statusKey === 'USED') {
-        ticketCardClass += ' ticket-used';
-        badgeHtml = `<span class="badge text-white" style="background:#6366f1; font-size:0.75rem;"><i class="bi bi-shield-check me-1"></i>USED / ADMITTED</span>`;
-        qrStubHtml = `
-          <div class="qr-img-box">
-            <img src="${qrUrl}" alt="Admission QR Code" style="opacity:0.25; filter:grayscale(1);">
-            <div class="qr-used-overlay">
-              <i class="bi bi-check2-circle fs-1 text-success d-block mb-1"></i>
-              <span class="badge bg-dark text-white fw-bold" style="font-size:0.68rem; letter-spacing:0.5px;">ADMITTED</span>
-            </div>
-          </div>
-          <div class="text-success small fw-semibold mb-1" style="font-size:0.75rem;"><i class="bi bi-check2 me-1"></i>Ticket Checked In</div>
-          <div class="code-label text-muted" title="${code}"><code>${code}</code></div>
-        `;
-      } else if (statusKey === 'EXPIRED') {
-        ticketCardClass += ' ticket-expired';
-        badgeHtml = `<span class="badge bg-secondary text-white" style="font-size:0.75rem;"><i class="bi bi-clock-history me-1"></i>EXPIRED</span>`;
-        qrStubHtml = `
-          <div class="qr-img-box">
-            <img src="${qrUrl}" alt="Admission QR Code" style="opacity:0.2; filter:grayscale(1);">
-            <div class="qr-used-overlay">
-              <i class="bi bi-hourglass-bottom fs-2 text-warning d-block mb-1"></i>
-              <span class="badge bg-dark text-white fw-bold" style="font-size:0.68rem;">EVENT CONCLUDED</span>
-            </div>
-          </div>
-          <div class="text-muted-soft small mb-1" style="font-size:0.75rem;">Pass Expired</div>
-          <div class="code-label text-muted" title="${code}"><code>${code}</code></div>
-        `;
-      } else if (statusKey === 'CANCELLED') {
-        ticketCardClass += ' ticket-cancelled';
-        badgeHtml = `<span class="badge bg-danger text-white" style="font-size:0.75rem;"><i class="bi bi-x-circle me-1"></i>CANCELLED</span>`;
-        qrStubHtml = `
-          <div class="text-danger py-4">
-            <i class="bi bi-x-octagon fs-1 d-block mb-1"></i>
-            <span class="fw-bold small d-block">Cancelled</span>
-            <span class="text-muted" style="font-size:0.7rem;">This ticket is void</span>
-          </div>
-        `;
-      } else {
-        badgeHtml = `<span class="badge bg-warning text-dark" style="font-size:0.75rem;"><i class="bi bi-hourglass-split me-1"></i>PENDING</span>`;
-        qrStubHtml = `
-          <div class="text-warning py-3">
-            <i class="bi bi-clock-history fs-2 d-block mb-1"></i>
-            <span class="fw-bold small d-block">Pending Payment</span>
-            <span class="text-muted" style="font-size:0.7rem;">QR codes activate on confirmation</span>
-          </div>
-        `;
-      }
-
-      return `
-      <div class="${ticketCardClass}">
-        <!-- Header -->
-        <div class="tk-header">
-          <div class="d-flex align-items-center">
-            <span class="sparkle me-1">${EsIcons.sparkle}</span> EventSphere Pass
-          </div>
-          ${badgeHtml}
-        </div>
-
-        <!-- Horizontal Content Split -->
-        <div class="tk-content-split">
-          
-          <!-- Left: Event & Attendee Details -->
-          <div class="tk-main-info">
-            <div>
-              <div class="tk-event" title="${eventTitle}">${eventTitle}</div>
-              
-              <div class="tk-meta-grid">
-                <div class="tk-meta-item">
-                  <span>Date</span>
-                  <b>${dateText}</b>
-                </div>
-                <div class="tk-meta-item">
-                  <span>Time</span>
-                  <b>${timeText}</b>
-                </div>
-                <div class="tk-meta-item">
-                  <span>Venue</span>
-                  <b title="${venueText}">${venueText}</b>
-                </div>
-                <div class="tk-meta-item">
-                  <span>Ticket Type</span>
-                  <b>${t.ticketTypeName}</b>
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-3 mt-2 border-top d-flex justify-content-between align-items-center">
-              <div class="tk-meta-item">
-                <span>Attendee</span>
-                <b class="fs-6">${t.attendeeName || 'Guest'}</b>
-              </div>
-              <div class="text-end">
-                <span class="text-muted-soft" style="font-size:0.72rem;">REF</span>
-                <div class="fw-bold text-muted" style="font-size:0.8rem;"><code>${booking.bookingReference}</code></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Middle: Vertical Perforation Line with Semicircle Cutouts -->
-          <div class="ticket-perforation-v">
-            <div class="cutout-top"></div>
-            <div class="cutout-bottom"></div>
-          </div>
-
-          <!-- Right: Scannable QR Code Stub -->
-          <div class="tk-qr-stub">
-            ${qrStubHtml}
-          </div>
-
-        </div>
-      </div>`;
-    }).join('');
-
-    actions.style.removeProperty('display');
-
+    renderTickets(booking, eventDetails);
   } catch (err) {
     console.error('Failed to load ticket:', err);
-    container.innerHTML = `
-      <div class="state-block text-center py-5 w-100">
-        <h4 class="text-danger">Could not load tickets</h4>
-        <p class="text-muted-soft">${err.message || 'Server error occurred'}</p>
-        <a href="my-bookings.html" class="btn btn-quiet btn-sm">Return to Bookings</a>
-      </div>`;
+    if (!cachedBooking) {
+      container.innerHTML = `
+        <div class="state-block text-center py-5 w-100">
+          <h4 class="text-danger">Could not load tickets</h4>
+          <p class="text-muted-soft">${err.message || 'Server error occurred'}</p>
+          <a href="my-bookings.html" class="btn btn-quiet btn-sm">Return to Bookings</a>
+        </div>`;
+    }
   }
 }
 

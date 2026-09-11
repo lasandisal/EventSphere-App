@@ -196,40 +196,108 @@ async function loadCategories() {
   if (params.get('categoryId')) sel.value = params.get('categoryId');
 }
 
-function renderEventsGrid(list, total) {
+function filterEventsList(list, { dateFilter, locationFilter, priceFilter }) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(ev => {
+    if (dateFilter && ev.startDatetime) {
+      const evDate = ev.startDatetime.substring(0, 10);
+      if (evDate !== dateFilter) return false;
+    }
+    if (locationFilter) {
+      const term = locationFilter.toLowerCase();
+      const vName = (ev.venueName || '').toLowerCase();
+      if (!vName.includes(term)) return false;
+    }
+    if (priceFilter) {
+      const prices = (ev.ticketTypes || []).map(t => Number(t.price));
+      const minPrice = prices.length ? Math.min(...prices) : 0;
+      if (priceFilter === 'free' && minPrice > 0) return false;
+      if (priceFilter === 'paid' && minPrice === 0 && prices.every(p => p === 0)) return false;
+    }
+    return true;
+  });
+}
+
+function renderPagination(totalElements, pageSize, activePage) {
+  const pag = document.getElementById('pagination');
+  if (!pag) return;
+  const totalPages = Math.ceil(totalElements / pageSize);
+  if (totalPages <= 1) {
+    pag.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  if (activePage > 0) {
+    html += `<button class="btn btn-quiet btn-sm me-1" onclick="loadEvents(${activePage - 1})"><i class="bi bi-chevron-left"></i> Prev</button>`;
+  }
+  for (let i = 0; i < totalPages; i++) {
+    html += `<button class="btn ${i === activePage ? 'btn-primary' : 'btn-quiet'} btn-sm me-1" onclick="loadEvents(${i})">${i + 1}</button>`;
+  }
+  if (activePage < totalPages - 1) {
+    html += `<button class="btn btn-quiet btn-sm" onclick="loadEvents(${activePage + 1})">Next <i class="bi bi-chevron-right"></i></button>`;
+  }
+  pag.innerHTML = html;
+}
+
+function renderEventsGrid(list, total, page = 0) {
   const grid = document.getElementById('eventsGrid');
   document.getElementById('resultCount').textContent = `${total} event${total === 1 ? '' : 's'} found`;
   grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
+  renderPagination(total, 9, page);
   if (window.EsCache && list.length) {
     window.EsCache.seedEvents(list);
   }
 }
 
 async function loadEvents(page = 0) {
+  currentPage = page;
   const grid = document.getElementById('eventsGrid');
-  const keyword = document.getElementById('fKeyword').value;
+  const keyword = document.getElementById('fKeyword').value.trim();
   const categoryId = document.getElementById('fCategory').value;
-  const searchKey = `${keyword || ''}_${categoryId || ''}_${page}_9`;
+  const dateFilter = document.getElementById('fDate').value;
+  const locationFilter = document.getElementById('fLocation').value.trim();
+  const priceFilter = document.getElementById('fPrice').value;
 
-  // STEP 1: Check instant cache first
-  const cached = window.EsCache?.getSearch(searchKey);
-  if (cached) {
-    const cachedList = Array.isArray(cached) ? cached : (cached?.content || []);
-    const cachedTotal = cached?.totalElements ?? cachedList.length;
-    renderEventsGrid(cachedList, cachedTotal);
+  const compositeKey = `comp_${keyword}_${categoryId}_${dateFilter}_${locationFilter}_${priceFilter}_${page}_9`;
+  const baseKey = `${keyword}_${categoryId}_${page}_9`;
+
+  // STEP 1: Check instant composite or base cache
+  let renderedFromCache = false;
+  const cachedComposite = window.EsCache?.getSearch(compositeKey);
+  if (cachedComposite) {
+    const list = Array.isArray(cachedComposite) ? cachedComposite : (cachedComposite?.content || []);
+    const total = cachedComposite?.totalElements ?? list.length;
+    renderEventsGrid(list, total, page);
+    renderedFromCache = true;
   } else {
-    // Only show shimmer skeletons if no cached data exists
+    const cachedBase = window.EsCache?.getSearch(baseKey);
+    if (cachedBase) {
+      const baseList = Array.isArray(cachedBase) ? cachedBase : (cachedBase?.content || []);
+      const filtered = filterEventsList(baseList, { dateFilter, locationFilter, priceFilter });
+      renderEventsGrid(filtered, filtered.length, page);
+      renderedFromCache = true;
+    }
+  }
+
+  if (!renderedFromCache) {
     grid.innerHTML = Array(6).fill('<div class="col-md-6 col-lg-4"><div class="skeleton" style="height:320px;"></div></div>').join('');
     document.getElementById('resultCount').textContent = 'Loading events…';
   }
 
+  // STEP 2: Fetch and filter
   try {
     const res = await EventsAPI.searchPublished({ keyword, categoryId, page, size: 9 });
-    const list = Array.isArray(res) ? res : (res?.content || []);
-    const total = res?.totalElements ?? list.length;
-    renderEventsGrid(list, total);
+    const rawList = Array.isArray(res) ? res : (res?.content || []);
+    const filteredList = filterEventsList(rawList, { dateFilter, locationFilter, priceFilter });
+    const total = (dateFilter || locationFilter || priceFilter) ? filteredList.length : (res?.totalElements ?? rawList.length);
+
+    if (window.EsCache) {
+      window.EsCache.setSearch(compositeKey, { content: filteredList, totalElements: total }, 180);
+    }
+    renderEventsGrid(filteredList, total, page);
   } catch (e) {
-    if (!cached) {
+    if (!renderedFromCache) {
       document.getElementById('resultCount').textContent = '0 events found';
       grid.innerHTML = `<div class="col-12 state-block"><h3>Could not load events</h3><p>${e.message || 'Is the backend running?'}</p></div>`;
     }
@@ -237,6 +305,9 @@ async function loadEvents(page = 0) {
 }
 
 document.getElementById('applyFilters').addEventListener('click', () => loadEvents(0));
+['fCategory', 'fDate', 'fPrice'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', () => loadEvents(0));
+});
 document.getElementById('fKeyword').value = params.get('keyword') || '';
 
 loadCategories().then(() => loadEvents(0));

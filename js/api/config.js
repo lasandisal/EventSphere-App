@@ -42,6 +42,163 @@
     }
   }
 
+  /**
+   * EsCache — Fast hybrid client cache (Memory L1 + sessionStorage L2)
+   * Ensures instant (0ms) loads across back/forward navigation within the session.
+   */
+  const _memCache = new Map();
+  const ES_CACHE_PREFIX = 'es_cache_';
+
+  const EsCache = {
+    get(key) {
+      if (!key) return null;
+      // 1. Check L1 Memory
+      if (_memCache.has(key)) {
+        const item = _memCache.get(key);
+        if (!item.exp || Date.now() < item.exp) {
+          return item.val;
+        }
+        _memCache.delete(key);
+      }
+      // 2. Check L2 sessionStorage
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          const raw = sessionStorage.getItem(ES_CACHE_PREFIX + key);
+          if (raw) {
+            const item = JSON.parse(raw);
+            if (!item.exp || Date.now() < item.exp) {
+              _memCache.set(key, item); // hydrate memory
+              return item.val;
+            }
+            sessionStorage.removeItem(ES_CACHE_PREFIX + key);
+          }
+        }
+      } catch (e) {
+        /* storage quota or access error */
+      }
+      return null;
+    },
+
+    set(key, val, ttlSeconds = 300) {
+      if (!key || val === undefined) return;
+      const exp = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
+      const item = { val, exp };
+      _memCache.set(key, item);
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(ES_CACHE_PREFIX + key, JSON.stringify(item));
+        }
+      } catch (e) {
+        try {
+          if (typeof sessionStorage !== 'undefined') {
+            Object.keys(sessionStorage)
+              .filter(k => k.startsWith(ES_CACHE_PREFIX))
+              .forEach(k => sessionStorage.removeItem(k));
+            sessionStorage.setItem(ES_CACHE_PREFIX + key, JSON.stringify(item));
+          }
+        } catch (inner) {}
+      }
+    },
+
+    remove(key) {
+      if (!key) return;
+      _memCache.delete(key);
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(ES_CACHE_PREFIX + key);
+        }
+      } catch (e) {}
+    },
+
+    clear(prefix = '') {
+      if (!prefix) {
+        _memCache.clear();
+      } else {
+        Array.from(_memCache.keys()).forEach(k => {
+          if (k.startsWith(prefix)) _memCache.delete(k);
+        });
+      }
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const k = sessionStorage.key(i);
+            if (k && (!prefix || k.startsWith(ES_CACHE_PREFIX + prefix))) {
+              sessionStorage.removeItem(k);
+            }
+          }
+          Object.keys(sessionStorage).forEach(k => {
+            if (!prefix || k.startsWith(ES_CACHE_PREFIX + prefix)) {
+              try { sessionStorage.removeItem(k); } catch (e) {}
+            }
+          });
+        }
+      } catch (e) {}
+    },
+
+    // Domain Helpers
+    getEvent(id) {
+      return this.get(`event_${id}`);
+    },
+
+    setEvent(id, eventData, ttlSeconds = 600) {
+      if (!id || !eventData) return;
+      this.set(`event_${id}`, eventData, ttlSeconds);
+    },
+
+    seedEvents(eventList, ttlSeconds = 600) {
+      if (!Array.isArray(eventList)) return;
+      eventList.forEach(ev => {
+        if (ev && ev.id) {
+          const existing = this.getEvent(ev.id);
+          const merged = existing ? { ...existing, ...ev } : ev;
+          this.setEvent(ev.id, merged, ttlSeconds);
+        }
+      });
+    },
+
+    invalidateEvent(id) {
+      if (id) this.remove(`event_${id}`);
+      this.clear('events_search_');
+    },
+
+    getCategories() {
+      return this.get('categories_all');
+    },
+
+    setCategories(categories, ttlSeconds = 1800) { // 30 mins
+      this.set('categories_all', categories, ttlSeconds);
+    },
+
+    getSearch(key) {
+      return this.get(`events_search_${key}`);
+    },
+
+    setSearch(key, data, ttlSeconds = 180) { // 3 mins
+      this.set(`events_search_${key}`, data, ttlSeconds);
+    },
+
+    getUserBookings(userId = 'me') {
+      return this.get(`user_bookings_${userId}`);
+    },
+
+    setUserBookings(userId = 'me', data, ttlSeconds = 300) { // 5 mins
+      this.set(`user_bookings_${userId}`, data, ttlSeconds);
+    },
+
+    invalidateUserBookings(userId) {
+      if (userId) this.remove(`user_bookings_${userId}`);
+      this.clear('user_bookings_');
+    },
+
+    getBooking(id) {
+      return this.get(`booking_${id}`);
+    },
+
+    setBooking(id, data, ttlSeconds = 600) { // 10 mins
+      this.set(`booking_${id}`, data, ttlSeconds);
+    }
+  };
+
   const EsAuthStore = {
     getToken() {
       const token = localStorage.getItem(ES_TOKEN_KEY);
@@ -56,7 +213,14 @@
       return token;
     },
     setToken(t) { localStorage.setItem(ES_TOKEN_KEY, t); },
-    clear() { localStorage.removeItem(ES_TOKEN_KEY); localStorage.removeItem(ES_USER_KEY); },
+    clear() {
+      localStorage.removeItem(ES_TOKEN_KEY);
+      localStorage.removeItem(ES_USER_KEY);
+      if (typeof EsCache !== 'undefined' && EsCache.clear) {
+        EsCache.clear('user_');
+        EsCache.clear('booking_');
+      }
+    },
     getUser() {
       if (!this.getToken()) return null;
       try { return JSON.parse(localStorage.getItem(ES_USER_KEY)); } catch (e) { return null; }
@@ -161,136 +325,6 @@
       throw err;
     }
   }
-
-  /**
-   * EsCache — Fast hybrid client cache (Memory L1 + sessionStorage L2)
-   * Ensures instant (0ms) loads across back/forward navigation within the session.
-   */
-  const _memCache = new Map();
-  const ES_CACHE_PREFIX = 'es_cache_';
-
-  const EsCache = {
-    get(key) {
-      if (!key) return null;
-      // 1. Check L1 Memory
-      if (_memCache.has(key)) {
-        const item = _memCache.get(key);
-        if (!item.exp || Date.now() < item.exp) {
-          return item.val;
-        }
-        _memCache.delete(key);
-      }
-      // 2. Check L2 sessionStorage
-      try {
-        if (typeof sessionStorage !== 'undefined') {
-          const raw = sessionStorage.getItem(ES_CACHE_PREFIX + key);
-          if (raw) {
-            const item = JSON.parse(raw);
-            if (!item.exp || Date.now() < item.exp) {
-              _memCache.set(key, item); // hydrate memory
-              return item.val;
-            }
-            sessionStorage.removeItem(ES_CACHE_PREFIX + key);
-          }
-        }
-      } catch (e) {
-        /* storage quota or access error */
-      }
-      return null;
-    },
-
-    set(key, val, ttlSeconds = 300) {
-      if (!key || val === undefined) return;
-      const exp = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
-      const item = { val, exp };
-      _memCache.set(key, item);
-      try {
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem(ES_CACHE_PREFIX + key, JSON.stringify(item));
-        }
-      } catch (e) {
-        try {
-          if (typeof sessionStorage !== 'undefined') {
-            Object.keys(sessionStorage)
-              .filter(k => k.startsWith(ES_CACHE_PREFIX))
-              .forEach(k => sessionStorage.removeItem(k));
-            sessionStorage.setItem(ES_CACHE_PREFIX + key, JSON.stringify(item));
-          }
-        } catch (inner) {}
-      }
-    },
-
-    remove(key) {
-      if (!key) return;
-      _memCache.delete(key);
-      try {
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.removeItem(ES_CACHE_PREFIX + key);
-        }
-      } catch (e) {}
-    },
-
-    clear(prefix = '') {
-      if (!prefix) {
-        _memCache.clear();
-      } else {
-        for (const k of _memCache.keys()) {
-          if (k.startsWith(prefix)) _memCache.delete(k);
-        }
-      }
-      try {
-        if (typeof sessionStorage !== 'undefined') {
-          Object.keys(sessionStorage).forEach(k => {
-            if (k.startsWith(ES_CACHE_PREFIX + prefix)) {
-              sessionStorage.removeItem(k);
-            }
-          });
-        }
-      } catch (e) {}
-    },
-
-    // Domain Helpers
-    getEvent(id) {
-      return this.get(`event_${id}`);
-    },
-
-    setEvent(id, eventData, ttlSeconds = 600) {
-      if (!id || !eventData) return;
-      this.set(`event_${id}`, eventData, ttlSeconds);
-    },
-
-    seedEvents(eventList, ttlSeconds = 600) {
-      if (!Array.isArray(eventList)) return;
-      eventList.forEach(ev => {
-        if (ev && ev.id) {
-          const existing = this.getEvent(ev.id);
-          const merged = existing ? { ...existing, ...ev } : ev;
-          this.setEvent(ev.id, merged, ttlSeconds);
-        }
-      });
-    },
-
-    invalidateEvent(id) {
-      if (id) this.remove(`event_${id}`);
-      this.clear('events_search_');
-    },
-
-    getCategories() {
-      return this.get('categories_all');
-    },
-
-    setCategories(categories, ttlSeconds = 1800) { // 30 mins
-      this.set('categories_all', categories, ttlSeconds);
-    },
-
-    getSearch(key) {
-      return this.get(`events_search_${key}`);
-    },
-
-    setSearch(key, data, ttlSeconds = 180) { // 3 mins
-      this.set(`events_search_${key}`, data, ttlSeconds);
-    }
-  };
 
   function esPathPrefix() {
     const isSubPage = typeof window !== 'undefined' && window.location.pathname.includes('/pages/');

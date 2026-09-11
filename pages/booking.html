@@ -484,6 +484,12 @@ function onBookingSuccess() {
   if (pollInterval) clearInterval(pollInterval);
   if (holdTimerInterval) clearInterval(holdTimerInterval);
   sessionStorage.removeItem('es_pending_booking');
+  if (window.EsCache) {
+    const user = EsAuthStore.getUser();
+    const uid = user?.id || user?.userId || 'me';
+    window.EsCache.invalidateUserBookings(uid);
+    if (eventId) window.EsCache.invalidateEvent(eventId);
+  }
   document.getElementById('viewTicketBtn').href = `ticket.html?bookingId=${currentBookingId}`;
   esToast('Payment Confirmed! Passes dispatched to emails.', 'success');
   goStep(5);

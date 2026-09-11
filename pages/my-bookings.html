@@ -99,7 +99,7 @@ const statusMap = {
 
 let toCancel = null;
 let currentTab = 'upcoming';
-let eventCache = {};
+let allUserBookings = null;
 
 function unwrap(res) {
   if (!res) return [];
@@ -111,9 +111,13 @@ function unwrap(res) {
   return [];
 }
 
+function getEventFromCacheOrLocal(eventId) {
+  return window.EsCache?.getEvent(eventId) || null;
+}
+
 function bookingCard(b) {
   const [cls, label] = statusMap[b.status] || ['status-pending', b.status];
-  const ev = eventCache[b.eventId];
+  const ev = getEventFromCacheOrLocal(b.eventId);
   const ticketCount = (b.items || []).reduce((s, i) => s + i.quantity, 0);
 
   const fallbackSvg = `data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect fill='%23F8E9E6' width='300' height='200'/%3E%3Ctext fill='%23C68B8F' font-family='sans-serif' font-size='16' font-weight='bold' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E🎟️ EventSphere%3C/text%3E%3C/svg%3E`;
@@ -159,58 +163,94 @@ function emptyState(tab) {
   </div>`;
 }
 
+function renderBookingsTab(tab = currentTab) {
+  currentTab = tab;
+  const list = document.getElementById('bookingsList');
+  if (!allUserBookings || !allUserBookings.length) {
+    list.innerHTML = emptyState(tab);
+    return;
+  }
+
+  const now = new Date();
+  const filtered = allUserBookings.filter(b => {
+    const ev = getEventFromCacheOrLocal(b.eventId);
+    const eventTime = ev?.startDatetime ? new Date(ev.startDatetime) : null;
+
+    if (tab === 'upcoming') {
+      return (b.status === 'CONFIRMED' || b.status === 'PENDING') && (!eventTime || eventTime >= now);
+    } else if (tab === 'past') {
+      return b.status === 'CONFIRMED' && eventTime && eventTime < now;
+    } else if (tab === 'cancelled') {
+      return b.status === 'CANCELLED' || b.status === 'EXPIRED';
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = emptyState(tab);
+    return;
+  }
+
+  list.innerHTML = filtered.map(bookingCard).join('');
+}
+
+async function ensureEventDetails(bookings) {
+  const uniqueEventIds = [...new Set(bookings.map(b => b.eventId).filter(Boolean))];
+  const missing = uniqueEventIds.filter(id => !window.EsCache?.getEvent(id));
+  if (missing.length) {
+    await Promise.all(missing.map(async id => {
+      try {
+        await EventsAPI.getById(id);
+      } catch (e) {}
+    }));
+    // Re-render once images/dates are cached
+    renderBookingsTab(currentTab);
+  }
+}
+
 async function loadBookings(tab = 'upcoming') {
   currentTab = tab;
   const list = document.getElementById('bookingsList');
-  list.innerHTML = `<div class="text-center py-5 text-muted-soft"><i class="bi bi-arrow-repeat spin fs-4 d-block mb-2"></i> Loading ${tab} bookings...</div>`;
 
+  // STEP 1: If already in memory, render immediately (0ms instant tab switch)
+  if (allUserBookings !== null) {
+    renderBookingsTab(tab);
+    return;
+  }
+
+  // STEP 2: Check sessionStorage cache
+  const user = EsAuthStore.getUser();
+  const uid = user?.id || user?.userId || 'me';
+  const cached = window.EsCache?.getUserBookings(uid);
+  if (cached) {
+    allUserBookings = unwrap(cached);
+    renderBookingsTab(tab);
+    ensureEventDetails(allUserBookings);
+  } else {
+    // Show sleek shimmer skeletons while waiting for first fetch
+    list.innerHTML = Array(3).fill('<div class="es-skeleton rounded-3 mb-3" style="height:140px;"></div>').join('');
+  }
+
+  // STEP 3: Fetch fresh from backend (SWR)
   try {
-    const raw = await BookingsAPI.myBookings({ tab: tab, size: 50 });
-    const allBookings = unwrap(raw);
-
-    if (!allBookings.length) {
-      list.innerHTML = emptyState(tab);
-      return;
-    }
-
-    // Pre-fetch all event details first to accurately check event dates
-    const uniqueEventIds = [...new Set(allBookings.map(b => b.eventId).filter(Boolean))];
-    await Promise.all(uniqueEventIds.map(async id => {
-      if (!eventCache[id]) {
-        try {
-          const rawEv = await EventsAPI.getById(id);
-          eventCache[id] = rawEv?.data || rawEv;
-        } catch (e) { /* degrades gracefully */ }
+    const raw = await BookingsAPI.myBookings({
+      size: 50,
+      onRevalidate: (fresh) => {
+        allUserBookings = unwrap(fresh);
+        if (window.EsCache) window.EsCache.setUserBookings(uid, fresh);
+        renderBookingsTab(currentTab);
+        ensureEventDetails(allUserBookings);
       }
-    }));
-
-    // ✨ Accurate Client-Side Validation ✨
-    const now = new Date();
-    const filtered = allBookings.filter(b => {
-      const ev = eventCache[b.eventId];
-      const eventTime = ev?.startDatetime ? new Date(ev.startDatetime) : null;
-
-      if (tab === 'upcoming') {
-        // Confirmed or Pending events in the future
-        return (b.status === 'CONFIRMED' || b.status === 'PENDING') && (!eventTime || eventTime >= now);
-      } else if (tab === 'past') {
-        // Confirmed events in the past
-        return b.status === 'CONFIRMED' && eventTime && eventTime < now;
-      } else if (tab === 'cancelled') {
-        // Cancelled or Expired events only
-        return b.status === 'CANCELLED' || b.status === 'EXPIRED';
-      }
-      return true;
     });
 
-    if (!filtered.length) {
-      list.innerHTML = emptyState(tab);
-      return;
-    }
-
-    list.innerHTML = filtered.map(bookingCard).join('');
+    allUserBookings = unwrap(raw);
+    if (window.EsCache) window.EsCache.setUserBookings(uid, raw);
+    renderBookingsTab(tab);
+    ensureEventDetails(allUserBookings);
   } catch (e) {
-    list.innerHTML = `<div class="state-block text-center py-5 text-danger"><h3>Could not load bookings</h3><p>${e.message || 'Is the server running?'}</p></div>`;
+    if (!allUserBookings) {
+      list.innerHTML = `<div class="state-block text-center py-5 text-danger"><h3>Could not load bookings</h3><p>${e.message || 'Is the server running?'}</p></div>`;
+    }
   }
 }
 
@@ -219,7 +259,7 @@ document.getElementById('bookingTabs').addEventListener('click', (e) => {
   if (!btn) return;
   document.querySelectorAll('#bookingTabs button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  loadBookings(btn.getAttribute('data-tab'));
+  renderBookingsTab(btn.getAttribute('data-tab'));
 });
 
 function askCancel(id) {
@@ -232,7 +272,12 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async () =
   try {
     await BookingsAPI.cancel(toCancel);
     esToast('Booking cancelled', 'success');
-    loadBookings(currentTab);
+    // Optimistically update local booking status
+    if (allUserBookings) {
+      const target = allUserBookings.find(b => b.id === toCancel);
+      if (target) target.status = 'CANCELLED';
+    }
+    renderBookingsTab(currentTab);
   } catch (e) {
     esToast(e.message || 'Could not cancel this booking', 'error');
   }
