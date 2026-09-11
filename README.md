@@ -9,10 +9,12 @@
 [![Database](https://img.shields.io/badge/Database-Aiven_MySQL-38BDF8.svg?style=for-the-badge&logo=mysql&logoColor=white)](https://aiven.io/)
 [![Payment](https://img.shields.io/badge/Payment-PayHere_IPG-F59E0B.svg?style=for-the-badge)](https://www.payhere.lk/)
 [![AI](https://img.shields.io/badge/AI-Google_Gemini-FF2E74.svg?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Project Report](https://img.shields.io/badge/Google_Docs-Project_Report-4285F4.svg?style=for-the-badge&logo=googledocs&logoColor=white)](https://docs.google.com/document/d/1X6XspO6Vx_Vn0Wct_69B55BjL2htt4JV/edit?usp=sharing&ouid=105743732836393895401&rtpof=true&sd=true)
 
 <p align="center">
   <b>Enterprise-Grade, Cloud-Ready Event Management & Cryptographic Ticketing Engine</b><br/>
-  Built for <b>ITS 1114 – Advanced API Development</b> at <b>IJSE (Institute of Software Engineering)</b>
+  Built for <b>ITS 1114 – Advanced API Development</b> at <b>IJSE (Institute of Software Engineering)</b><br/>
+  📄 <b><a href="https://docs.google.com/document/d/1X6XspO6Vx_Vn0Wct_69B55BjL2htt4JV/edit?usp=sharing&ouid=105743732836393895401&rtpof=true&sd=true">Read the Full Project Report (Google Docs)</a></b>
 </p>
 
 </div>
@@ -239,12 +241,13 @@ eventsphere_frontend/
 
 ---
 
-## 🌐 Live Deployments
+## 🌐 Live Deployments & Project Links
 
 * **Frontend Web Application (Vercel):** [https://eventsphere-webapp.vercel.app](https://eventsphere-webapp.vercel.app)
 * **Backend REST API (Render):** [https://its-1114-eventsphere-booking-platform.onrender.com](https://its-1114-eventsphere-booking-platform.onrender.com)
 * **Cloud Database:** Hosted on Aiven MySQL with connection pooling.
 * **Payment Gateway:** PayHere Merchant Portal (Sandbox / Live Mode).
+* **Project Documentation / Report:** [EventSphere Project Report (Google Docs)](https://docs.google.com/document/d/1X6XspO6Vx_Vn0Wct_69B55BjL2htt4JV/edit?usp=sharing&ouid=105743732836393895401&rtpof=true&sd=true)
 
 ---
 
@@ -253,3 +256,5 @@ eventsphere_frontend/
 * **Course:** Semester 2 — AAD (Advanced API Development — ITS 1114) Module Coursework
 * **Institution:** IJSE (Institute of Software Engineering)
 * **Author:** Lasandi Salwathura
+* **Project Documentation:** [EventSphere Project Report (Google Docs)](https://docs.google.com/document/d/1X6XspO6Vx_Vn0Wct_69B55BjL2htt4JV/edit?usp=sharing&ouid=105743732836393895401&rtpof=true&sd=true)
+
