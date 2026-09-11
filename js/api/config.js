@@ -241,7 +241,7 @@
   const EsAuthStore = {
     getToken() {
       const token = localStorage.getItem(ES_TOKEN_KEY);
-      if (!token) return null;
+      if (!token || token === 'null' || token === 'undefined' || token.trim() === '') return null;
       const claims = parseJwt(token);
       if (claims && claims.exp) {
         if (Date.now() >= claims.exp * 1000 - 5000) {
@@ -294,7 +294,7 @@
   /**
    * esFetch — thin wrapper around fetch() for the EventSphere API with in-flight deduplication.
    */
-  function esFetch(path, { method = 'GET', body, params, isForm = false } = {}) {
+  function esFetch(path, { method = 'GET', body, params, isForm = false, retries = 1 } = {}) {
     let cleanPath = path || '';
     if (cleanPath.startsWith('/api/v1')) {
       cleanPath = cleanPath.substring(7);
@@ -375,9 +375,17 @@
         }
         return payload;
       } catch (networkErr) {
-        if (networkErr.status) throw networkErr;
-        const err = new Error('Could not reach EventSphere servers.');
-        err.status = 0;
+        if (networkErr.status && networkErr.status !== 502 && networkErr.status !== 503 && networkErr.status !== 504) {
+          throw networkErr;
+        }
+        // Auto-retry once for GET requests if server is cold-booting (Render 502 / preflight network blip)
+        if (isGet && retries > 0) {
+          console.warn(`[EventSphere API] Server may be warming up from cold standby. Retrying ${cleanPath} in 2s...`);
+          await new Promise(r => setTimeout(r, 2000));
+          return esFetch(cleanPath, { method, body, params, isForm, retries: retries - 1 });
+        }
+        const err = new Error('Could not reach EventSphere servers. The backend may be spinning up from standby.');
+        err.status = networkErr.status || 0;
         throw err;
       } finally {
         if (flightKey) {

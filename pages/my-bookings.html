@@ -249,7 +249,17 @@ async function loadBookings(tab = 'upcoming') {
     ensureEventDetails(allUserBookings);
   } catch (e) {
     if (!allUserBookings) {
-      list.innerHTML = `<div class="state-block text-center py-5 text-danger"><h3>Could not load bookings</h3><p>${e.message || 'Is the server running?'}</p></div>`;
+      list.innerHTML = `
+        <div class="state-block text-center py-5">
+          <div class="mb-3 fs-1 text-warning"><i class="bi bi-cloud-slash"></i></div>
+          <h4 class="fw-bold text-white mb-2">Could not load bookings</h4>
+          <p class="text-muted-soft mb-3" style="max-width:440px; margin:0 auto; font-size:0.9rem;">
+            ${e.message || 'The server may be waking up from cold standby (Render Free Tier). Please wait a moment.'}
+          </p>
+          <button class="btn btn-primary btn-sm" onclick="loadBookings('${tab}')">
+            <i class="bi bi-arrow-clockwise me-1"></i> Retry Connection
+          </button>
+        </div>`;
     }
   }
 }
