@@ -1,7 +1,7 @@
 // =========================================================
 // EventSphere — Organizer Attendees & Gate Desk Module
-// Handles multi-event guest lists, date disambiguation,
-// individual ticket expansion, and interactive check-in.
+// Handles multi-event guest lists, itemized ticket expansion,
+// and interactive desk check-in controls.
 // =========================================================
 
 let orgAttendeesCache = [];
@@ -60,34 +60,62 @@ async function loadOrganizerAttendees(forceRefresh = false) {
     const getBookingsFn = window.getSharedOrganizerBookings || (async () => []);
     const bList = await getBookingsFn(forceRefresh);
 
-    // Expand bookings into individual ticket attendee passes
+    // Deep expansion: extract all tickets from booking items (b.items[].tickets) or b.tickets
     const expanded = [];
     (bList || []).forEach(b => {
-      if (b.tickets && Array.isArray(b.tickets) && b.tickets.length > 0) {
-        b.tickets.forEach((t, idx) => {
-          const isCheckedIn = t.status === 'USED' || t.status === 'CHECKED_IN' || t.checkedIn === true || b.checkedIn === true || b.status === 'USED';
+      const allTickets = [];
+      const items = b.items || b.bookingItems || [];
+
+      items.forEach(item => {
+        if (item.tickets && Array.isArray(item.tickets) && item.tickets.length > 0) {
+          item.tickets.forEach(t => {
+            allTickets.push({
+              ...t,
+              ticketTypeName: item.ticketTypeName || b.ticketTypeName || 'General Admission',
+              seatNumber: t.seatNumber || item.seatNumber || null
+            });
+          });
+        }
+      });
+
+      if (allTickets.length === 0 && b.tickets && Array.isArray(b.tickets) && b.tickets.length > 0) {
+        allTickets.push(...b.tickets);
+      }
+
+      if (allTickets.length > 0) {
+        allTickets.forEach((t, idx) => {
+          const isCheckedIn = (t.status || '').toUpperCase() === 'USED' ||
+                              (t.status || '').toUpperCase() === 'CHECKED_IN' ||
+                              t.checkedIn === true ||
+                              (b.status || '').toUpperCase() === 'USED';
+
           expanded.push({
             id: t.id || `${b.id}-${idx + 1}`,
+            ticketId: t.id,
             bookingId: b.id,
             eventId: b.eventId,
             eventTitle: b.eventTitle,
             eventStartDatetime: b.eventStartDatetime,
             eventVenue: b.eventVenue,
-            name: t.attendeeName || t.name || b.userName || b.attendeeName || (b.user && (b.user.fullName || b.user.name)) || 'Attendee',
-            email: t.attendeeEmail || t.email || b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '—',
-            phone: t.phone || b.userPhone || b.attendeePhone || (b.user && b.user.phoneNumber) || '—',
-            ticketType: t.ticketTypeName || t.ticketType || b.ticketTypeName || 'General Admission',
+            name: t.attendeeName || t.name || b.customerName || b.userName || b.attendeeName || (b.user && (b.user.fullName || b.user.name)) || 'Attendee',
+            email: t.attendeeEmail || t.email || b.customerEmail || b.userEmail || (b.user && b.user.email) || '—',
+            phone: t.phone || b.customerPhone || b.userPhone || (b.user && b.user.phoneNumber) || '—',
+            ticketType: t.ticketTypeName || b.ticketTypeName || 'General Admission',
             ticketCode: t.ticketCode || `${b.bookingReference || 'TK'}-${idx + 1}`,
-            signedPayload: t.signedPayload || t.qrPayload || t.signedQrPayload || t.ticketCode || `${b.bookingReference || 'TK'}-${idx + 1}`,
+            signedPayload: t.qrPayload || t.signedPayload || t.ticketCode || `${b.bookingReference || 'TK'}-${idx + 1}`,
             bookingRef: b.bookingReference || `#${b.id}`,
+            bookingStatus: (b.status || 'CONFIRMED').toUpperCase(),
+            ticketStatus: (t.status || 'VALID').toUpperCase(),
             isCheckedIn,
             checkedInAt: t.checkedInAt || b.checkedInAt || null
           });
         });
       } else {
-        const isCheckedIn = b.checkedIn === true || b.status === 'USED' || b.status === 'CHECKED_IN' || b.checkInStatus === 'CHECKED_IN';
-        const ticketCode = b.ticketCode || b.ticketId || b.bookingReference || `#${b.id}`;
-        const signedPayload = b.signedPayload || b.qrPayload || b.ticketCode || b.bookingReference || `#${b.id}`;
+        // Fallback for bookings without expanded tickets
+        const isCheckedIn = (b.status || '').toUpperCase() === 'USED' ||
+                            (b.status || '').toUpperCase() === 'CHECKED_IN' ||
+                            b.checkedIn === true ||
+                            b.checkInStatus === 'CHECKED_IN';
 
         expanded.push({
           id: b.id,
@@ -96,13 +124,15 @@ async function loadOrganizerAttendees(forceRefresh = false) {
           eventTitle: b.eventTitle,
           eventStartDatetime: b.eventStartDatetime,
           eventVenue: b.eventVenue,
-          name: b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || 'Attendee',
-          email: b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '—',
-          phone: b.userPhone || b.attendeePhone || (b.user && b.user.phoneNumber) || '—',
-          ticketType: b.ticketTypeName || b.ticketType || 'General Admission',
-          ticketCode,
-          signedPayload,
+          name: b.customerName || b.userName || b.attendeeName || 'Attendee',
+          email: b.customerEmail || b.userEmail || '—',
+          phone: b.customerPhone || b.userPhone || '—',
+          ticketType: b.ticketTypeName || 'General Admission',
+          ticketCode: b.ticketCode || b.bookingReference || `#${b.id}`,
+          signedPayload: b.qrPayload || b.signedPayload || b.ticketCode || b.bookingReference || `#${b.id}`,
           bookingRef: b.bookingReference || `#${b.id}`,
+          bookingStatus: (b.status || 'CONFIRMED').toUpperCase(),
+          ticketStatus: (b.status || 'CONFIRMED').toUpperCase(),
           isCheckedIn,
           checkedInAt: b.checkedInAt || null
         });
@@ -120,8 +150,9 @@ async function loadOrganizerAttendees(forceRefresh = false) {
 
 // Update Top Counter Badges
 function updateAttendeeCounters() {
-  const total = orgAttendeesCache.length;
-  const checkedIn = orgAttendeesCache.filter(a => a.isCheckedIn).length;
+  const confirmedAttendees = orgAttendeesCache.filter(a => a.bookingStatus === 'CONFIRMED' || a.isCheckedIn);
+  const total = confirmedAttendees.length;
+  const checkedIn = confirmedAttendees.filter(a => a.isCheckedIn).length;
   const pending = total - checkedIn;
 
   const elTotal = document.getElementById('orgAttendeeCountTotal');
@@ -149,11 +180,13 @@ function renderOrganizerAttendeesTable(keyword = '') {
     filtered = filtered.filter(a => String(a.eventId) === String(selectedEvent));
   }
 
-  // 2. Filter by check-in status
+  // 2. Filter by check-in / booking status
   if (selectedStatus === 'CHECKED_IN') {
     filtered = filtered.filter(a => a.isCheckedIn);
   } else if (selectedStatus === 'NOT_CHECKED_IN') {
-    filtered = filtered.filter(a => !a.isCheckedIn);
+    filtered = filtered.filter(a => !a.isCheckedIn && a.bookingStatus === 'CONFIRMED');
+  } else if (selectedStatus === 'CONFIRMED_ONLY') {
+    filtered = filtered.filter(a => a.bookingStatus === 'CONFIRMED');
   }
 
   // 3. Multi-field search across Name, Email, Phone, Ticket, Ref, Event Title, Date, ID, Venue
@@ -201,6 +234,27 @@ function renderOrganizerAttendeesTable(keyword = '') {
     const evDateStr = a.eventStartDatetime ? new Date(a.eventStartDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Date TBA';
     const evVenue = a.eventVenue || '';
 
+    let checkInHtml = '';
+    if (a.isCheckedIn) {
+      checkInHtml = `
+        <div>
+          <span class="status-badge status-confirmed"><i class="bi bi-check-circle-fill me-1"></i>Checked-in</span>
+          ${a.checkedInAt ? `<div class="small text-muted-soft mt-1" style="font-size:0.72rem;"><i class="bi bi-clock me-1"></i>${formatLocalTime(a.checkedInAt)}</div>` : ''}
+        </div>`;
+    } else if (a.bookingStatus === 'CANCELLED') {
+      checkInHtml = `<span class="status-badge status-cancelled">Booking Cancelled</span>`;
+    } else if (a.bookingStatus === 'EXPIRED') {
+      checkInHtml = `<span class="status-badge status-cancelled">Checkout Expired</span>`;
+    } else {
+      checkInHtml = `
+        <div class="d-flex align-items-center gap-2">
+          <span class="status-badge status-pending">Not Checked-in</span>
+          <button type="button" class="btn btn-primary btn-sm py-1 px-2" style="font-size:0.75rem; white-space:nowrap;" onclick="manualCheckInAttendee('${escapeJs(a.signedPayload)}', '${a.id}', this)" title="Admit guest at gate">
+            <i class="bi bi-qr-code-scan me-1"></i> Check In
+          </button>
+        </div>`;
+    }
+
     return `
       <tr>
         <td data-label="Attendee">
@@ -219,22 +273,10 @@ function renderOrganizerAttendeesTable(keyword = '') {
           </div>
         </td>
         <td data-label="Ticket Type"><span class="pill-badge pill-beige">${escapeHtml(a.ticketType)}</span></td>
-        <td data-label="Ticket ID"><code>${escapeHtml(a.ticketCode)}</code></td>
-        <td data-label="Booking Ref"><span class="small text-muted-soft">${escapeHtml(a.bookingRef)}</span></td>
+        <td data-label="Ticket ID"><code style="font-size:0.75rem;">${escapeHtml(a.ticketCode)}</code></td>
+        <td data-label="Booking Ref"><span class="small text-muted-soft font-monospace" style="font-size:0.75rem;">${escapeHtml(a.bookingRef)}</span></td>
         <td data-label="Check-in Action">
-          ${a.isCheckedIn ? `
-            <div>
-              <span class="status-badge status-confirmed"><i class="bi bi-check-circle-fill me-1"></i>Checked-in</span>
-              ${a.checkedInAt ? `<div class="small text-muted-soft mt-1" style="font-size:0.72rem;"><i class="bi bi-clock me-1"></i>${formatLocalTime(a.checkedInAt)}</div>` : ''}
-            </div>
-          ` : `
-            <div class="d-flex align-items-center gap-2">
-              <span class="status-badge status-pending">Not Checked-in</span>
-              <button type="button" class="btn btn-primary btn-sm py-1 px-2" style="font-size:0.75rem; white-space:nowrap;" onclick="manualCheckInAttendee('${escapeJs(a.signedPayload)}', '${a.id}', this)" title="Check in this attendee at the gate">
-                <i class="bi bi-qr-code-scan me-1"></i> Check In
-              </button>
-            </div>
-          `}
+          ${checkInHtml}
         </td>
       </tr>`;
   }).join('');
@@ -260,6 +302,7 @@ async function manualCheckInAttendee(signedPayload, attendeeId, btnElement) {
     const match = orgAttendeesCache.find(a => String(a.id) === String(attendeeId) || String(a.signedPayload) === String(signedPayload) || String(a.ticketCode) === String(signedPayload));
     if (match) {
       match.isCheckedIn = true;
+      match.ticketStatus = 'USED';
       match.checkedInAt = res?.checkedInAt || new Date().toISOString();
     }
 
@@ -267,7 +310,7 @@ async function manualCheckInAttendee(signedPayload, attendeeId, btnElement) {
     renderOrganizerAttendeesTable();
 
     if (typeof esToast === 'function') {
-      esToast(`Entry Granted: ${match?.name || 'Attendee'} checked in successfully!`, 'success');
+      esToast(`Entry Granted: ${match?.name || 'Attendee'} admitted successfully!`, 'success');
     }
   } catch (err) {
     console.error('Manual check-in error:', err);
