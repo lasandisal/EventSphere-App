@@ -141,8 +141,8 @@ function renderOrganizerBookingsTable(keyword = '') {
       const evDate = b.eventStartDatetime ? new Date(b.eventStartDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
       const evDateIso = b.eventStartDatetime ? String(b.eventStartDatetime).toLowerCase() : '';
       const evVenue = (b.eventVenue || '').toLowerCase();
-      const name = (b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || '').toLowerCase();
-      const email = (b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '').toLowerCase();
+      const name = (b.customerName || b.userName || b.attendeeName || (b.user && (b.user.fullName || b.user.name)) || '').toLowerCase();
+      const email = (b.customerEmail || b.email || b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '').toLowerCase();
       const ticketType = (b.ticketTypeName || b.ticketType || '').toLowerCase();
 
       return ref.includes(q) ||

@@ -389,12 +389,29 @@
     // Process manifest items
     const manifestRows = paidBookings.map(b => {
       const ref = b.bookingReference || b.bookingId || ('ES-BK-' + b.id);
-      const name = b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || 'Registered Attendee';
-      const email = b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '—';
-      const phone = b.userPhone || b.attendeePhone || (b.user && b.user.phoneNumber) || '—';
-      const ticketType = b.ticketTypeName || b.ticketType || 'General';
-      const qty = b.ticketCount || b.quantity || 1;
-      const amount = Number(b.totalPrice != null ? b.totalPrice : (b.totalAmount != null ? b.totalAmount : 0));
+      const name = b.customerName || b.userName || b.attendeeName || (b.user && (b.user.fullName || b.user.name)) || 'Registered Attendee';
+
+      // Extract all possible email addresses (customerEmail, attendeeEmail, nested items[].tickets[].attendeeEmail)
+      let email = b.customerEmail || b.email || b.userEmail || b.attendeeEmail || (b.user && b.user.email);
+      const ticketEmails = [];
+      if (b.items && Array.isArray(b.items)) {
+        b.items.forEach(item => {
+          (item.tickets || []).forEach(t => {
+            if (t.attendeeEmail && t.attendeeEmail.includes('@')) {
+              ticketEmails.push(t.attendeeEmail.trim());
+            }
+          });
+        });
+      }
+      if (!email && ticketEmails.length > 0) {
+        email = ticketEmails[0];
+      }
+      email = email || '—';
+
+      const phone = b.customerPhone || b.phone || b.userPhone || b.attendeePhone || (b.user && b.user.phoneNumber) || '—';
+      const ticketType = b.ticketTypeName || b.ticketType || (b.items && b.items[0]?.ticketTypeName) || 'General';
+      const qty = b.ticketCount || b.quantity || (b.items ? b.items.reduce((s, it) => s + (it.quantity || 1), 0) : 1);
+      const amount = Number(b.totalAmount != null ? b.totalAmount : (b.totalPrice != null ? b.totalPrice : 0));
       const payRef = b.paymentId || b.payherePaymentId || b.paymentReference || ref;
       const date = b.createdAt || b.bookingDate ? new Date(b.createdAt || b.bookingDate).toLocaleDateString() : '—';
       const status = (b.status || 'CONFIRMED').toUpperCase();
@@ -405,6 +422,7 @@
         name,
         email,
         phone,
+        ticketEmails,
         ticketType,
         qty,
         amount,
@@ -573,11 +591,27 @@
     });
   }
 
+  // Helper: Extract all unique, valid attendee emails from manifest rows and tickets
+  function extractAllAttendeeEmails(rows) {
+    const emails = [];
+    (rows || []).forEach(r => {
+      if (r.email && r.email !== '—' && r.email.includes('@')) {
+        emails.push(r.email.trim());
+      }
+      if (r.ticketEmails && Array.isArray(r.ticketEmails)) {
+        r.ticketEmails.forEach(te => {
+          if (te && te.includes('@')) {
+            emails.push(te.trim());
+          }
+        });
+      }
+    });
+    return Array.from(new Set(emails));
+  }
+
   // Helper: Launch default mail client with all attendee emails in BCC
   function emailAllAttendees(event, rows, reason) {
-    const validEmails = Array.from(new Set(
-      (rows || []).map(r => (r.email || '').trim()).filter(e => e && e !== '—' && e.includes('@'))
-    ));
+    const validEmails = extractAllAttendeeEmails(rows);
 
     if (!validEmails.length) {
       if (typeof esToast === 'function') esToast('No attendee email addresses found in confirmed bookings.', 'warning');
@@ -619,9 +653,7 @@
 
   // Helper: Copy comma-separated email list to clipboard
   function copyAttendeeEmails(rows) {
-    const validEmails = Array.from(new Set(
-      (rows || []).map(r => (r.email || '').trim()).filter(e => e && e !== '—' && e.includes('@'))
-    ));
+    const validEmails = extractAllAttendeeEmails(rows);
 
     if (!validEmails.length) {
       if (typeof esToast === 'function') esToast('No attendee email addresses found in bookings.', 'warning');

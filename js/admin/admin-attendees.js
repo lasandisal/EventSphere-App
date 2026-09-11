@@ -149,8 +149,8 @@ function renderAllAttendeesTable() {
 
     // 3. Search Query Filter across Name, Email, Ref, Title, Date, ID, Venue, Org, Ticket
     if (q) {
-      const name = (b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || '').toLowerCase();
-      const email = (b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '').toLowerCase();
+      const name = (b.customerName || b.userName || b.attendeeName || (b.user && (b.user.fullName || b.user.name)) || '').toLowerCase();
+      const email = (b.customerEmail || b.email || b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '').toLowerCase();
       const evTitle = (b.eventTitle || '').toLowerCase();
       const evId = String(b.eventId || '');
       const evDate = b.eventStartDatetime ? new Date(b.eventStartDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
@@ -193,8 +193,8 @@ function renderAllAttendeesTable() {
 
   tbody.innerHTML = filtered.map(b => {
     const ref = b.bookingReference || b.bookingId || `#${b.id}`;
-    const name = b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || 'Attendee';
-    const email = b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '—';
+    const name = b.customerName || b.userName || b.attendeeName || (b.user && (b.user.fullName || b.user.name)) || 'Attendee';
+    const email = b.customerEmail || b.email || b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '—';
     const evTitle = b.eventTitle || '—';
     const org = b.organizerName || '—';
     const ticketType = b.ticketTypeName || b.ticketType || 'General';
