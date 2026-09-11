@@ -171,7 +171,7 @@ function renderOrganizerAttendeesTable(keyword = '') {
 
   const q = (keyword || document.getElementById('orgAttendeeSearchInput')?.value || '').toLowerCase().trim();
   const selectedEvent = document.getElementById('orgAttendeeEventFilter')?.value || 'ALL';
-  const selectedStatus = document.getElementById('orgAttendeeStatusFilter')?.value || 'ALL';
+  const selectedStatus = document.getElementById('orgAttendeeStatusFilter')?.value || 'CONFIRMED';
 
   let filtered = orgAttendeesCache;
 
@@ -184,9 +184,11 @@ function renderOrganizerAttendeesTable(keyword = '') {
   if (selectedStatus === 'CHECKED_IN') {
     filtered = filtered.filter(a => a.isCheckedIn);
   } else if (selectedStatus === 'NOT_CHECKED_IN') {
-    filtered = filtered.filter(a => !a.isCheckedIn && a.bookingStatus === 'CONFIRMED');
-  } else if (selectedStatus === 'CONFIRMED_ONLY') {
-    filtered = filtered.filter(a => a.bookingStatus === 'CONFIRMED');
+    filtered = filtered.filter(a => !a.isCheckedIn && (a.bookingStatus === 'CONFIRMED' || a.bookingStatus === 'PAID'));
+  } else if (selectedStatus === 'CONFIRMED' || selectedStatus === 'CONFIRMED_ONLY') {
+    filtered = filtered.filter(a => a.bookingStatus === 'CONFIRMED' || a.bookingStatus === 'PAID' || a.isCheckedIn);
+  } else if (selectedStatus === 'EXPIRED_HOLDS') {
+    filtered = filtered.filter(a => a.bookingStatus === 'EXPIRED');
   }
 
   // 3. Multi-field search across Name, Email, Phone, Ticket, Ref, Event Title, Date, ID, Venue

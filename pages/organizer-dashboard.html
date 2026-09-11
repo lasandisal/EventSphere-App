@@ -203,10 +203,12 @@
           <select class="form-select text-white" id="orgAttendeeEventFilter" style="max-width:280px; background:#1b1e2c; border-color:rgba(255,255,255,0.15); font-size:0.85rem;">
             <option value="ALL">All Events</option>
           </select>
-          <select class="form-select text-white" id="orgAttendeeStatusFilter" style="max-width:170px; background:#1b1e2c; border-color:rgba(255,255,255,0.15); font-size:0.85rem;">
-            <option value="ALL">All Statuses</option>
-            <option value="CHECKED_IN">Checked-in</option>
-            <option value="NOT_CHECKED_IN">Not Checked-in</option>
+          <select class="form-select text-white" id="orgAttendeeStatusFilter" style="max-width:200px; background:#1b1e2c; border-color:rgba(255,255,255,0.15); font-size:0.85rem;">
+            <option value="CONFIRMED" selected>Confirmed Guests</option>
+            <option value="CHECKED_IN">Checked-in Only</option>
+            <option value="NOT_CHECKED_IN">Awaiting Check-in</option>
+            <option value="EXPIRED_HOLDS">Expired Holds (Unpaid)</option>
+            <option value="ALL">All Records</option>
           </select>
           <input class="form-control" id="orgAttendeeSearchInput" placeholder="Search attendee, ticket, date, ID..." style="max-width:260px;">
         </div>

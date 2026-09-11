@@ -167,9 +167,15 @@
       console.warn('Could not fetch event bookings for safety modal:', err);
     }
 
-    const totalBookings = bookingsList.length;
-    const totalTickets = bookingsList.reduce((sum, b) => sum + (b.ticketCount || b.quantity || 1), 0);
-    const totalRevenue = bookingsList.reduce((sum, b) => sum + Number(b.totalPrice != null ? b.totalPrice : (b.totalAmount != null ? b.totalAmount : 0)), 0);
+    // Filter confirmed/paid bookings only (exclude abandoned/expired cart holds)
+    const paidBookings = bookingsList.filter(b => {
+      const s = (b.status || 'CONFIRMED').toUpperCase();
+      return s === 'CONFIRMED' || s === 'PAID' || (!b.status && Number(b.totalPrice || b.totalAmount || 0) > 0);
+    });
+
+    const totalBookings = paidBookings.length;
+    const totalTickets = paidBookings.reduce((sum, b) => sum + (b.ticketCount || b.quantity || 1), 0);
+    const totalRevenue = paidBookings.reduce((sum, b) => sum + Number(b.totalPrice != null ? b.totalPrice : (b.totalAmount != null ? b.totalAmount : 0)), 0);
 
     const elBookingCount = document.getElementById('esCancelBookingCount');
     const elTicketCount = document.getElementById('esCancelTicketCount');
@@ -220,7 +226,7 @@
           esToast('Event successfully cancelled and admission passes voided.', 'success');
         }
 
-        // Open Refund Manifest modal so organizer/admin can immediately execute refunds
+        // Open Refund Manifest modal so organizer/admin can immediately execute refunds & notify guests
         openRefundManifestModal(event, bookingsList, fullReason);
 
         if (typeof onCancelled === 'function') {
@@ -299,11 +305,17 @@
                 <span class="input-group-text text-muted-soft border-0" style="background:#1b1e2c;"><i class="bi bi-search"></i></span>
                 <input type="text" class="form-control text-white border-0" id="esManifestSearch" placeholder="Search attendee, email, ref..." style="background:#1b1e2c;">
               </div>
-              <div class="d-flex gap-2">
+              <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-primary btn-sm" id="esManifestEmailAllBtn" title="Launch default email client with all attendee emails in BCC">
+                  <i class="bi bi-send-fill me-1"></i> Email All Attendees (BCC)
+                </button>
+                <button type="button" class="btn btn-outline-soft btn-sm" id="esManifestCopyEmailsBtn" title="Copy comma-separated attendee email addresses">
+                  <i class="bi bi-envelope-at me-1"></i> Copy Email List
+                </button>
                 <button type="button" class="btn btn-outline-soft btn-sm" id="esManifestCopyRosterBtn" title="Copy formatted text to clipboard for Excel or merchant notes">
                   <i class="bi bi-clipboard me-1 text-primary"></i> Copy PayHere Roster
                 </button>
-                <button type="button" class="btn btn-primary btn-sm" id="esManifestExportCsvBtn" title="Download spreadsheet for banking and accountant audit">
+                <button type="button" class="btn btn-outline-soft btn-sm" id="esManifestExportCsvBtn" title="Download spreadsheet for banking and accountant audit">
                   <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
                 </button>
                 <a href="https://www.payhere.lk/merchant" target="_blank" rel="noopener noreferrer" class="btn btn-quiet btn-sm" title="Open PayHere Merchant Portal">
@@ -368,8 +380,14 @@
       }
     }
 
+    // Filter confirmed/paid bookings only (exclude abandoned/expired cart holds)
+    const paidBookings = bookingsList.filter(b => {
+      const s = (b.status || 'CONFIRMED').toUpperCase();
+      return s === 'CONFIRMED' || s === 'PAID' || (!b.status && Number(b.totalPrice || b.totalAmount || 0) > 0);
+    });
+
     // Process manifest items
-    const manifestRows = bookingsList.map(b => {
+    const manifestRows = paidBookings.map(b => {
       const ref = b.bookingReference || b.bookingId || ('ES-BK-' + b.id);
       const name = b.userName || b.attendeeName || b.customerName || (b.user && (b.user.fullName || b.user.name)) || 'Registered Attendee';
       const email = b.userEmail || b.attendeeEmail || (b.user && b.user.email) || '—';
@@ -421,7 +439,7 @@
         tbody.innerHTML = `
           <tr>
             <td colspan="7" class="text-center text-muted-soft py-4">
-              ${manifestRows.length === 0 ? 'No registered bookings or payments recorded for this event.' : 'No attendees match your search query.'}
+              ${manifestRows.length === 0 ? 'No paid bookings or tickets found requiring refunds.' : 'No attendees match your search query.'}
             </td>
           </tr>
         `;
@@ -456,6 +474,16 @@
     // Filter listener
     document.getElementById('esManifestSearch')?.addEventListener('input', (e) => {
       renderTable(e.target.value);
+    });
+
+    // 1-Click Email All Attendees via mailto: (BCC)
+    document.getElementById('esManifestEmailAllBtn')?.addEventListener('click', () => {
+      emailAllAttendees(event, manifestRows, reason);
+    });
+
+    // Copy Attendee Emails
+    document.getElementById('esManifestCopyEmailsBtn')?.addEventListener('click', () => {
+      copyAttendeeEmails(manifestRows);
     });
 
     // CSV Export
@@ -539,6 +567,71 @@
     navigator.clipboard.writeText(lines.join('\n')).then(() => {
       if (typeof esToast === 'function') {
         esToast('PayHere refund roster copied to clipboard!', 'success');
+      }
+    }).catch(err => {
+      console.error('Clipboard copy failed:', err);
+    });
+  }
+
+  // Helper: Launch default mail client with all attendee emails in BCC
+  function emailAllAttendees(event, rows, reason) {
+    const validEmails = Array.from(new Set(
+      (rows || []).map(r => (r.email || '').trim()).filter(e => e && e !== '—' && e.includes('@'))
+    ));
+
+    if (!validEmails.length) {
+      if (typeof esToast === 'function') esToast('No attendee email addresses found in confirmed bookings.', 'warning');
+      return;
+    }
+
+    const title = event.title || 'Event';
+    const subject = encodeURIComponent(`[EventSphere] Urgent: Cancellation & Refund Notice for "${title}"`);
+    const dateStr = event.startDatetime ? new Date(event.startDatetime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Scheduled Date';
+
+    const bodyText = `Dear Attendee,\n\n` +
+      `We regret to inform you that "${title}", originally scheduled for ${dateStr}, has been cancelled by the event host.\n\n` +
+      `Reason: ${reason || 'Unforeseen circumstances'}\n\n` +
+      `Important Information for Ticket Holders:\n` +
+      `1. All digital admission passes and QR codes for this event have been voided and deactivated.\n` +
+      `2. A 100% refund is being processed to your original payment method via PayHere IPG.\n` +
+      `3. Refunds typically settle to your bank account within 3 to 7 business days.\n\n` +
+      `If you have questions regarding your refund, please reply directly to this notice.\n\n` +
+      `Thank you for your understanding,\n` +
+      `${event.organizerName || 'Event Host'} & EventSphere Operations`;
+
+    const body = encodeURIComponent(bodyText);
+    const bcc = encodeURIComponent(validEmails.join(','));
+
+    // Construct mailto link
+    const mailtoUrl = `mailto:?bcc=${bcc}&subject=${subject}&body=${body}`;
+
+    const a = document.createElement('a');
+    a.href = mailtoUrl;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    if (typeof esToast === 'function') {
+      esToast(`Opened email client with ${validEmails.length} attendee(s) in BCC.`, 'success');
+    }
+  }
+
+  // Helper: Copy comma-separated email list to clipboard
+  function copyAttendeeEmails(rows) {
+    const validEmails = Array.from(new Set(
+      (rows || []).map(r => (r.email || '').trim()).filter(e => e && e !== '—' && e.includes('@'))
+    ));
+
+    if (!validEmails.length) {
+      if (typeof esToast === 'function') esToast('No attendee email addresses found in bookings.', 'warning');
+      return;
+    }
+
+    const emailStr = validEmails.join(', ');
+    navigator.clipboard.writeText(emailStr).then(() => {
+      if (typeof esToast === 'function') {
+        esToast(`Copied ${validEmails.length} attendee email(s) to clipboard!`, 'success');
       }
     }).catch(err => {
       console.error('Clipboard copy failed:', err);
