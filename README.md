@@ -277,6 +277,7 @@ eventsphere_frontend/
 * **Salted Password Encryption:** Passwords use BCrypt with a cost factor of 12.
 * **Payment Isolation:** All card data entry occurs on PayHere's hosted PCI-DSS compliant interface. EventSphere never stores or handles credit card numbers.
 * **Single-Use Cryptographic Tickets:** Admission QR passes transition immediately to `USED` upon gate scan with append-only audit trails to prevent reuse.
+* **Client Cache Purge & Session Hygiene:** Logging out triggers `EsAuthStore.clear()`, which immediately purges all user-scoped and booking-scoped cache entries (`user_*`, `booking_*`) from both in-memory and `sessionStorage` layers, preventing session leakage on shared devices.
 
 ---
 
