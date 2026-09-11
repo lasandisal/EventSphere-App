@@ -152,6 +152,44 @@ Follow this guide to demonstrate the complete lifecycle from purchase to gate ch
 
 ---
 
+## ⚡ Client-Side Performance & Zero-Lag Architecture (Hybrid SWR Cache)
+
+To solve network latency inherent to cross-region cloud APIs (e.g. Render deployments) and eliminate jarring loading flashes during navigation, EventSphere incorporates an enterprise-grade **dual-tier client cache (`EsCache`)** with **Stale-While-Revalidate (SWR)**:
+
+```
+                  ┌─────────────────────────────────────────────────────────┐
+                  │                 Browser Navigation / Request             │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                       Check EsCache (0ms)
+                                               │
+                         ┌─────────────────────┴─────────────────────┐
+                         │                                           │
+                  [ Cache HIT ]                               [ Cache MISS ]
+                         │                                           │
+         1. Return cached data immediately (0ms)            1. Render luxury shimmer skeleton
+         2. Paint UI synchronously without spinner          2. Fetch over HTTPS from Render API
+         3. Quietly revalidate in background (SWR)          3. Store response in EsCache (L1 + L2)
+         4. Update availability/counts smoothly             4. Replace skeleton with real content
+```
+
+### Key Performance Pillars:
+1. **Dual-Tier Storage Architecture**:
+   * **L1 Memory Cache (`Map`)**: Synchronous, sub-millisecond retrieval within the page lifecycle.
+   * **L2 Tab-Scoped `sessionStorage`**: Preserves discovery results, event details, and user bookings across browser "Back" and "Forward" navigation within the session.
+2. **0ms Discovery Pre-Seeding**:
+   * When `index.html` or `pages/events.html` queries `/events`, all returned events are automatically pre-seeded into `EsCache`.
+   * When an attendee clicks **"View Event"** on ANY card, `event-details.html` renders **in 0 milliseconds** without awaiting a redundant `/events/{id}` roundtrip.
+3. **Instant Tab Switching (`my-bookings.html`)**:
+   * Switching between **Upcoming**, **Past**, and **Cancelled** filters in memory instantly (0ms) with zero loading spinners, while background SWR quietly confirms check-in statuses.
+4. **Instant Digital Admission Passes (`ticket.html`)**:
+   * Confirmed tickets and QR codes render immediately from cache upon navigation, ensuring seamless gate entry even in poor venue connectivity.
+5. **Security & Session Hygiene**:
+   * **Logout Cache Purge**: `EsAuthStore.clear()` purges all private user cache entries (`user_*`, `booking_*`), guaranteeing zero data leakage on shared computers.
+   * **Mutation Invalidation**: Order confirmation or reservation cancellation immediately invalidates relevant cache keys to ensure data consistency.
+
+---
+
 ## 👥 Three-Tier User Ecosystem & Permissions (RBAC)
 
 | Role | Target Users | Key Capabilities & Workflows |
@@ -178,6 +216,7 @@ Follow this guide to demonstrate the complete lifecycle from purchase to gate ch
 | **Media Storage** | **Cloudinary CDN** | Direct client-side unsigned banner uploads with edge optimization. |
 | **Artificial Intelligence**| **Google Gemini API (`gemini-3.5-flash-lite`)** | Natural language event assistant with server-side tool / function calling. |
 | **QR Engine** | **Google ZXing 3.5.3** | Dynamic PNG QR code generation with HMAC-SHA256 signature verification. |
+| **Client Caching & SWR** | **Custom Dual-Tier Engine (L1 Memory + L2 `sessionStorage`)** | 0ms instant hydration, tab persistence, SWR background updates, and logout security cache purging. |
 | **Email Service** | **Spring Mail + Brevo SMTP** | Asynchronous delivery of receipts, attendee passes, and 6-digit OTP codes. |
 | **Hosting & Cloud** | **Vercel (Web) & Render (Backend)** | Serverless frontend deployment and continuous cloud backend hosting. |
 
@@ -196,10 +235,10 @@ eventsphere_frontend/
 ├── js/
 │   ├── env.js                   # Runtime public config generated from .env
 │   ├── api/
-│   │   ├── config.js            # esFetch wrapper, JWT auto-expiry check, and 401 recovery
-│   │   ├── auth.js              # Register, login, OTP verification, password reset
-│   │   ├── events.js            # Public event search, organizer event management
-│   │   ├── bookings.js          # Cart hold, booking creation, attendee ticket lookup
+│   │   ├── config.js            # esFetch wrapper, EsCache hybrid client cache (L1/L2), 401 recovery
+│   │   ├── auth.js              # Register, login, OTP verification, password reset, and cache purge
+│   │   ├── events.js            # Public event search with auto-seeding, SWR caching, organizer API
+│   │   ├── bookings.js          # Cart hold, user-scoped booking cache, digital ticket lookup
 │   │   ├── payments.js          # PayHere hash checkout & status verification
 │   │   └── organizer.js         # Organizer analytics, check-in API, attendee lists
 │   └── utils/
