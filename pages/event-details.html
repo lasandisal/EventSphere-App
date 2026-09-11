@@ -32,30 +32,52 @@
   </div>
 </nav>
 
-<div class="ratio ratio-21x9" style="max-height:420px;">
-  <img id="heroImg" src="" alt="" style="object-fit:cover;">
+<div class="ratio ratio-21x9 position-relative overflow-hidden" id="heroImgWrapper" style="max-height:420px; background: rgba(255,255,255,0.03);">
+  <div id="heroSkeleton" class="es-skeleton position-absolute w-100 h-100 top-0 start-0"></div>
+  <img id="heroImg" src="" alt="" style="object-fit:cover; display:none;">
 </div>
 
 <section class="section-sm">
   <div class="container-narrow">
     <div class="row g-5">
-      <div class="col-lg-7">
-        <span class="pill-badge pill-blush mb-3" id="evCategory">Category</span>
-        <h1 id="evTitle" style="font-size:2.4rem;">Loading…</h1>
-        <div class="d-flex flex-wrap gap-4 mb-4 text-muted-soft" style="font-size:0.92rem;">
-          <span><i class="bi bi-calendar3"></i> <span id="evDate"></span></span>
-          <span><i class="bi bi-clock"></i> <span id="evTime"></span></span>
-          <span><i class="bi bi-geo-alt"></i> <span id="evVenue"></span></span>
-          <span><i class="bi bi-person"></i> Organized by <span id="evOrganizer">—</span></span>
+      <div class="col-lg-7" id="eventMainCol">
+        <!-- Skeleton placeholder -->
+        <div id="detailsSkeleton">
+          <div class="es-skeleton skeleton-badge mb-3"></div>
+          <div class="es-skeleton skeleton-title mb-3" style="width:85%; height:40px;"></div>
+          <div class="d-flex flex-wrap gap-3 mb-4">
+            <div class="es-skeleton" style="width:120px; height:18px;"></div>
+            <div class="es-skeleton" style="width:100px; height:18px;"></div>
+            <div class="es-skeleton" style="width:140px; height:18px;"></div>
+          </div>
+          <div class="es-skeleton mb-2" style="width:40%; height:24px;"></div>
+          <div class="es-skeleton skeleton-text" style="width:100%;"></div>
+          <div class="es-skeleton skeleton-text" style="width:95%;"></div>
+          <div class="es-skeleton skeleton-text" style="width:80%;"></div>
         </div>
-        <h3 class="mb-3">About this event</h3>
-        <p id="evDescription">Loading description…</p>
+
+        <!-- Real content (hidden until populated) -->
+        <div id="detailsContent" style="display:none;">
+          <span class="pill-badge pill-blush mb-3" id="evCategory">Category</span>
+          <h1 id="evTitle" style="font-size:2.4rem;"></h1>
+          <div class="d-flex flex-wrap gap-4 mb-4 text-muted-soft" style="font-size:0.92rem;">
+            <span><i class="bi bi-calendar3"></i> <span id="evDate"></span></span>
+            <span><i class="bi bi-clock"></i> <span id="evTime"></span></span>
+            <span><i class="bi bi-geo-alt"></i> <span id="evVenue"></span></span>
+            <span><i class="bi bi-person"></i> Organized by <span id="evOrganizer">—</span></span>
+          </div>
+          <h3 class="mb-3">About this event</h3>
+          <p id="evDescription" style="line-height:1.75; color: #D1D5DB; white-space:pre-line;"></p>
+        </div>
       </div>
 
       <div class="col-lg-5">
         <div class="summary-card">
           <h3 class="mb-3">Ticket Types</h3>
-          <div id="ticketTypesWrap" class="d-flex flex-column gap-3"></div>
+          <div id="ticketTypesWrap" class="d-flex flex-column gap-3">
+            <div class="es-skeleton p-4 rounded-3" style="height:90px;"></div>
+            <div class="es-skeleton p-4 rounded-3" style="height:90px;"></div>
+          </div>
           <button class="btn btn-primary btn-lg w-100 mt-4" id="bookBtn">Book Tickets</button>
           <p class="text-center text-muted-soft mt-2 mb-0" style="font-size:0.78rem;">Secure checkout · Instant digital ticket</p>
         </div>
@@ -92,11 +114,23 @@ if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get('id');
 const selectedTickets = {}; // ticketTypeId -> {qty, price, name}
+let currentEventData = null;
+
+function getCategoryPillClass(catName = '') {
+  const name = String(catName).toLowerCase();
+  if (name.includes('music') || name.includes('concert') || name.includes('art')) return 'pill-blush';
+  if (name.includes('tech') || name.includes('innovation') || name.includes('digital') || name.includes('code') || name.includes('software')) return 'pill-blue';
+  if (name.includes('sport') || name.includes('fitness') || name.includes('health') || name.includes('outdoor')) return 'pill-sage';
+  if (name.includes('food') || name.includes('drink') || name.includes('dining')) return 'pill-beige';
+  if (name.includes('business') || name.includes('workshop') || name.includes('edu')) return 'pill-lavender';
+  return 'pill-lavender';
+}
 
 function ticketTypeCard(tt) {
   const availableQty = tt.availableQuantity ?? tt.available ?? 0;
+  const currentQty = selectedTickets[tt.id]?.qty || 0;
   return `
-  <div class="ticket-type-card" data-tt="${tt.id}">
+  <div class="ticket-type-card ${currentQty > 0 ? 'selected' : ''}" data-tt="${tt.id}">
     <div class="d-flex justify-content-between align-items-start">
       <div>
         <div class="tt-name">${tt.name}</div>
@@ -106,9 +140,9 @@ function ticketTypeCard(tt) {
         </div>
       </div>
       <div class="qty-stepper">
-        <button type="button" class="qty-minus" disabled>−</button>
-        <span class="qty-val">0</span>
-        <button type="button" class="qty-plus" ${availableQty <= 0 ? 'disabled' : ''}>+</button>
+        <button type="button" class="qty-minus" ${currentQty <= 0 ? 'disabled' : ''}>−</button>
+        <span class="qty-val">${currentQty}</span>
+        <button type="button" class="qty-plus" ${availableQty <= currentQty ? 'disabled' : ''}>+</button>
       </div>
     </div>
   </div>`;
@@ -184,6 +218,88 @@ function wireTicketCards(types) {
   });
 }
 
+function renderEventUI(ev) {
+  if (!ev) return;
+  currentEventData = ev;
+
+  document.title = `${ev.title || 'Event Details'} — EventSphere`;
+
+  // Format start datetime into Date and Time strings
+  let dateText = 'TBA';
+  let timeText = 'TBA';
+  if (ev.startDatetime) {
+    const d = new Date(ev.startDatetime);
+    dateText = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    timeText = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Hero image
+  const heroImg = document.getElementById('heroImg');
+  const heroSkel = document.getElementById('heroSkeleton');
+  const banner = ev.bannerUrl || ev.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80';
+  
+  heroImg.src = banner;
+  heroImg.onload = () => {
+    heroImg.style.display = 'block';
+    if (heroSkel) heroSkel.style.display = 'none';
+  };
+  heroImg.onerror = () => {
+    heroImg.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80';
+    heroImg.style.display = 'block';
+    if (heroSkel) heroSkel.style.display = 'none';
+  };
+  if (heroImg.complete) {
+    heroImg.style.display = 'block';
+    if (heroSkel) heroSkel.style.display = 'none';
+  }
+
+  // Category badge with dynamic color
+  const catEl = document.getElementById('evCategory');
+  const catName = ev.categoryName || 'Event';
+  catEl.textContent = catName;
+  catEl.className = `pill-badge ${getCategoryPillClass(catName)} mb-3`;
+
+  // Details
+  document.getElementById('evTitle').textContent = ev.title || 'Untitled Event';
+  document.getElementById('evDate').textContent = dateText;
+  document.getElementById('evTime').textContent = timeText;
+  document.getElementById('evVenue').textContent = ev.venueName || 'TBA';
+  document.getElementById('evOrganizer').textContent = ev.organizerName || 'Organizer';
+  document.getElementById('evDescription').textContent = ev.description || 'No description provided.';
+
+  // Hide skeleton, show content
+  const skel = document.getElementById('detailsSkeleton');
+  const content = document.getElementById('detailsContent');
+  if (skel) skel.style.display = 'none';
+  if (content) content.style.display = 'block';
+
+  // Render tickets
+  const ticketTypes = ev.ticketTypes || [];
+  const wrap = document.getElementById('ticketTypesWrap');
+  if (ticketTypes.length) {
+    wrap.innerHTML = ticketTypes.map(ticketTypeCard).join('');
+    wireTicketCards(ticketTypes);
+    updateBookingSummary();
+  } else {
+    wrap.innerHTML = '<p class="text-muted-soft mb-0">No tickets currently available for this event.</p>';
+  }
+}
+
+// Restore ticket selections if user navigated back from booking
+function restoreSelectedTickets() {
+  try {
+    const raw = sessionStorage.getItem('es_pending_booking');
+    if (raw) {
+      const pending = JSON.parse(raw);
+      if (pending && String(pending.eventId) === String(eventId) && Array.isArray(pending.items)) {
+        pending.items.forEach(i => {
+          selectedTickets[i.ticketTypeId] = { qty: i.quantity, price: i.price, name: i.name };
+        });
+      }
+    }
+  } catch (e) {}
+}
+
 document.getElementById('bookBtn').addEventListener('click', () => {
   const items = Object.entries(selectedTickets).filter(([, v]) => v.qty > 0);
   if (!items.length) { esToast('Select at least one ticket to continue', 'error'); return; }
@@ -204,43 +320,37 @@ async function loadEvent() {
     return;
   }
 
+  restoreSelectedTickets();
+
+  // STEP 1: INSTANT SYNCHRONOUS HYDRATION (0ms from cache)
+  const cachedEv = window.EsCache?.getEvent(eventId);
+  if (cachedEv) {
+    renderEventUI(cachedEv);
+  }
+
+  // STEP 2: SILENT REVALIDATION IN BACKGROUND OR FOREGROUND FETCH IF UNCACHED
   try {
-    const ev = await EventsAPI.getById(eventId);
-    if (!ev) throw new Error('Event not found');
+    const ev = await EventsAPI.getById(eventId, {
+      onRevalidate: (freshEv) => {
+        // Quietly update with latest availability if data refreshed
+        renderEventUI(freshEv);
+      }
+    });
 
-    // Format start datetime into Date and Time strings
-    let dateText = 'TBA';
-    let timeText = 'TBA';
-    if (ev.startDatetime) {
-      const d = new Date(ev.startDatetime);
-      dateText = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      timeText = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    if (!cachedEv && ev) {
+      renderEventUI(ev);
     }
-
-    document.getElementById('heroImg').src = ev.bannerUrl || ev.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80';
-    document.getElementById('evCategory').textContent = ev.categoryName || 'Event';
-    document.getElementById('evTitle').textContent = ev.title || 'Untitled Event';
-    document.getElementById('evDate').textContent = dateText;
-    document.getElementById('evTime').textContent = timeText;
-    document.getElementById('evVenue').textContent = ev.venueName || 'TBA';
-    document.getElementById('evOrganizer').textContent = ev.organizerName || 'Organizer';
-    document.getElementById('evDescription').textContent = ev.description || 'No description provided.';
-
-    const ticketTypes = ev.ticketTypes || [];
-    const wrap = document.getElementById('ticketTypesWrap');
-    
-    if (ticketTypes.length) {
-      wrap.innerHTML = ticketTypes.map(ticketTypeCard).join('');
-      wireTicketCards(ticketTypes);
-    } else {
-      wrap.innerHTML = '<p class="text-muted-soft">No tickets currently available for this event.</p>';
-    }
-
   } catch (e) {
     console.error('Error loading event:', e);
-    esToast('Could not load event details', 'error');
-    document.getElementById('evTitle').textContent = 'Event Not Found';
-    document.getElementById('evDescription').textContent = 'The event you requested could not be retrieved from the server.';
+    if (!cachedEv) {
+      esToast('Could not load event details', 'error');
+      const skel = document.getElementById('detailsSkeleton');
+      if (skel) skel.style.display = 'none';
+      const content = document.getElementById('detailsContent');
+      if (content) content.style.display = 'block';
+      document.getElementById('evTitle').textContent = 'Event Not Found';
+      document.getElementById('evDescription').textContent = 'The event you requested could not be retrieved from the server.';
+    }
   }
 }
 

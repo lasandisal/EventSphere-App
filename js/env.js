@@ -1,5 +1,6 @@
 /* =========================================================
    EventSphere — Generated Runtime Environment Configuration
+   GENERATED AUTOMATICALLY BY dev.sh — DO NOT EDIT MANUALLY!
    ========================================================= */
 
 window.ES_CONFIG = {

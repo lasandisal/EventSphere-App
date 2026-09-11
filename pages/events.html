@@ -183,6 +183,8 @@ async function loadCategories() {
   try {
     const cats = await CategoriesAPI.getAll();
     const list = Array.isArray(cats) ? cats : (cats?.content || []);
+    // Preserve default "All" option and avoid duplicate population
+    sel.innerHTML = '<option value="">All Categories</option>';
     list.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id; opt.textContent = c.name;
@@ -194,23 +196,43 @@ async function loadCategories() {
   if (params.get('categoryId')) sel.value = params.get('categoryId');
 }
 
+function renderEventsGrid(list, total) {
+  const grid = document.getElementById('eventsGrid');
+  document.getElementById('resultCount').textContent = `${total} event${total === 1 ? '' : 's'} found`;
+  grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
+  if (window.EsCache && list.length) {
+    window.EsCache.seedEvents(list);
+  }
+}
+
 async function loadEvents(page = 0) {
   const grid = document.getElementById('eventsGrid');
-  grid.innerHTML = Array(6).fill('<div class="col-md-6 col-lg-4"><div class="skeleton" style="height:320px;"></div></div>').join('');
-
   const keyword = document.getElementById('fKeyword').value;
   const categoryId = document.getElementById('fCategory').value;
+  const searchKey = `${keyword || ''}_${categoryId || ''}_${page}_9`;
+
+  // STEP 1: Check instant cache first
+  const cached = window.EsCache?.getSearch(searchKey);
+  if (cached) {
+    const cachedList = Array.isArray(cached) ? cached : (cached?.content || []);
+    const cachedTotal = cached?.totalElements ?? cachedList.length;
+    renderEventsGrid(cachedList, cachedTotal);
+  } else {
+    // Only show shimmer skeletons if no cached data exists
+    grid.innerHTML = Array(6).fill('<div class="col-md-6 col-lg-4"><div class="skeleton" style="height:320px;"></div></div>').join('');
+    document.getElementById('resultCount').textContent = 'Loading events…';
+  }
 
   try {
     const res = await EventsAPI.searchPublished({ keyword, categoryId, page, size: 9 });
     const list = Array.isArray(res) ? res : (res?.content || []);
     const total = res?.totalElements ?? list.length;
-
-    document.getElementById('resultCount').textContent = `${total} event${total === 1 ? '' : 's'} found`;
-    grid.innerHTML = list.length ? list.map(eventCard).join('') : emptyState();
+    renderEventsGrid(list, total);
   } catch (e) {
-    document.getElementById('resultCount').textContent = '0 events found';
-    grid.innerHTML = `<div class="col-12 state-block"><h3>Could not load events</h3><p>${e.message || 'Is the backend running?'}</p></div>`;
+    if (!cached) {
+      document.getElementById('resultCount').textContent = '0 events found';
+      grid.innerHTML = `<div class="col-12 state-block"><h3>Could not load events</h3><p>${e.message || 'Is the backend running?'}</p></div>`;
+    }
   }
 }
 

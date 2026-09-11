@@ -301,30 +301,43 @@
   </div>`;
     }
 
+    function renderFeaturedGrid(events) {
+      const grid = document.getElementById('featuredGrid');
+      if (!grid) return;
+      grid.innerHTML = events.length
+        ? events.map(eventCard).join('')
+        : `<div class="col-12 text-center text-muted-soft py-5">
+         <i class="bi bi-calendar-x fs-2 d-block mb-2 text-muted"></i>
+         No events found in this category.
+       </div>`;
+      if (window.EsCache && events.length) {
+        window.EsCache.seedEvents(events);
+      }
+    }
+
     // Fetch and filter events via API on the current page
     async function loadEvents() {
       const grid = document.getElementById('featuredGrid');
-      if (grid) grid.innerHTML = `<div class="col-12 text-center text-muted-soft py-5"><i class="bi bi-arrow-repeat spin"></i> Loading events...</div>`;
+      const params = { size: 8 };
+      if (currentCategoryId) params.categoryId = currentCategoryId;
+      if (currentKeyword) params.keyword = currentKeyword;
+
+      const searchKey = `${currentKeyword || ''}_${currentCategoryId || ''}_0_8`;
+      const cached = window.EsCache?.getSearch(searchKey);
+      if (cached) {
+        const cachedEvents = unwrapResponse(cached);
+        if (cachedEvents.length) renderFeaturedGrid(cachedEvents);
+      } else {
+        if (grid) grid.innerHTML = `<div class="col-12 text-center text-muted-soft py-5"><i class="bi bi-arrow-repeat spin"></i> Loading events...</div>`;
+      }
 
       try {
-        const params = { size: 8 };
-        if (currentCategoryId) params.categoryId = currentCategoryId;
-        if (currentKeyword) params.keyword = currentKeyword;
-
         const rawEvents = await EventsAPI.searchPublished(params);
         const events = unwrapResponse(rawEvents);
-
-        if (grid) {
-          grid.innerHTML = events.length
-            ? events.map(eventCard).join('')
-            : `<div class="col-12 text-center text-muted-soft py-5">
-             <i class="bi bi-calendar-x fs-2 d-block mb-2 text-muted"></i>
-             No events found in this category.
-           </div>`;
-        }
+        renderFeaturedGrid(events);
       } catch (e) {
         console.error('Failed to load events:', e);
-        if (grid) grid.innerHTML = `<div class="col-12 text-center text-danger py-4">Could not load events from the server.</div>`;
+        if (!cached && grid) grid.innerHTML = `<div class="col-12 text-center text-danger py-4">Could not load events from the server.</div>`;
       }
     }
 

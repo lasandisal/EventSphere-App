@@ -1,57 +1,154 @@
-/* Events / Categories / Venues API */
+/* Events / Categories / Venues API with Intelligent Caching & SWR */
 
-const EventsAPI = {
-  // Public — EventController
-  searchPublished({ keyword, categoryId, page = 0, size = 10 } = {}) {
-    return esFetch('/events', { params: { keyword, categoryId, page, size } });
-  },
-  getById(id) {
-    return esFetch(`/events/${id}`);
-  },
+(function (global) {
+  const esFetch = (...args) => (global.esFetch || (typeof window !== 'undefined' ? window.esFetch : null))(...args);
 
-  // Organizer — OrganizerEventController (/api/v1/organizer/events/**)
-  createEvent(payload) {
-    return esFetch('/organizer/events', { method: 'POST', body: payload });
-  },
-  updateEvent(id, payload) {
-    return esFetch(`/organizer/events/${id}`, { method: 'PUT', body: payload });
-  },
-  publishEvent(id) {
-    return esFetch(`/organizer/events/${id}/publish`, { method: 'PATCH' });
-  },
-  cancelEvent(id) {
-    return esFetch(`/organizer/events/${id}/cancel`, { method: 'PATCH' });
-  },
-  myEvents({ page = 0, size = 10 } = {}) {
-    return esFetch('/organizer/events/my-events', { params: { page, size } });
-  },
-  addTicketType(eventId, payload) {
-    return esFetch(`/organizer/events/${eventId}/ticket-types`, { method: 'POST', body: payload });
-  },
-  getEventBookings(eventId) {
-    return esFetch(`/organizer/events/${eventId}/bookings`);
-  }
-};
+  const EventsAPI = {
+    // Public — EventController
+    async searchPublished({ keyword, categoryId, page = 0, size = 10, skipCache = false } = {}) {
+      const searchKey = `${keyword || ''}_${categoryId || ''}_${page}_${size}`;
+      if (!skipCache && global.EsCache) {
+        const cached = global.EsCache.getSearch(searchKey);
+        if (cached) return cached;
+      }
 
-const CategoriesAPI = {
-  getAll() { return esFetch('/categories'); },
-  getById(id) { return esFetch(`/categories/${id}`); },
-  // Admin — AdminCategoryController
-  create(payload) { return esFetch('/admin/categories', { method: 'POST', body: payload }); },
-  update(id, payload) { return esFetch(`/admin/categories/${id}`, { method: 'PUT', body: payload }); },
-  remove(id) { return esFetch(`/admin/categories/${id}`, { method: 'DELETE' }); }
-};
+      const res = await esFetch('/events', { params: { keyword, categoryId, page, size } });
+      if (global.EsCache && res) {
+        global.EsCache.setSearch(searchKey, res);
+        const list = Array.isArray(res) ? res : (res?.content || []);
+        global.EsCache.seedEvents(list);
+      }
+      return res;
+    },
 
-const VenuesAPI = {
-  getAll() { return esFetch('/venues'); },
-  getById(id) { return esFetch(`/venues/${id}`); },
-  createCustom(payload) { return esFetch('/organizer/venues', { method: 'POST', body: payload }); },
-  // Admin — AdminVenueController
-  create(payload) { return esFetch('/admin/venues', { method: 'POST', body: payload }); },
-  update(id, payload) { return esFetch(`/admin/venues/${id}`, { method: 'PUT', body: payload }); },
-  remove(id) { return esFetch(`/admin/venues/${id}`, { method: 'DELETE' }); }
-};
+    async getById(id, { skipCache = false, onRevalidate = null } = {}) {
+      if (!skipCache && global.EsCache) {
+        const cached = global.EsCache.getEvent(id);
+        if (cached) {
+          // If caller supplied onRevalidate callback, perform silent background refresh
+          if (typeof onRevalidate === 'function') {
+            esFetch(`/events/${id}`)
+              .then(fresh => {
+                if (fresh) {
+                  global.EsCache.setEvent(id, fresh);
+                  onRevalidate(fresh);
+                }
+              })
+              .catch(err => console.warn('Background event revalidation:', err));
+          }
+          return cached;
+        }
+      }
 
-window.EventsAPI = EventsAPI;
-window.CategoriesAPI = CategoriesAPI;
-window.VenuesAPI = VenuesAPI;
+      const res = await esFetch(`/events/${id}`);
+      if (global.EsCache && res) {
+        global.EsCache.setEvent(id, res);
+      }
+      return res;
+    },
+
+    // Organizer — OrganizerEventController (/api/v1/organizer/events/**)
+    async createEvent(payload) {
+      const res = await esFetch('/organizer/events', { method: 'POST', body: payload });
+      if (global.EsCache) global.EsCache.clear('events_search_');
+      return res;
+    },
+    async updateEvent(id, payload) {
+      const res = await esFetch(`/organizer/events/${id}`, { method: 'PUT', body: payload });
+      if (global.EsCache) global.EsCache.invalidateEvent(id);
+      return res;
+    },
+    async publishEvent(id) {
+      const res = await esFetch(`/organizer/events/${id}/publish`, { method: 'PATCH' });
+      if (global.EsCache) global.EsCache.invalidateEvent(id);
+      return res;
+    },
+    async cancelEvent(id) {
+      const res = await esFetch(`/organizer/events/${id}/cancel`, { method: 'PATCH' });
+      if (global.EsCache) global.EsCache.invalidateEvent(id);
+      return res;
+    },
+    myEvents({ page = 0, size = 10 } = {}) {
+      return esFetch('/organizer/events/my-events', { params: { page, size } });
+    },
+    async addTicketType(eventId, payload) {
+      const res = await esFetch(`/organizer/events/${eventId}/ticket-types`, { method: 'POST', body: payload });
+      if (global.EsCache) global.EsCache.invalidateEvent(eventId);
+      return res;
+    },
+    getEventBookings(eventId) {
+      return esFetch(`/organizer/events/${eventId}/bookings`);
+    }
+  };
+
+  const CategoriesAPI = {
+    async getAll({ skipCache = false } = {}) {
+      if (!skipCache && global.EsCache) {
+        const cached = global.EsCache.getCategories();
+        if (cached) return cached;
+      }
+      const res = await esFetch('/categories');
+      if (global.EsCache && res) {
+        global.EsCache.setCategories(res);
+      }
+      return res;
+    },
+    getById(id) { return esFetch(`/categories/${id}`); },
+    // Admin — AdminCategoryController
+    async create(payload) {
+      const res = await esFetch('/admin/categories', { method: 'POST', body: payload });
+      if (global.EsCache) global.EsCache.remove('categories_all');
+      return res;
+    },
+    async update(id, payload) {
+      const res = await esFetch(`/admin/categories/${id}`, { method: 'PUT', body: payload });
+      if (global.EsCache) global.EsCache.remove('categories_all');
+      return res;
+    },
+    async remove(id) {
+      const res = await esFetch(`/admin/categories/${id}`, { method: 'DELETE' });
+      if (global.EsCache) global.EsCache.remove('categories_all');
+      return res;
+    }
+  };
+
+  const VenuesAPI = {
+    async getAll({ skipCache = false } = {}) {
+      if (!skipCache && global.EsCache) {
+        const cached = global.EsCache.get('venues_all');
+        if (cached) return cached;
+      }
+      const res = await esFetch('/venues');
+      if (global.EsCache && res) {
+        global.EsCache.set('venues_all', res, 1800);
+      }
+      return res;
+    },
+    getById(id) { return esFetch(`/venues/${id}`); },
+    async createCustom(payload) {
+      const res = await esFetch('/organizer/venues', { method: 'POST', body: payload });
+      if (global.EsCache) global.EsCache.remove('venues_all');
+      return res;
+    },
+    // Admin — AdminVenueController
+    async create(payload) {
+      const res = await esFetch('/admin/venues', { method: 'POST', body: payload });
+      if (global.EsCache) global.EsCache.remove('venues_all');
+      return res;
+    },
+    async update(id, payload) {
+      const res = await esFetch(`/admin/venues/${id}`, { method: 'PUT', body: payload });
+      if (global.EsCache) global.EsCache.remove('venues_all');
+      return res;
+    },
+    async remove(id) {
+      const res = await esFetch(`/admin/venues/${id}`, { method: 'DELETE' });
+      if (global.EsCache) global.EsCache.remove('venues_all');
+      return res;
+    }
+  };
+
+  global.EventsAPI = EventsAPI;
+  global.CategoriesAPI = CategoriesAPI;
+  global.VenuesAPI = VenuesAPI;
+})(typeof window !== 'undefined' ? window : this);
