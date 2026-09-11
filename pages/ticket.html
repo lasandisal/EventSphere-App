@@ -124,8 +124,9 @@ function renderTickets(booking, eventDetails) {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(qrPayload)}`;
 
     // Resolve effective ticket status (VALID, USED, CANCELLED, EXPIRED, PENDING)
+    const isEventCancelled = eventDetails?.status === 'CANCELLED';
     let statusKey = (t.status || (isBookingConfirmed ? 'VALID' : booking.status)).toUpperCase();
-    if (booking.status === 'CANCELLED' || statusKey === 'CANCELLED') {
+    if (booking.status === 'CANCELLED' || statusKey === 'CANCELLED' || isEventCancelled) {
       statusKey = 'CANCELLED';
     } else if (statusKey === 'USED') {
       statusKey = 'USED';
@@ -179,12 +180,12 @@ function renderTickets(booking, eventDetails) {
       `;
     } else if (statusKey === 'CANCELLED') {
       ticketCardClass += ' ticket-cancelled';
-      badgeHtml = `<span class="badge bg-danger text-white" style="font-size:0.75rem;"><i class="bi bi-x-circle me-1"></i>CANCELLED</span>`;
+      badgeHtml = `<span class="badge bg-danger text-white" style="font-size:0.75rem;"><i class="bi bi-x-circle me-1"></i>${isEventCancelled ? 'EVENT CANCELLED' : 'CANCELLED'}</span>`;
       qrStubHtml = `
         <div class="text-danger py-4">
           <i class="bi bi-x-octagon fs-1 d-block mb-1"></i>
           <span class="fw-bold small d-block">Cancelled</span>
-          <span class="text-muted" style="font-size:0.7rem;">This ticket is void</span>
+          <span class="text-muted" style="font-size:0.7rem;">${isEventCancelled ? 'Event called off · Pass void' : 'This ticket is void'}</span>
         </div>
       `;
     } else {
@@ -213,9 +214,9 @@ function renderTickets(booking, eventDetails) {
         
         <!-- Left: Event & Attendee Details -->
         <div class="tk-details">
-          <h4 class="fw-bold text-white mb-2" style="font-size:1.25rem;">${eventTitle}</h4>
+          <h4 class="fw-bold text-white mb-1" style="font-family:var(--font-display);">${eventTitle}</h4>
           
-          <div class="d-flex flex-wrap gap-3 mb-3 text-muted-soft small">
+          <div class="d-flex flex-wrap gap-3 text-muted-soft small mb-3">
             <div><i class="bi bi-calendar3 me-1 text-primary"></i> ${dateText}</div>
             <div><i class="bi bi-clock me-1 text-primary"></i> ${timeText}</div>
             <div><i class="bi bi-geo-alt me-1 text-primary"></i> ${venueText}</div>
@@ -253,6 +254,20 @@ function renderTickets(booking, eventDetails) {
       </div>
     </div>`;
   }).join('');
+
+  if (eventDetails?.status === 'CANCELLED') {
+    const cancelledBanner = `
+      <div class="alert alert-danger py-3 px-3 mb-4 rounded-3 d-flex align-items-center gap-3 w-100" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35);">
+        <i class="bi bi-exclamation-octagon-fill fs-3 text-danger"></i>
+        <div>
+          <h6 class="fw-bold text-white mb-1">Notice: This Event Was Cancelled</h6>
+          <p class="small text-muted-soft mb-0" style="line-height:1.5;">
+            The event host called off this event. Admission passes are voided, and refunds are being issued to your original payment method via PayHere IPG.
+          </p>
+        </div>
+      </div>`;
+    container.innerHTML = cancelledBanner + container.innerHTML;
+  }
 
   if (actions) actions.style.removeProperty('display');
 }

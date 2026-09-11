@@ -55,6 +55,11 @@ async function loadAllEvents(keyword = '') {
               <button type="button" class="btn btn-quiet btn-sm" onclick="openEventAttendeesModal(${e.id}, '${escapedTitle}')" title="View Registered Attendees">
                 <i class="bi bi-people me-1"></i> Attendees
               </button>
+              ${e.status === 'CANCELLED' ? `
+                <button type="button" class="btn btn-quiet btn-sm text-danger" onclick="openAdminRefundManifest(${e.id})" title="View PayHere Refund Manifest & Attendee Details">
+                  <i class="bi bi-receipt me-1"></i> Refunds
+                </button>
+              ` : ''}
               <button type="button" class="btn btn-quiet btn-sm" onclick="openEditEventModal(${e.id})" title="Edit Event Details">
                 <i class="bi bi-pencil"></i> Edit
               </button>
@@ -273,25 +278,43 @@ document.getElementById('editEventForm')?.addEventListener('submit', async (e) =
   }
 });
 
-// Cancel Event from modal
+// Cancel Event from modal with danger-zone safety verification & refund manifest
 document.getElementById('adminCancelEventBtn')?.addEventListener('click', async () => {
   const id = document.getElementById('adminEditEventId').value;
   if (!id) return;
 
-  if (!confirm('Are you sure you want to cancel this event?')) return;
+  const ev = allEventsMap[id];
+  if (!ev) return;
 
-  try {
-    await EventsAPI.cancelEvent(id);
-    esToast('Event marked as cancelled', 'info');
+  // Hide edit modal
+  const editModalEl = document.getElementById('editEventModal');
+  if (editModalEl) bootstrap.Modal.getInstance(editModalEl)?.hide();
 
-    const modalEl = document.getElementById('editEventModal');
-    if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
-
-    loadAllEvents();
-  } catch (err) {
-    esToast(err.message || 'Failed to cancel event', 'error');
+  if (typeof openEventCancellationModal === 'function') {
+    openEventCancellationModal(ev, () => {
+      loadAllEvents();
+    });
+  } else {
+    if (!confirm('Are you sure you want to cancel this event?')) return;
+    try {
+      await EventsAPI.cancelEvent(id);
+      esToast('Event marked as cancelled', 'info');
+      loadAllEvents();
+    } catch (err) {
+      esToast(err.message || 'Failed to cancel event', 'error');
+    }
   }
 });
+
+// Admin Refund Manifest Handler
+function openAdminRefundManifest(id) {
+  const ev = allEventsMap[id];
+  if (!ev) return;
+  if (typeof openRefundManifestModal === 'function') {
+    openRefundManifestModal(ev);
+  }
+}
+window.openAdminRefundManifest = openAdminRefundManifest;
 
 // Preview Banner Button & Input Listener
 document.getElementById('adminPreviewBannerBtn')?.addEventListener('click', () => {

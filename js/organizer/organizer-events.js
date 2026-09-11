@@ -124,10 +124,39 @@ function renderMyEventsTable(keyword = '') {
             ${e.status === 'DRAFT' ? `
               <button class="btn btn-primary btn-sm" onclick="publishEvent(${e.id})" title="Publish to Live Platform">Publish</button>
             ` : ''}
+            ${e.status === 'PUBLISHED' ? `
+              <button class="btn btn-outline-danger btn-sm" onclick="promptCancelEvent(${e.id})" title="Cancel Event & Process Refunds"><i class="bi bi-x-circle me-1"></i>Cancel</button>
+            ` : ''}
+            ${e.status === 'CANCELLED' ? `
+              <button class="btn btn-quiet btn-sm text-danger" onclick="viewRefundManifest(${e.id})" title="View PayHere Refund Manifest & Attendee List"><i class="bi bi-receipt me-1"></i>Refunds</button>
+            ` : ''}
           </div>
         </td>
       </tr>`;
   }).join('');
+}
+
+// Cancel Event Safety Modal Handler
+function promptCancelEvent(id) {
+  const ev = myEventsCache.find(x => x.id === id);
+  if (!ev) return;
+  if (typeof openEventCancellationModal === 'function') {
+    openEventCancellationModal(ev, () => {
+      loadMyEvents('', true);
+      if (typeof loadOrganizerOverview === 'function') loadOrganizerOverview();
+    });
+  } else {
+    console.error('openEventCancellationModal is not loaded.');
+  }
+}
+
+// View Refund Manifest Handler
+function viewRefundManifest(id) {
+  const ev = myEventsCache.find(x => x.id === id);
+  if (!ev) return;
+  if (typeof openRefundManifestModal === 'function') {
+    openRefundManifestModal(ev);
+  }
 }
 
 // Publish Event Action
@@ -146,3 +175,7 @@ async function publishEvent(id) {
 document.getElementById('myEventsSearchInput')?.addEventListener('input', (e) => {
   renderMyEventsTable(e.target.value);
 });
+
+window.promptCancelEvent = promptCancelEvent;
+window.viewRefundManifest = viewRefundManifest;
+

@@ -227,6 +227,52 @@ To solve network latency inherent to cross-region cloud APIs (e.g. Render deploy
 | **Hosting & Cloud** | **Vercel (Web) & Render (Backend)** | Serverless frontend deployment and continuous cloud backend hosting. |
 
 ---
+---
+
+## 🚫 Enterprise Event Cancellation & PayHere Refund Manifest Architecture
+
+When an event organizer or administrator cancels an event in EventSphere, the platform executes a coordinated, multi-tiered lifecycle across attendee accounts, digital tickets, gate scanners, and payment accounting:
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1E1B4B', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#EF4444', 'lineColor': '#EF4444', 'secondaryColor': '#0E121C', 'tertiaryColor': '#121624'}}}%%
+flowchart TD
+    CancelReq["🔴 Organizer / Admin Requests Cancellation"] --> DangerZone["🛡️ Danger-Zone Verification Modal<br/>• Live calculation of affected attendees & gross refund liability<br/>• Mandatory categorized reason selection<br/>• Type 'CANCEL' to unlock execution"]
+    
+    DangerZone --> ExecuteCancel["⚙️ Event Status Updated to CANCELLED<br/>• EsCache invalidated across platform<br/>• Public discovery & checkout closed"]
+    
+    ExecuteCancel --> CascadeAttendee["📱 Attendee Portal (my-bookings.html)<br/>• Cascades automatically to 'Cancelled' tab<br/>• 'Event Cancelled' high-contrast badge<br/>• Interactive 'Refund Info' timeline dialog"]
+    
+    ExecuteCancel --> VoidPass["🎟️ Digital Ticket Pass (ticket.html)<br/>• Pass status resolves to CANCELLED / VOID<br/>• QR entry code deactivated & replaced with void stamp<br/>• Red cancellation alert banner displayed"]
+    
+    ExecuteCancel --> GateRejection["🚪 Venue Gate Scanner (check-in.html)<br/>• Gate scanner immediately rejects barcode<br/>• High-pitched audio warning chime"]
+    
+    ExecuteCancel --> RefundManifest["💰 PayHere Refund Audit Manifest<br/>• Immediate popup for organizer/admin<br/>• Itemizes buyer name, email, phone, tickets, and LKR amount<br/>• One-click RFC 4180 CSV export for bank/accounting audit<br/>• Tab-separated PayHere clipboard roster for fast merchant settlement"]
+
+    classDef red stroke:#EF4444,stroke-width:2px;
+    classDef cyan stroke:#00F2FE,stroke-width:2px;
+    classDef gold stroke:#F59E0B,stroke-width:2px;
+    class DangerZone,ExecuteCancel,VoidPass,GateRejection red;
+    class CascadeAttendee cyan;
+    class RefundManifest gold;
+```
+
+### 1. Danger-Zone Safety Verification
+* **Financial & Attendance Pre-Audit**: Before cancellation is confirmed, the safety modal queries `EventsAPI.getEventBookings(eventId)` and surfaces live impact metrics: registered bookings count, total sold tickets, and gross refund volume in LKR.
+* **Typing Confirmation**: Accidental clicks are prevented by requiring the user to choose a cancellation reason (Force Majeure, Speaker Unavailability, Venue Emergency, etc.) and type `CANCEL` in uppercase into a security input field.
+
+### 2. Immediate Client-Side Status Cascading
+* **Decoupled Resiliency**: Even when relational database tables maintain independent statuses, the frontend automatically cascades parent event cancellations down to child bookings and ticket passes (`ev?.status === 'CANCELLED'`).
+* **Active Pass Invalidation**: In `ticket.html`, ticket state is forced to `CANCELLED`, rendering a red `.ticket-cancelled` pass, replacing the QR code with an official void stamp, and rendering an explanation banner.
+
+### 3. PayHere Refund Audit Manifest & CSV Export
+* **PayHere Settlement Realities**: Because hosted payment gateways like PayHere do not allow arbitrary automated reverse debits without merchant portal approval, the platform equips organizers and admins with an actionable **Refund Audit Manifest**.
+* **Audit Capabilities**:
+  * **Itemized Attendee Table**: Full roster with booking references, attendee names, emails, phone numbers, quantities, paid LKR amounts, and PayHere order references.
+  * **Export to CSV**: Generates RFC 4180 compliant CSV files (`EventSphere_Refund_Manifest_Event_{id}.csv`) for banking, ledger, and accounting compliance.
+  * **Copy PayHere Roster**: Copies formatted rosters directly to the system clipboard for immediate pasting into spreadsheets or the PayHere Merchant Portal.
+  * **Notice Preview**: Generates standardized attendee email and dispatch notice copy for customer communications.
+
+---
 
 ## 📂 Frontend Application Directory
 
@@ -252,6 +298,7 @@ eventsphere_frontend/
 │       ├── ai-widget.js         # Google Gemini floating conversational assistant
 │       ├── otp-modal.js         # 6-digit OTP modal dialog with countdown timer
 │       ├── toast.js             # Cyber-luxe toast notifications (success, error, warning)
+│       ├── event-cancellation.js # Danger-zone verification & PayHere refund manifest suite
 │       └── icons.js             # SVG icon definitions (sparkles, bells, status)
 ├── pages/
 │   ├── events.html              # All events directory with comprehensive filter bar
