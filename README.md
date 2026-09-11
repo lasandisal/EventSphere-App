@@ -174,19 +174,25 @@ To solve network latency inherent to cross-region cloud APIs (e.g. Render deploy
 ```
 
 ### Key Performance Pillars:
-1. **Dual-Tier Storage Architecture**:
-   * **L1 Memory Cache (`Map`)**: Synchronous, sub-millisecond retrieval within the page lifecycle.
-   * **L2 Tab-Scoped `sessionStorage`**: Preserves discovery results, event details, and user bookings across browser "Back" and "Forward" navigation within the session.
-2. **0ms Discovery Pre-Seeding**:
-   * When `index.html` or `pages/events.html` queries `/events`, all returned events are automatically pre-seeded into `EsCache`.
-   * When an attendee clicks **"View Event"** on ANY card, `event-details.html` renders **in 0 milliseconds** without awaiting a redundant `/events/{id}` roundtrip.
-3. **Instant Tab Switching (`my-bookings.html`)**:
-   * Switching between **Upcoming**, **Past**, and **Cancelled** filters in memory instantly (0ms) with zero loading spinners, while background SWR quietly confirms check-in statuses.
-4. **Instant Digital Admission Passes (`ticket.html`)**:
+1. **In-Flight Request Deduplication (Promise Coalescing)**:
+   * When multiple page widgets or components request identical `GET` endpoints concurrently (e.g. `/categories`, `/events`, `/venues`), `esFetch` merges them into a single active promise. Only **one** network request is sent to Render, preventing thundering herds and request stampedes.
+2. **Dual-Tier Storage with Bounded LRU Eviction**:
+   * **L1 In-Memory Cache (`Map`)**: Sub-millisecond synchronous retrieval bounded to 200 entries with Least-Recently-Used (LRU) eviction to prevent memory leaks during long-running sessions.
+   * **L2 Tab-Scoped `sessionStorage`**: Preserves discovery filters, event details, and user bookings across browser "Back" and "Forward" navigation within the session.
+3. **True SWR Across Event Discovery & Details**:
+   * Both `EventsAPI.searchPublished` and `EventsAPI.getById` return cached data immediately at **0ms**, quietly revalidating in the background without layout shifts or intrusive loading spinners.
+4. **Concurrent Hydration & Dark Luxe Skeletons**:
+   * `index.html` loads categories and featured events in parallel via `Promise.allSettled`, rendering luxury shimmer skeleton cards during cold visits and instant content during warm visits.
+5. **Instant Dashboard Switching with Analytics SWR**:
+   * Organizer and Admin dashboards cache metrics (`org_analytics_overview`, `admin_analytics_overview`) with a 120s TTL and background revalidation, enabling **0ms instant tab switching** between Dashboard, Events, Bookings, and Attendees.
+6. **Instant Digital Admission Passes (`ticket.html`) & Tab Switching (`my-bookings.html`)**:
+   * Switching between **Upcoming**, **Past**, and **Cancelled** filters in memory instantly (0ms) with zero loading spinners.
    * Confirmed tickets and QR codes render immediately from cache upon navigation, ensuring seamless gate entry even in poor venue connectivity.
-5. **Security & Session Hygiene**:
+7. **Security Hygiene & Mutation Invalidation**:
    * **Logout Cache Purge**: `EsAuthStore.clear()` purges all private user cache entries (`user_*`, `booking_*`), guaranteeing zero data leakage on shared computers.
-   * **Mutation Invalidation**: Order confirmation or reservation cancellation immediately invalidates relevant cache keys to ensure data consistency.
+   * **Mutation Invalidation**: Creating, updating, or cancelling events/bookings immediately flushes search, analytics, and event caches across the platform.
+8. **Off-Thread Image Pipeline**:
+   * All event cards, hero banners, and booking thumbnails utilize `loading="lazy"` and `decoding="async"`, freeing the main JavaScript execution thread from synchronous image decoding.
 
 ---
 

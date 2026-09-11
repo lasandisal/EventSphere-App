@@ -238,6 +238,7 @@ function renderEventUI(ev) {
   const heroSkel = document.getElementById('heroSkeleton');
   const banner = ev.bannerUrl || ev.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80';
   
+  heroImg.decoding = 'async';
   heroImg.src = banner;
   heroImg.onload = () => {
     heroImg.style.display = 'block';

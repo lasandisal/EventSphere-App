@@ -283,7 +283,7 @@
     <div class="event-card h-100">
       <div class="img-wrap">
         <span class="pill-badge ${v.cls}">${ev.categoryName || 'General'}</span>
-        <img src="${banner}" alt="${ev.title}" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+        <img src="${banner}" alt="${ev.title}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${fallbackSvg}';">
       </div>
       <div class="body">
         <div class="title fw-bold mb-2 text-truncate" title="${ev.title}">${ev.title}</div>
@@ -315,7 +315,7 @@
       }
     }
 
-    // Fetch and filter events via API on the current page
+    // Fetch and filter events via API on the current page with SWR
     async function loadEvents() {
       const grid = document.getElementById('featuredGrid');
       const params = { size: 8 };
@@ -328,11 +328,23 @@
         const cachedEvents = unwrapResponse(cached);
         if (cachedEvents.length) renderFeaturedGrid(cachedEvents);
       } else {
-        if (grid) grid.innerHTML = `<div class="col-12 text-center text-muted-soft py-5"><i class="bi bi-arrow-repeat spin"></i> Loading events...</div>`;
+        if (grid) {
+          grid.innerHTML = Array(4).fill(`
+            <div class="col-md-6 col-lg-3">
+              <div class="es-skeleton rounded-4" style="height:320px; opacity:0.7;"></div>
+            </div>
+          `).join('');
+        }
       }
 
       try {
-        const rawEvents = await EventsAPI.searchPublished(params);
+        const rawEvents = await EventsAPI.searchPublished({
+          ...params,
+          onRevalidate: (fresh) => {
+            const freshEvents = unwrapResponse(fresh);
+            if (freshEvents.length) renderFeaturedGrid(freshEvents);
+          }
+        });
         const events = unwrapResponse(rawEvents);
         renderFeaturedGrid(events);
       } catch (e) {
@@ -383,15 +395,29 @@
       loadEvents();
     });
 
-    // Initialization
+    // High-performance concurrent initialization
     async function init() {
-      try {
-        const rawCats = await CategoriesAPI.getAll();
-        renderCategoryFilters(unwrapResponse(rawCats));
-      } catch (e) {
-        console.error('Failed to load categories:', e);
+      // 1. Instant 0ms category render from cache
+      const cachedCats = window.EsCache?.getCategories();
+      if (cachedCats) {
+        renderCategoryFilters(unwrapResponse(cachedCats));
       }
-      loadEvents();
+
+      // 2. Fetch categories and events concurrently
+      const catTask = (async () => {
+        try {
+          const rawCats = await CategoriesAPI.getAll({
+            onRevalidate: (fresh) => renderCategoryFilters(unwrapResponse(fresh))
+          });
+          renderCategoryFilters(unwrapResponse(rawCats));
+        } catch (e) {
+          console.error('Failed to load categories:', e);
+        }
+      })();
+
+      const eventTask = loadEvents();
+
+      await Promise.allSettled([catTask, eventTask]);
     }
 
     init();

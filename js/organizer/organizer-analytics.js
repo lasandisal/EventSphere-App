@@ -101,45 +101,55 @@ async function loadOrganizerOverview(forceRefresh = false) {
   const upcomingEventsEl = document.getElementById('orgUpcomingEvents');
   const topEventsBody = document.getElementById('orgTopEventsBody');
 
+  function renderOverviewUI(overview) {
+    if (!overview) return;
+    if (totalEventsEl) totalEventsEl.textContent = Number(overview.totalEvents || 0).toLocaleString();
+    if (totalTicketsEl) totalTicketsEl.textContent = Number(overview.totalTicketsSold || 0).toLocaleString();
+    
+    const rev = Number(overview.totalRevenue || overview.totalGrossRevenue || 0);
+    if (totalRevenueEl) totalRevenueEl.textContent = rev > 0 ? `LKR ${rev.toLocaleString()}` : 'LKR 0';
+
+    if (upcomingEventsEl) upcomingEventsEl.textContent = Number(overview.upcomingEvents || 0).toLocaleString();
+
+    // Top Events
+    if (topEventsBody && overview.topEvents) {
+      if (!overview.topEvents.length) {
+        topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events with ticket sales yet.</td></tr>`;
+      } else {
+        topEventsBody.innerHTML = overview.topEvents.slice(0, 5).map(e => `
+          <tr>
+            <td data-label="Event"><span class="fw-bold text-white">${e.title}</span></td>
+            <td data-label="Date" class="small text-muted-soft">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
+            <td data-label="Tickets Sold"><span class="fw-semibold text-white">${e.ticketsSold || 0}</span></td>
+            <td data-label="Revenue"><strong class="text-white">LKR ${Number(e.revenue || 0).toLocaleString()}</strong></td>
+          </tr>`).join('');
+      }
+    }
+
+    // Ticket Type Mix
+    if (overview.ticketTypeDistribution) {
+      renderAttendanceMix(overview.ticketTypeDistribution);
+    }
+
+    // Monthly sales chart
+    renderOrganizerSalesChart('orgRevenueChartBars', window.orgBookingsCache || [], overview.monthlySales);
+  }
+
   // 1. Try fetching from Backend Organizer Analytics endpoint (/api/v1/organizer/analytics/overview)
   if (!backendAnalyticsEndpointFailed || forceRefresh) {
     try {
-      const raw = await OrganizerAPI.getAnalyticsOverview();
+      const raw = await OrganizerAPI.getAnalyticsOverview({
+        skipCache: forceRefresh,
+        onRevalidate: (fresh) => {
+          const freshOverview = fresh?.data || fresh;
+          if (freshOverview) renderOverviewUI(freshOverview);
+        }
+      });
       const overview = raw?.data || raw;
 
       if (overview && (overview.totalEvents != null || overview.totalRevenue != null)) {
         backendAnalyticsEndpointFailed = false;
-
-        if (totalEventsEl) totalEventsEl.textContent = Number(overview.totalEvents || 0).toLocaleString();
-        if (totalTicketsEl) totalTicketsEl.textContent = Number(overview.totalTicketsSold || 0).toLocaleString();
-        
-        const rev = Number(overview.totalRevenue || overview.totalGrossRevenue || 0);
-        if (totalRevenueEl) totalRevenueEl.textContent = rev > 0 ? `LKR ${rev.toLocaleString()}` : 'LKR 0';
-
-        if (upcomingEventsEl) upcomingEventsEl.textContent = Number(overview.upcomingEvents || 0).toLocaleString();
-
-        // Top Events
-        if (topEventsBody && overview.topEvents) {
-          if (!overview.topEvents.length) {
-            topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No events with ticket sales yet.</td></tr>`;
-          } else {
-            topEventsBody.innerHTML = overview.topEvents.slice(0, 5).map(e => `
-              <tr>
-                <td data-label="Event"><span class="fw-bold text-white">${e.title}</span></td>
-                <td data-label="Date" class="small text-muted-soft">${e.startDatetime ? new Date(e.startDatetime).toLocaleDateString() : 'TBA'}</td>
-                <td data-label="Tickets Sold"><span class="fw-semibold text-white">${e.ticketsSold || 0}</span></td>
-                <td data-label="Revenue"><strong class="text-white">LKR ${Number(e.revenue || 0).toLocaleString()}</strong></td>
-              </tr>`).join('');
-          }
-        }
-
-        // Ticket Type Mix
-        if (overview.ticketTypeDistribution) {
-          renderAttendanceMix(overview.ticketTypeDistribution);
-        }
-
-        // Monthly sales chart
-        renderOrganizerSalesChart('orgRevenueChartBars', window.orgBookingsCache || [], overview.monthlySales);
+        renderOverviewUI(overview);
         return;
       }
     } catch (err) {

@@ -17,8 +17,28 @@ const OrganizerAPI = {
       }
     }
   },
-  getAnalyticsOverview() {
-    return esFetch('/organizer/analytics/overview');
+  async getAnalyticsOverview({ skipCache = false, onRevalidate = null } = {}) {
+    if (!skipCache && window.EsCache) {
+      const cached = window.EsCache.getOrgAnalytics();
+      if (cached) {
+        if (typeof onRevalidate === 'function') {
+          esFetch('/organizer/analytics/overview')
+            .then(fresh => {
+              if (fresh) {
+                window.EsCache.setOrgAnalytics(fresh, 120);
+                onRevalidate(fresh);
+              }
+            })
+            .catch(err => console.warn('Background organizer analytics revalidation:', err));
+        }
+        return cached;
+      }
+    }
+    const res = await esFetch('/organizer/analytics/overview');
+    if (window.EsCache && res) {
+      window.EsCache.setOrgAnalytics(res, 120);
+    }
+    return res;
   }
 };
 
@@ -49,16 +69,39 @@ const AdminAPI = {
     return esFetch('/admin/organizers/pending');
   },
   verifyOrganizer(id) {
+    if (window.EsCache) window.EsCache.invalidateAnalytics();
     return esFetch(`/admin/organizers/${id}/verify`, { method: 'PATCH' });
   },
   rejectOrganizer(id) {
+    if (window.EsCache) window.EsCache.invalidateAnalytics();
     return esFetch(`/admin/organizers/${id}/reject`, { method: 'DELETE' });
   },
   promoteToAdmin(userId) {
+    if (window.EsCache) window.EsCache.invalidateAnalytics();
     return esFetch(`/admin/users/${userId}/promote-to-admin`, { method: 'PATCH' });
   },
-  getAnalyticsOverview() {
-    return esFetch('/admin/analytics/overview');
+  async getAnalyticsOverview({ skipCache = false, onRevalidate = null } = {}) {
+    if (!skipCache && window.EsCache) {
+      const cached = window.EsCache.getAdminAnalytics();
+      if (cached) {
+        if (typeof onRevalidate === 'function') {
+          esFetch('/admin/analytics/overview')
+            .then(fresh => {
+              if (fresh) {
+                window.EsCache.setAdminAnalytics(fresh, 120);
+                onRevalidate(fresh);
+              }
+            })
+            .catch(err => console.warn('Background admin analytics revalidation:', err));
+        }
+        return cached;
+      }
+    }
+    const res = await esFetch('/admin/analytics/overview');
+    if (window.EsCache && res) {
+      window.EsCache.setAdminAnalytics(res, 120);
+    }
+    return res;
   }
 };
 

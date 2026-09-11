@@ -3,13 +3,39 @@
 (function (global) {
   const esFetch = (...args) => (global.esFetch || (typeof window !== 'undefined' ? window.esFetch : null))(...args);
 
+  function invalidateEventCaches(id) {
+    if (global.EsCache) {
+      if (id) global.EsCache.invalidateEvent(id);
+      global.EsCache.clear('events_search_');
+      global.EsCache.clear('org_events_');
+      global.EsCache.invalidateAnalytics();
+    }
+    if (typeof window !== 'undefined') {
+      window.myEventsCache = [];
+    }
+  }
+
   const EventsAPI = {
     // Public — EventController
-    async searchPublished({ keyword, categoryId, page = 0, size = 10, skipCache = false } = {}) {
+    async searchPublished({ keyword, categoryId, page = 0, size = 10, skipCache = false, onRevalidate = null } = {}) {
       const searchKey = `${keyword || ''}_${categoryId || ''}_${page}_${size}`;
       if (!skipCache && global.EsCache) {
         const cached = global.EsCache.getSearch(searchKey);
-        if (cached) return cached;
+        if (cached) {
+          if (typeof onRevalidate === 'function') {
+            esFetch('/events', { params: { keyword, categoryId, page, size } })
+              .then(fresh => {
+                if (fresh) {
+                  global.EsCache.setSearch(searchKey, fresh);
+                  const list = Array.isArray(fresh) ? fresh : (fresh?.content || []);
+                  global.EsCache.seedEvents(list);
+                  onRevalidate(fresh);
+                }
+              })
+              .catch(err => console.warn('Background search revalidation:', err));
+          }
+          return cached;
+        }
       }
 
       const res = await esFetch('/events', { params: { keyword, categoryId, page, size } });
@@ -50,30 +76,51 @@
     // Organizer — OrganizerEventController (/api/v1/organizer/events/**)
     async createEvent(payload) {
       const res = await esFetch('/organizer/events', { method: 'POST', body: payload });
-      if (global.EsCache) global.EsCache.clear('events_search_');
+      invalidateEventCaches();
       return res;
     },
     async updateEvent(id, payload) {
       const res = await esFetch(`/organizer/events/${id}`, { method: 'PUT', body: payload });
-      if (global.EsCache) global.EsCache.invalidateEvent(id);
+      invalidateEventCaches(id);
       return res;
     },
     async publishEvent(id) {
       const res = await esFetch(`/organizer/events/${id}/publish`, { method: 'PATCH' });
-      if (global.EsCache) global.EsCache.invalidateEvent(id);
+      invalidateEventCaches(id);
       return res;
     },
     async cancelEvent(id) {
       const res = await esFetch(`/organizer/events/${id}/cancel`, { method: 'PATCH' });
-      if (global.EsCache) global.EsCache.invalidateEvent(id);
+      invalidateEventCaches(id);
       return res;
     },
-    myEvents({ page = 0, size = 10 } = {}) {
-      return esFetch('/organizer/events/my-events', { params: { page, size } });
+    async myEvents({ page = 0, size = 50, skipCache = false, onRevalidate = null } = {}) {
+      const cacheKey = `org_events_${page}_${size}`;
+      if (!skipCache && global.EsCache) {
+        const cached = global.EsCache.get(cacheKey);
+        if (cached) {
+          if (typeof onRevalidate === 'function') {
+            esFetch('/organizer/events/my-events', { params: { page, size } })
+              .then(fresh => {
+                if (fresh) {
+                  global.EsCache.set(cacheKey, fresh, 120);
+                  onRevalidate(fresh);
+                }
+              })
+              .catch(err => console.warn('Background myEvents revalidation:', err));
+          }
+          return cached;
+        }
+      }
+      const res = await esFetch('/organizer/events/my-events', { params: { page, size } });
+      if (global.EsCache && res) {
+        global.EsCache.set(cacheKey, res, 120);
+      }
+      return res;
     },
     async addTicketType(eventId, payload) {
       const res = await esFetch(`/organizer/events/${eventId}/ticket-types`, { method: 'POST', body: payload });
-      if (global.EsCache) global.EsCache.invalidateEvent(eventId);
+      invalidateEventCaches(eventId);
       return res;
     },
     getEventBookings(eventId) {
@@ -82,10 +129,22 @@
   };
 
   const CategoriesAPI = {
-    async getAll({ skipCache = false } = {}) {
+    async getAll({ skipCache = false, onRevalidate = null } = {}) {
       if (!skipCache && global.EsCache) {
         const cached = global.EsCache.getCategories();
-        if (cached) return cached;
+        if (cached) {
+          if (typeof onRevalidate === 'function') {
+            esFetch('/categories')
+              .then(fresh => {
+                if (fresh) {
+                  global.EsCache.setCategories(fresh);
+                  onRevalidate(fresh);
+                }
+              })
+              .catch(err => console.warn('Background categories revalidation:', err));
+          }
+          return cached;
+        }
       }
       const res = await esFetch('/categories');
       if (global.EsCache && res) {
@@ -97,17 +156,26 @@
     // Admin — AdminCategoryController
     async create(payload) {
       const res = await esFetch('/admin/categories', { method: 'POST', body: payload });
-      if (global.EsCache) global.EsCache.remove('categories_all');
+      if (global.EsCache) {
+        global.EsCache.remove('categories_all');
+        global.EsCache.clear('events_search_');
+      }
       return res;
     },
     async update(id, payload) {
       const res = await esFetch(`/admin/categories/${id}`, { method: 'PUT', body: payload });
-      if (global.EsCache) global.EsCache.remove('categories_all');
+      if (global.EsCache) {
+        global.EsCache.remove('categories_all');
+        global.EsCache.clear('events_search_');
+      }
       return res;
     },
     async remove(id) {
       const res = await esFetch(`/admin/categories/${id}`, { method: 'DELETE' });
-      if (global.EsCache) global.EsCache.remove('categories_all');
+      if (global.EsCache) {
+        global.EsCache.remove('categories_all');
+        global.EsCache.clear('events_search_');
+      }
       return res;
     }
   };

@@ -131,7 +131,7 @@ function bookingCard(b) {
   return `
   <div class="event-card flex-row p-0 overflow-hidden shadow-sm" style="flex-direction:row; align-items:stretch; min-height:140px; border-radius: var(--radius-md);">
     <div style="width:160px; min-width:160px; background: linear-gradient(135deg, var(--blush-soft) 0%, var(--lavender-soft) 100%);" class="img-wrap position-relative">
-      <img src="${img}" alt="${b.eventTitle}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+      <img src="${img}" alt="${b.eventTitle}" loading="lazy" decoding="async" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
     </div>
     <div class="body w-100 p-3 d-flex flex-row align-items-center justify-content-between gap-3 flex-wrap">
       <div>

@@ -43,10 +43,11 @@
   }
 
   /**
-   * EsCache — Fast hybrid client cache (Memory L1 + sessionStorage L2)
+   * EsCache — Fast hybrid client cache (Memory L1 with LRU eviction + sessionStorage L2)
    * Ensures instant (0ms) loads across back/forward navigation within the session.
    */
   const _memCache = new Map();
+  const MAX_MEM_ENTRIES = 200; // Bounded L1 memory cache
   const ES_CACHE_PREFIX = 'es_cache_';
 
   const EsCache = {
@@ -56,6 +57,9 @@
       if (_memCache.has(key)) {
         const item = _memCache.get(key);
         if (!item.exp || Date.now() < item.exp) {
+          // LRU recency refresh: move entry to end of insertion order
+          _memCache.delete(key);
+          _memCache.set(key, item);
           return item.val;
         }
         _memCache.delete(key);
@@ -67,7 +71,12 @@
           if (raw) {
             const item = JSON.parse(raw);
             if (!item.exp || Date.now() < item.exp) {
-              _memCache.set(key, item); // hydrate memory
+              // Hydrate memory with LRU bounds check
+              if (_memCache.size >= MAX_MEM_ENTRIES) {
+                const oldest = _memCache.keys().next().value;
+                if (oldest) _memCache.delete(oldest);
+              }
+              _memCache.set(key, item);
               return item.val;
             }
             sessionStorage.removeItem(ES_CACHE_PREFIX + key);
@@ -83,7 +92,16 @@
       if (!key || val === undefined) return;
       const exp = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
       const item = { val, exp };
+
+      // Bounded LRU eviction for memory map
+      if (_memCache.has(key)) {
+        _memCache.delete(key);
+      } else if (_memCache.size >= MAX_MEM_ENTRIES) {
+        const oldest = _memCache.keys().next().value;
+        if (oldest) _memCache.delete(oldest);
+      }
       _memCache.set(key, item);
+
       try {
         if (typeof sessionStorage !== 'undefined') {
           sessionStorage.setItem(ES_CACHE_PREFIX + key, JSON.stringify(item));
@@ -196,6 +214,27 @@
 
     setBooking(id, data, ttlSeconds = 600) { // 10 mins
       this.set(`booking_${id}`, data, ttlSeconds);
+    },
+
+    getOrgAnalytics() {
+      return this.get('org_analytics_overview');
+    },
+
+    setOrgAnalytics(data, ttlSeconds = 120) { // 2 mins
+      this.set('org_analytics_overview', data, ttlSeconds);
+    },
+
+    getAdminAnalytics() {
+      return this.get('admin_analytics_overview');
+    },
+
+    setAdminAnalytics(data, ttlSeconds = 120) { // 2 mins
+      this.set('admin_analytics_overview', data, ttlSeconds);
+    },
+
+    invalidateAnalytics() {
+      this.remove('org_analytics_overview');
+      this.remove('admin_analytics_overview');
     }
   };
 
@@ -248,9 +287,14 @@
   };
 
   /**
-   * esFetch — thin wrapper around fetch() for the EventSphere API.
+   * In-flight request deduplication map (prevents duplicate simultaneous GET requests)
    */
-  async function esFetch(path, { method = 'GET', body, params, isForm = false } = {}) {
+  const _inFlightRequests = new Map();
+
+  /**
+   * esFetch — thin wrapper around fetch() for the EventSphere API with in-flight deduplication.
+   */
+  function esFetch(path, { method = 'GET', body, params, isForm = false } = {}) {
     let cleanPath = path || '';
     if (cleanPath.startsWith('/api/v1')) {
       cleanPath = cleanPath.substring(7);
@@ -267,63 +311,86 @@
       if (qs) url += `?${qs}`;
     }
 
-    const headers = {};
-    const token = EsAuthStore.getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (!isForm && body !== undefined) headers['Content-Type'] = 'application/json';
-
-    let fetchBody;
-    if (isForm && body) {
-      fetchBody = new URLSearchParams(body).toString();
-      headers['Content-Type'] = 'application/x-www-form-urlencoded';
-    } else if (body !== undefined) {
-      fetchBody = typeof body === 'string' ? body : JSON.stringify(body);
+    // In-flight request coalescing for idempotent GET requests
+    const isGet = method.toUpperCase() === 'GET' && !body;
+    let flightKey = null;
+    if (isGet) {
+      const token = EsAuthStore.getToken() || 'anon';
+      flightKey = `${token}:${url}`;
+      if (_inFlightRequests.has(flightKey)) {
+        return _inFlightRequests.get(flightKey);
+      }
     }
 
-    try {
-      const res = await fetch(url, { method, headers, body: fetchBody });
-      let payload = null;
-      try { payload = await res.json(); } catch (e) { /* no body */ }
+    const requestPromise = (async () => {
+      const headers = {};
+      const token = EsAuthStore.getToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (!isForm && body !== undefined) headers['Content-Type'] = 'application/json';
 
-      if (!res.ok) {
-        if (res.status === 401 && headers['Authorization']) {
-          EsAuthStore.clear();
-          // If this is a public GET request, retry once without the expired Authorization header
-          const isProtected = ['/admin', '/organizer', '/bookings', '/users'].some(p => cleanPath.startsWith(p));
-          if (method === 'GET' && !isProtected) {
-            delete headers['Authorization'];
-            try {
-              const retryRes = await fetch(url, { method, headers, body: fetchBody });
-              let retryPayload = null;
-              try { retryPayload = await retryRes.json(); } catch (e) {}
-              if (retryRes.ok) {
-                if (retryPayload !== null && typeof retryPayload === 'object' && 'data' in retryPayload) {
-                  return retryPayload.data !== undefined ? retryPayload.data : retryPayload;
+      let fetchBody;
+      if (isForm && body) {
+        fetchBody = new URLSearchParams(body).toString();
+        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      } else if (body !== undefined) {
+        fetchBody = typeof body === 'string' ? body : JSON.stringify(body);
+      }
+
+      try {
+        const res = await fetch(url, { method, headers, body: fetchBody });
+        let payload = null;
+        try { payload = await res.json(); } catch (e) { /* no body */ }
+
+        if (!res.ok) {
+          if (res.status === 401 && headers['Authorization']) {
+            EsAuthStore.clear();
+            // If this is a public GET request, retry once without the expired Authorization header
+            const isProtected = ['/admin', '/organizer', '/bookings', '/users'].some(p => cleanPath.startsWith(p));
+            if (method === 'GET' && !isProtected) {
+              delete headers['Authorization'];
+              try {
+                const retryRes = await fetch(url, { method, headers, body: fetchBody });
+                let retryPayload = null;
+                try { retryPayload = await retryRes.json(); } catch (e) {}
+                if (retryRes.ok) {
+                  if (retryPayload !== null && typeof retryPayload === 'object' && 'data' in retryPayload) {
+                    return retryPayload.data !== undefined ? retryPayload.data : retryPayload;
+                  }
+                  return retryPayload;
                 }
-                return retryPayload;
+              } catch (retryErr) {
+                /* fall through to error */
               }
-            } catch (retryErr) {
-              /* fall through to error */
             }
           }
-        }
 
-        const message = (payload && payload.message) || `Request failed (${res.status})`;
-        const err = new Error(message);
-        err.status = res.status;
-        err.payload = payload;
+          const message = (payload && payload.message) || `Request failed (${res.status})`;
+          const err = new Error(message);
+          err.status = res.status;
+          err.payload = payload;
+          throw err;
+        }
+        if (payload !== null && typeof payload === 'object' && 'data' in payload) {
+          return payload.data !== undefined ? payload.data : payload;
+        }
+        return payload;
+      } catch (networkErr) {
+        if (networkErr.status) throw networkErr;
+        const err = new Error('Could not reach EventSphere servers.');
+        err.status = 0;
         throw err;
+      } finally {
+        if (flightKey) {
+          _inFlightRequests.delete(flightKey);
+        }
       }
-      if (payload !== null && typeof payload === 'object' && 'data' in payload) {
-        return payload.data !== undefined ? payload.data : payload;
-      }
-      return payload;
-    } catch (networkErr) {
-      if (networkErr.status) throw networkErr;
-      const err = new Error('Could not reach EventSphere servers.');
-      err.status = 0;
-      throw err;
+    })();
+
+    if (flightKey) {
+      _inFlightRequests.set(flightKey, requestPromise);
     }
+
+    return requestPromise;
   }
 
   function esPathPrefix() {

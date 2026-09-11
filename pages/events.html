@@ -155,7 +155,7 @@ function eventCard(ev) {
     <div class="event-card h-100">
       <div class="img-wrap">
         <span class="pill-badge ${pillCls}">${categoryName}</span>
-        <img src="${bannerUrl}" alt="${title}">
+        <img src="${bannerUrl}" alt="${title}" loading="lazy" decoding="async">
       </div>
       <div class="body">
         <div class="title fw-bold mb-2 text-truncate" title="${title}">${title}</div>
@@ -285,17 +285,27 @@ async function loadEvents(page = 0) {
     document.getElementById('resultCount').textContent = 'Loading events…';
   }
 
-  // STEP 2: Fetch and filter
+  // STEP 2: Fetch and filter with SWR background revalidation
   try {
-    const res = await EventsAPI.searchPublished({ keyword, categoryId, page, size: 9 });
-    const rawList = Array.isArray(res) ? res : (res?.content || []);
-    const filteredList = filterEventsList(rawList, { dateFilter, locationFilter, priceFilter });
-    const total = (dateFilter || locationFilter || priceFilter) ? filteredList.length : (res?.totalElements ?? rawList.length);
+    const handleData = (data) => {
+      const rawList = Array.isArray(data) ? data : (data?.content || []);
+      const filteredList = filterEventsList(rawList, { dateFilter, locationFilter, priceFilter });
+      const total = (dateFilter || locationFilter || priceFilter) ? filteredList.length : (data?.totalElements ?? rawList.length);
 
-    if (window.EsCache) {
-      window.EsCache.setSearch(compositeKey, { content: filteredList, totalElements: total }, 180);
-    }
-    renderEventsGrid(filteredList, total, page);
+      if (window.EsCache) {
+        window.EsCache.setSearch(compositeKey, { content: filteredList, totalElements: total }, 180);
+      }
+      renderEventsGrid(filteredList, total, page);
+    };
+
+    const res = await EventsAPI.searchPublished({
+      keyword,
+      categoryId,
+      page,
+      size: 9,
+      onRevalidate: handleData
+    });
+    handleData(res);
   } catch (e) {
     if (!renderedFromCache) {
       document.getElementById('resultCount').textContent = '0 events found';

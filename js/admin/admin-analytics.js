@@ -109,7 +109,7 @@ async function renderPopularCategoriesBreakdown() {
 }
 
 // Load Executive Dashboard Analytics
-async function loadDashboardAnalytics() {
+async function loadDashboardAnalytics(forceRefresh = false) {
   const totalUsersEl = document.getElementById('dashTotalUsers');
   const totalOrgsEl = document.getElementById('dashTotalOrganizers');
   const orgsSubEl = document.getElementById('dashOrganizersSub');
@@ -119,102 +119,110 @@ async function loadDashboardAnalytics() {
   const topEventsBody = document.getElementById('dashTopEventsBody');
   const topOrgsBody = document.getElementById('dashTopOrganizersBody');
 
+  function renderAdminOverviewUI(overview) {
+    if (!overview) return;
+    // KPI Cards
+    if (totalUsersEl) totalUsersEl.textContent = Number(overview.totalUsers || 0).toLocaleString();
+    if (totalOrgsEl) totalOrgsEl.textContent = Number(overview.totalOrganizers || 0).toLocaleString();
+    
+    const pendingCount = Number(overview.pendingOrganizersCount || 0);
+    if (orgsSubEl) {
+      orgsSubEl.textContent = pendingCount > 0 ? `${pendingCount} Pending Approval` : 'All Verified';
+    }
+    if (kycBannerText) {
+      kycBannerText.textContent = pendingCount > 0 
+        ? `${pendingCount} organizer application(s) awaiting verification.`
+        : 'All organizer KYC applications are up to date.';
+    }
+
+    const grossRev = Number(overview.totalGrossRevenue || 0);
+    if (totalRevEl) totalRevEl.textContent = grossRev > 0 ? `LKR ${grossRev.toLocaleString()}` : 'LKR 0';
+    if (totalTixEl) totalTixEl.textContent = Number(overview.totalTicketsSold || 0).toLocaleString();
+
+    // Top Performing Events Leaderboard
+    const topEvents = overview.topPerformingEvents || [];
+    if (topEventsBody) {
+      if (!topEvents.length) {
+        topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No event sales recorded yet.</td></tr>`;
+      } else {
+        topEventsBody.innerHTML = topEvents.slice(0, 5).map((e, index) => {
+          const medal = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+          const evId = e.eventId || e.id || '';
+          const tix = Number(e.ticketsSold || e.ticketCount || 0);
+          const rev = Number(e.totalRevenue || e.grossRevenue || 0);
+          const title = (e.title || 'Event').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+          return `
+            <tr>
+              <td data-label="Event">
+                <div class="fw-bold text-white">${medal}${e.title}</div>
+                <div class="small text-muted-soft">${e.organizerName || 'Organizer'} • <span class="pill-badge pill-beige" style="font-size:0.65rem;">${e.categoryName || 'General'}</span></div>
+              </td>
+              <td data-label="Tickets Sold">
+                <span class="fw-semibold text-white">${tix.toLocaleString()} tickets</span>
+              </td>
+              <td data-label="Gross Income">
+                <strong class="text-white">LKR ${rev.toLocaleString()}</strong>
+              </td>
+              <td data-label="Action" class="text-end">
+                ${evId ? `
+                  <button class="btn btn-quiet btn-sm" onclick="openEventAttendeesModal(${evId}, '${title}')" title="Inspect Attendees">
+                    <i class="bi bi-people"></i>
+                  </button>
+                ` : ''}
+              </td>
+            </tr>`;
+        }).join('');
+      }
+    }
+
+    // Top Organizers Leaderboard
+    const topOrgs = overview.topOrganizers || [];
+    if (topOrgsBody) {
+      if (!topOrgs.length) {
+        topOrgsBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted-soft py-4">No organizer stats recorded yet.</td></tr>`;
+      } else {
+        topOrgsBody.innerHTML = topOrgs.slice(0, 5).map(o => {
+          const evCount = Number(o.eventsCount || o.events || 0);
+          const tix = Number(o.ticketsSold || 0);
+          const rev = Number(o.totalRevenue || 0);
+          return `
+            <tr>
+              <td data-label="Organizer">
+                <div class="fw-bold text-white">${o.organizerName}</div>
+                <div class="small text-muted-soft">${tix.toLocaleString()} tickets sold</div>
+              </td>
+              <td data-label="Events">
+                <span class="pill-badge pill-beige">${evCount} Events</span>
+              </td>
+              <td data-label="Total Revenue">
+                <strong class="text-white">LKR ${rev.toLocaleString()}</strong>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+    }
+
+    // Monthly Revenue Chart
+    renderMonthlyRevenueChart('dashRevenueChartBars', allAttendeesCache, overview.monthlyRevenue);
+  }
+
   // Render categories in parallel
   renderPopularCategoriesBreakdown();
 
   // 1. Try fetching directly from backend AdminAnalyticsController (/admin/analytics/overview)
   try {
-    const raw = await AdminAPI.getAnalyticsOverview();
+    const raw = await AdminAPI.getAnalyticsOverview({
+      skipCache: forceRefresh,
+      onRevalidate: (fresh) => {
+        const freshOverview = fresh?.data || fresh;
+        if (freshOverview) renderAdminOverviewUI(freshOverview);
+      }
+    });
     const overview = raw?.data || raw;
 
     if (overview && (overview.totalUsers != null || overview.totalOrganizers != null || overview.topPerformingEvents != null)) {
-      console.log('Loaded backend analytics overview:', overview);
-
-      // KPI Cards
-      if (totalUsersEl) totalUsersEl.textContent = Number(overview.totalUsers || 0).toLocaleString();
-      if (totalOrgsEl) totalOrgsEl.textContent = Number(overview.totalOrganizers || 0).toLocaleString();
-      
-      const pendingCount = Number(overview.pendingOrganizersCount || 0);
-      if (orgsSubEl) {
-        orgsSubEl.textContent = pendingCount > 0 ? `${pendingCount} Pending Approval` : 'All Verified';
-      }
-      if (kycBannerText) {
-        kycBannerText.textContent = pendingCount > 0 
-          ? `${pendingCount} organizer application(s) awaiting verification.`
-          : 'All organizer KYC applications are up to date.';
-      }
-
-      const grossRev = Number(overview.totalGrossRevenue || 0);
-      if (totalRevEl) totalRevEl.textContent = grossRev > 0 ? `LKR ${grossRev.toLocaleString()}` : 'LKR 0';
-      if (totalTixEl) totalTixEl.textContent = Number(overview.totalTicketsSold || 0).toLocaleString();
-
-      // Top Performing Events Leaderboard
-      const topEvents = overview.topPerformingEvents || [];
-      if (topEventsBody) {
-        if (!topEvents.length) {
-          topEventsBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted-soft py-4">No event sales recorded yet.</td></tr>`;
-        } else {
-          topEventsBody.innerHTML = topEvents.slice(0, 5).map((e, index) => {
-            const medal = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-            const evId = e.eventId || e.id || '';
-            const tix = Number(e.ticketsSold || e.ticketCount || 0);
-            const rev = Number(e.totalRevenue || e.grossRevenue || 0);
-            const title = (e.title || 'Event').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-            return `
-              <tr>
-                <td data-label="Event">
-                  <div class="fw-bold text-white">${medal}${e.title}</div>
-                  <div class="small text-muted-soft">${e.organizerName || 'Organizer'} • <span class="pill-badge pill-beige" style="font-size:0.65rem;">${e.categoryName || 'General'}</span></div>
-                </td>
-                <td data-label="Tickets Sold">
-                  <span class="fw-semibold text-white">${tix.toLocaleString()} tickets</span>
-                </td>
-                <td data-label="Gross Income">
-                  <strong class="text-white">LKR ${rev.toLocaleString()}</strong>
-                </td>
-                <td data-label="Action" class="text-end">
-                  ${evId ? `
-                    <button class="btn btn-quiet btn-sm" onclick="openEventAttendeesModal(${evId}, '${title}')" title="Inspect Attendees">
-                      <i class="bi bi-people"></i>
-                    </button>
-                  ` : ''}
-                </td>
-              </tr>`;
-          }).join('');
-        }
-      }
-
-      // Top Organizers Leaderboard
-      const topOrgs = overview.topOrganizers || [];
-      if (topOrgsBody) {
-        if (!topOrgs.length) {
-          topOrgsBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted-soft py-4">No organizer stats recorded yet.</td></tr>`;
-        } else {
-          topOrgsBody.innerHTML = topOrgs.slice(0, 5).map(o => {
-            const evCount = Number(o.eventsCount || o.events || 0);
-            const tix = Number(o.ticketsSold || 0);
-            const rev = Number(o.totalRevenue || 0);
-            return `
-              <tr>
-                <td data-label="Organizer">
-                  <div class="fw-bold text-white">${o.organizerName}</div>
-                  <div class="small text-muted-soft">${tix.toLocaleString()} tickets sold</div>
-                </td>
-                <td data-label="Events">
-                  <span class="pill-badge pill-beige">${evCount} Events</span>
-                </td>
-                <td data-label="Total Revenue">
-                  <strong class="text-white">LKR ${rev.toLocaleString()}</strong>
-                </td>
-              </tr>`;
-          }).join('');
-        }
-      }
-
-      // Monthly Revenue Chart
-      renderMonthlyRevenueChart('dashRevenueChartBars', allAttendeesCache, overview.monthlyRevenue);
-
+      renderAdminOverviewUI(overview);
       return;
     }
   } catch (err) {

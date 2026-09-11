@@ -15,7 +15,19 @@ async function getSharedOrganizerEvents(forceRefresh = false) {
   }
   myEventsPromise = (async () => {
     try {
-      const res = await EventsAPI.myEvents({ page: 0, size: 50 });
+      const res = await EventsAPI.myEvents({
+        page: 0,
+        size: 50,
+        skipCache: forceRefresh,
+        onRevalidate: (fresh) => {
+          const list = Array.isArray(fresh) ? fresh : (fresh?.data || fresh?.content || []);
+          myEventsCache = list;
+          window.myEventsCache = list;
+          if (typeof renderMyEventsTable === 'function' && document.getElementById('myEventsBody')) {
+            renderMyEventsTable();
+          }
+        }
+      });
       const list = Array.isArray(res) ? res : (res?.data || res?.content || []);
       myEventsCache = list;
       window.myEventsCache = list;
