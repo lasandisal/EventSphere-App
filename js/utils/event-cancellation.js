@@ -210,7 +210,7 @@
       executeBtn.innerHTML = `<i class="bi bi-arrow-repeat spin me-1"></i> Cancelling & Voiding Passes...`;
 
       try {
-        await EventsAPI.cancelEvent(event.id);
+        await EventsAPI.cancelEvent(event.id, fullReason);
 
         // Invalidate all related client caches
         if (global.EsCache) {

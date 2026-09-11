@@ -89,8 +89,12 @@
       invalidateEventCaches(id);
       return res;
     },
-    async cancelEvent(id) {
-      const res = await esFetch(`/organizer/events/${id}/cancel`, { method: 'PATCH' });
+    async cancelEvent(id, reason = null) {
+      const opts = { method: 'PATCH' };
+      if (reason && typeof reason === 'string' && reason.trim()) {
+        opts.body = { reason: reason.trim() };
+      }
+      const res = await esFetch(`/organizer/events/${id}/cancel`, opts);
       invalidateEventCaches(id);
       return res;
     },
