@@ -380,6 +380,9 @@
         }
         // Auto-retry once for GET requests if server is cold-booting (Render 502 / preflight network blip)
         if (isGet && retries > 0) {
+          if (flightKey) {
+            _inFlightRequests.delete(flightKey);
+          }
           console.warn(`[EventSphere API] Server may be warming up from cold standby. Retrying ${cleanPath} in 2s...`);
           await new Promise(r => setTimeout(r, 2000));
           return esFetch(cleanPath, { method, body, params, isForm, retries: retries - 1 });
