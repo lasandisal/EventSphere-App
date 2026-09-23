@@ -478,11 +478,40 @@ function checkBookingConfirmed() {
       if (b && b.status === 'CONFIRMED') {
         clearInterval(pollInterval);
         onBookingSuccess();
+      } else if (b && (b.status === 'CANCELLED' || b.status === 'EXPIRED')) {
+        clearInterval(pollInterval);
+        onBookingFailure(b.status);
       }
     } catch (err) {
       console.warn('Polling booking status error:', err);
     }
   }, 2500);
+}
+
+function onBookingFailure(status) {
+  if (pollInterval) clearInterval(pollInterval);
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
+  document.getElementById('holdTimerBadge')?.classList.add('d-none');
+  document.getElementById('paymentStatusBox')?.classList.add('d-none');
+  
+  if (status === 'EXPIRED') {
+    handleHoldExpired();
+    return;
+  }
+  
+  const errBox = document.getElementById('paymentErrorBox');
+  const errMsg = document.getElementById('paymentErrorMessage');
+  if (errMsg) {
+    errMsg.textContent = 'Payment was declined or cancelled (e.g., insufficient funds). Your held tickets were released back to the event.';
+  }
+  if (errBox) errBox.classList.remove('d-none');
+  
+  const btnPay = document.getElementById('btnPayWithPayHere');
+  if (btnPay) {
+    btnPay.disabled = false;
+    btnPay.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Retry Payment';
+  }
+  esToast('Payment was declined or cancelled.', 'error');
 }
 
 function onBookingSuccess() {
@@ -531,6 +560,8 @@ async function syncBookingOnFocus() {
       const b = res?.data || res;
       if (b && b.status === 'CONFIRMED') {
         onBookingSuccess();
+      } else if (b && (b.status === 'CANCELLED' || b.status === 'EXPIRED')) {
+        onBookingFailure(b.status);
       }
     } catch (e) {}
   }
