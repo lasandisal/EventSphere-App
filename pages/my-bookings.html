@@ -95,15 +95,17 @@ if (paidOrderId) {
   const numericId = paidOrderId.replace(/^ES-/i, '');
   (async () => {
     try {
-      const res = await BookingsAPI.getById(numericId);
+      const res = await BookingsAPI.getById(numericId, { skipCache: true });
       const b = res?.data || res;
       if (b && b.status === 'CONFIRMED') {
         esToast('Payment received! Your confirmed booking is listed below.', 'success');
         try {
           new BroadcastChannel('eventsphere_checkout').postMessage({ type: 'PAYMENT_COMPLETE', orderId: paidOrderId });
         } catch (e) {}
+        currentTab = 'upcoming';
+        loadBookings('upcoming');
       } else if (b && (b.status === 'CANCELLED' || b.status === 'EXPIRED')) {
-        esToast('Payment was not completed or was declined. No tickets were charged.', 'error');
+        esToast('Payment was not completed or was cancelled. No tickets were charged.', 'error');
         try {
           new BroadcastChannel('eventsphere_checkout').postMessage({ type: 'PAYMENT_FAILED', orderId: paidOrderId });
         } catch (e) {}
@@ -114,7 +116,21 @@ if (paidOrderId) {
         currentTab = 'cancelled';
         loadBookings('cancelled');
       } else if (b && b.status === 'PENDING') {
-        esToast('Payment was not finalized. Your reservation is still pending.', 'warning');
+        // Returned from checkout without completion - release reservation hold
+        try {
+          await BookingsAPI.cancel(numericId);
+          esToast('Payment was cancelled on checkout. Your held tickets have been released.', 'info');
+          try {
+            new BroadcastChannel('eventsphere_checkout').postMessage({ type: 'PAYMENT_FAILED', orderId: paidOrderId });
+          } catch (e) {}
+        } catch (e) {
+          esToast('Payment was not finalized. Your reservation is pending.', 'warning');
+        }
+        document.querySelectorAll('#bookingTabs button').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-tab') === 'cancelled');
+        });
+        currentTab = 'cancelled';
+        loadBookings('cancelled');
       }
     } catch (e) {
       console.warn('Could not verify booking status for order_id:', e);

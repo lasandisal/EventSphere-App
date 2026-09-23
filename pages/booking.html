@@ -122,11 +122,11 @@
             <div class="d-flex align-items-start gap-2 text-danger mb-2">
               <i class="bi bi-exclamation-octagon-fill fs-5"></i>
               <div>
-                <strong class="d-block text-white">Payment Gateway Issue</strong>
+                <strong class="d-block text-white" id="paymentErrorTitle">Payment Gateway Issue</strong>
                 <span class="small text-white-50" id="paymentErrorMessage">Could not initiate checkout.</span>
               </div>
             </div>
-            <div class="d-flex gap-2 mt-3">
+            <div class="d-flex gap-2 mt-3" id="paymentErrorActions">
               <button class="btn btn-sm btn-outline-light flex-fill" onclick="startPayment()">
                 <i class="bi bi-arrow-clockwise me-1"></i> Retry PayHere
               </button>
@@ -417,12 +417,12 @@ async function cancelCurrentBooking() {
     if (holdTimerInterval) clearInterval(holdTimerInterval);
     if (pollInterval) clearInterval(pollInterval);
 
-    // Re-check booking status on server: if already confirmed, do not attempt to cancel hold
+    // Verify if already confirmed
     try {
-      const res = await BookingsAPI.getById(currentBookingId);
+      const res = await BookingsAPI.getById(currentBookingId, { skipCache: true });
       const b = res?.data || res;
       if (b && b.status === 'CONFIRMED') {
-        esToast('This booking is already confirmed and paid! Showing your tickets...', 'info');
+        esToast('This booking is already confirmed and paid for. Redirecting to your tickets...', 'info');
         onBookingSuccess();
         return;
       }
@@ -432,24 +432,17 @@ async function cancelCurrentBooking() {
     sessionStorage.removeItem('es_pending_booking');
     esToast('Reservation cancelled and tickets released', 'success');
 
-    setTimeout(() => {
-      if (eventId) {
-        window.location.href = `event-details.html?id=${eventId}`;
-      } else {
-        window.location.href = 'events.html';
-      }
-    }, 1000);
+    onBookingFailure('CANCELLED');
   } catch (err) {
     console.error('Cancel booking failed:', err);
     if (err.message && err.message.includes('refund')) {
-      esToast('This booking is already confirmed and paid for. Redirecting to your ticket...', 'info');
-      onBookingSuccess();
+      esToast('This booking is already confirmed. Confirmed tickets require an organizer refund.', 'warning');
     } else {
       esToast(err.message || 'Failed to cancel booking', 'error');
-      if (btnCancel) {
-        btnCancel.disabled = false;
-        btnCancel.innerHTML = origText;
-      }
+    }
+    if (btnCancel) {
+      btnCancel.disabled = false;
+      btnCancel.innerHTML = origText;
     }
   }
 }
@@ -521,25 +514,41 @@ function onBookingFailure(status) {
   if (holdTimerInterval) clearInterval(holdTimerInterval);
   document.getElementById('holdTimerBadge')?.classList.add('d-none');
   document.getElementById('paymentStatusBox')?.classList.add('d-none');
+  document.getElementById('paymentActions')?.classList.add('d-none');
+  sessionStorage.removeItem('es_pending_booking');
   
   if (status === 'EXPIRED') {
-    handleHoldExpired();
+    document.getElementById('paymentErrorBox')?.classList.add('d-none');
+    document.getElementById('holdExpiredBox')?.classList.remove('d-none');
     return;
   }
   
   const errBox = document.getElementById('paymentErrorBox');
+  const errTitle = document.getElementById('paymentErrorTitle');
   const errMsg = document.getElementById('paymentErrorMessage');
+  const errActions = document.getElementById('paymentErrorActions');
+
+  if (errTitle) {
+    errTitle.textContent = (status === 'CANCELLED') ? 'Reservation Cancelled & Tickets Released' : 'Payment Issue';
+  }
   if (errMsg) {
-    errMsg.textContent = 'Payment was declined or cancelled (e.g., insufficient funds). Your held tickets were released back to the event.';
+    errMsg.textContent = (status === 'CANCELLED')
+      ? 'This reservation was cancelled and the held tickets were released back to the event pool.'
+      : 'Payment was declined or cancelled. Your held tickets have been released back to the event pool.';
+  }
+  if (errActions) {
+    const evId = eventId || '';
+    errActions.innerHTML = `
+      <a href="${evId ? `event-details.html?id=${evId}` : 'events.html'}" class="btn btn-sm btn-primary flex-fill">
+        <i class="bi bi-arrow-repeat me-1"></i> Book Tickets Again
+      </a>
+      <a href="my-bookings.html" class="btn btn-sm btn-outline-light flex-fill">
+        My Bookings
+      </a>
+    `;
   }
   if (errBox) errBox.classList.remove('d-none');
-  
-  const btnPay = document.getElementById('btnPayWithPayHere');
-  if (btnPay) {
-    btnPay.disabled = false;
-    btnPay.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Retry Payment';
-  }
-  esToast('Payment was declined or cancelled.', 'error');
+  esToast(status === 'CANCELLED' ? 'Reservation cancelled and tickets released.' : 'Payment was declined or cancelled.', 'info');
 }
 
 function onBookingSuccess() {
@@ -735,6 +744,7 @@ async function initBookingPage() {
         }
         // If cancelled or expired, display failure state
         if (b.status === 'CANCELLED' || b.status === 'EXPIRED') {
+          goStep(4);
           onBookingFailure(b.status);
           return;
         }
