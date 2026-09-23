@@ -88,18 +88,38 @@ if (!EsAuthStore.isLoggedIn()) {
   window.location.href = 'login.html?redirect=' + encodeURIComponent('my-bookings.html' + window.location.search);
 }
 
-// Broadcast payment completion to any open checkout/booking tab
+// Verify actual booking status when redirected back with order_id
 const urlParams = new URLSearchParams(window.location.search);
 const paidOrderId = urlParams.get('order_id');
 if (paidOrderId) {
-  try {
-    const checkoutChannel = new BroadcastChannel('eventsphere_checkout');
-    checkoutChannel.postMessage({ type: 'PAYMENT_COMPLETE', orderId: paidOrderId });
-  } catch (e) {}
-  try {
-    localStorage.setItem('es_payment_success', JSON.stringify({ orderId: paidOrderId, time: Date.now() }));
-  } catch (e) {}
-  esToast('Payment received! Your confirmed booking is listed below.', 'success');
+  const numericId = paidOrderId.replace(/^ES-/i, '');
+  (async () => {
+    try {
+      const res = await BookingsAPI.getById(numericId);
+      const b = res?.data || res;
+      if (b && b.status === 'CONFIRMED') {
+        esToast('Payment received! Your confirmed booking is listed below.', 'success');
+        try {
+          new BroadcastChannel('eventsphere_checkout').postMessage({ type: 'PAYMENT_COMPLETE', orderId: paidOrderId });
+        } catch (e) {}
+      } else if (b && (b.status === 'CANCELLED' || b.status === 'EXPIRED')) {
+        esToast('Payment was not completed or was declined. No tickets were charged.', 'error');
+        try {
+          new BroadcastChannel('eventsphere_checkout').postMessage({ type: 'PAYMENT_FAILED', orderId: paidOrderId });
+        } catch (e) {}
+        // Automatically switch to Cancelled tab
+        document.querySelectorAll('#bookingTabs button').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-tab') === 'cancelled');
+        });
+        currentTab = 'cancelled';
+        loadBookings('cancelled');
+      } else if (b && b.status === 'PENDING') {
+        esToast('Payment was not finalized. Your reservation is still pending.', 'warning');
+      }
+    } catch (e) {
+      console.warn('Could not verify booking status for order_id:', e);
+    }
+  })();
 }
 
 const statusMap = {

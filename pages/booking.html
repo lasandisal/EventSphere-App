@@ -541,14 +541,16 @@ try {
   const checkoutChannel = new BroadcastChannel('eventsphere_checkout');
   checkoutChannel.onmessage = (event) => {
     if (event.data?.type === 'PAYMENT_COMPLETE') {
-      onBookingSuccess();
+      syncBookingOnFocus();
+    } else if (event.data?.type === 'PAYMENT_FAILED') {
+      onBookingFailure('CANCELLED');
     }
   };
 } catch (e) {}
 
 window.addEventListener('storage', (e) => {
-  if (e.key === 'es_payment_success') {
-    onBookingSuccess();
+  if (e.key === 'es_payment_success' || e.key === 'es_payment_failed') {
+    syncBookingOnFocus();
   }
 });
 
