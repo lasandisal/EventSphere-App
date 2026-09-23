@@ -391,7 +391,7 @@ function askCancel(id) {
 document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
   try {
     await BookingsAPI.cancel(toCancel);
-    esToast('Booking cancelled', 'success');
+    esToast('Reservation cancelled and tickets released', 'success');
     // Optimistically update local booking status
     if (allUserBookings) {
       const target = allUserBookings.find(b => b.id === toCancel);
@@ -399,7 +399,12 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async () =
     }
     renderBookingsTab(currentTab);
   } catch (e) {
-    esToast(e.message || 'Could not cancel this booking', 'error');
+    if (e.message && e.message.includes('refund')) {
+      esToast('This booking is already confirmed and paid. Confirmed bookings require an organizer refund.', 'warning');
+      loadBookings(currentTab);
+    } else {
+      esToast(e.message || 'Could not cancel this booking', 'error');
+    }
   }
   bootstrap.Modal.getInstance(document.getElementById('cancelModal'))?.hide();
 });

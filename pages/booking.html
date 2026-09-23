@@ -370,18 +370,30 @@ function startHoldCountdown(durationSeconds = 600) {
 
 async function handleHoldExpired() {
   if (pollInterval) clearInterval(pollInterval);
-  document.getElementById('paymentActions')?.classList.add('d-none');
-  document.getElementById('paymentStatusBox')?.classList.add('d-none');
-  document.getElementById('paymentErrorBox')?.classList.add('d-none');
-  document.getElementById('holdExpiredBox')?.classList.remove('d-none');
   
   if (currentBookingId) {
     try {
+      // Re-verify booking status on server before attempting hold cancellation
+      const res = await BookingsAPI.getById(currentBookingId);
+      const b = res?.data || res;
+      if (b && b.status === 'CONFIRMED') {
+        onBookingSuccess();
+        return;
+      }
+      if (b && (b.status === 'CANCELLED' || b.status === 'EXPIRED')) {
+        onBookingFailure(b.status);
+        return;
+      }
       await BookingsAPI.cancel(currentBookingId);
     } catch (e) {
       console.warn('Auto-cancel on hold expiry error:', e);
     }
   }
+
+  document.getElementById('paymentActions')?.classList.add('d-none');
+  document.getElementById('paymentStatusBox')?.classList.add('d-none');
+  document.getElementById('paymentErrorBox')?.classList.add('d-none');
+  document.getElementById('holdExpiredBox')?.classList.remove('d-none');
   sessionStorage.removeItem('es_pending_booking');
 }
 
@@ -405,6 +417,17 @@ async function cancelCurrentBooking() {
     if (holdTimerInterval) clearInterval(holdTimerInterval);
     if (pollInterval) clearInterval(pollInterval);
 
+    // Re-check booking status on server: if already confirmed, do not attempt to cancel hold
+    try {
+      const res = await BookingsAPI.getById(currentBookingId);
+      const b = res?.data || res;
+      if (b && b.status === 'CONFIRMED') {
+        esToast('This booking is already confirmed and paid! Showing your tickets...', 'info');
+        onBookingSuccess();
+        return;
+      }
+    } catch (e) {}
+
     await BookingsAPI.cancel(currentBookingId);
     sessionStorage.removeItem('es_pending_booking');
     esToast('Reservation cancelled and tickets released', 'success');
@@ -418,10 +441,15 @@ async function cancelCurrentBooking() {
     }, 1000);
   } catch (err) {
     console.error('Cancel booking failed:', err);
-    esToast(err.message || 'Failed to cancel booking', 'error');
-    if (btnCancel) {
-      btnCancel.disabled = false;
-      btnCancel.innerHTML = origText;
+    if (err.message && err.message.includes('refund')) {
+      esToast('This booking is already confirmed and paid for. Redirecting to your ticket...', 'info');
+      onBookingSuccess();
+    } else {
+      esToast(err.message || 'Failed to cancel booking', 'error');
+      if (btnCancel) {
+        btnCancel.disabled = false;
+        btnCancel.innerHTML = origText;
+      }
     }
   }
 }
@@ -699,6 +727,18 @@ async function initBookingPage() {
       if (b) {
         currentBookingId = b.id;
         eventTitle = b.eventTitle || eventTitle;
+
+        // If the booking is already confirmed, immediately jump to confirmation / ticket screen
+        if (b.status === 'CONFIRMED') {
+          onBookingSuccess();
+          return;
+        }
+        // If cancelled or expired, display failure state
+        if (b.status === 'CANCELLED' || b.status === 'EXPIRED') {
+          onBookingFailure(b.status);
+          return;
+        }
+
         const total = b.totalAmount || 0;
         document.getElementById('paySummaryEvent').textContent = eventTitle;
         document.getElementById('paySummaryCount').textContent = (b.items || []).reduce((s, i) => s + i.quantity, 0) + ' tickets';
