@@ -15,7 +15,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   if (!EsAuthStore.hasRole('ORGANIZER') && !EsAuthStore.hasRole('ADMIN')) {
-    window.location.href = 'organizer-apply.html';
+    // Re-verify with backend profile in case admin recently approved the user
+    OrganizerAPI.getMyProfile().then(raw => {
+      const p = raw?.data || raw;
+      if (p && (p.status === 'APPROVED' || p.status === 'VERIFIED')) {
+        const u = EsAuthStore.getUser() || {};
+        u.roles = u.roles || [];
+        if (!u.roles.some(r => String(r).toUpperCase().includes('ORGANIZER'))) {
+          u.roles.push('ORGANIZER');
+          EsAuthStore.setUser(u);
+        }
+        if (typeof loadOrganizerOverview === 'function') loadOrganizerOverview();
+        if (typeof loadProfile === 'function') loadProfile();
+      } else {
+        window.location.href = 'organizer-apply.html';
+      }
+    }).catch(() => {
+      window.location.href = 'organizer-apply.html';
+    });
     return;
   }
 

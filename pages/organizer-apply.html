@@ -233,7 +233,15 @@ async function checkExistingApplication() {
 
       if (status === 'APPROVED' || status === 'VERIFIED') {
         badgeSlot.innerHTML = '<span class="status-badge status-confirmed">Approved</span>';
-        setTimeout(() => { window.location.href = 'organizer-dashboard.html'; }, 2000);
+        const currentUser = EsAuthStore.getUser();
+        if (currentUser) {
+          currentUser.roles = currentUser.roles || [];
+          if (!currentUser.roles.some(r => String(r).toUpperCase().includes('ORGANIZER'))) {
+            currentUser.roles.push('ORGANIZER');
+            EsAuthStore.setUser(currentUser);
+          }
+        }
+        setTimeout(() => { window.location.href = 'organizer-dashboard.html'; }, 1200);
       } else if (status === 'REJECTED') {
         badgeSlot.innerHTML = '<span class="status-badge status-cancelled">Rejected</span>';
       } else {
