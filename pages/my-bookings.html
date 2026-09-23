@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -86,6 +86,20 @@ if (brandSp) brandSp.innerHTML = EsIcons.sparkle;
 
 if (!EsAuthStore.isLoggedIn()) {
   window.location.href = 'login.html?redirect=' + encodeURIComponent('my-bookings.html' + window.location.search);
+}
+
+// Broadcast payment completion to any open checkout/booking tab
+const urlParams = new URLSearchParams(window.location.search);
+const paidOrderId = urlParams.get('order_id');
+if (paidOrderId) {
+  try {
+    const checkoutChannel = new BroadcastChannel('eventsphere_checkout');
+    checkoutChannel.postMessage({ type: 'PAYMENT_COMPLETE', orderId: paidOrderId });
+  } catch (e) {}
+  try {
+    localStorage.setItem('es_payment_success', JSON.stringify({ orderId: paidOrderId, time: Date.now() }));
+  } catch (e) {}
+  esToast('Payment received! Your confirmed booking is listed below.', 'success');
 }
 
 const statusMap = {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -330,8 +330,13 @@ function goStep(step) {
     s.classList.toggle('done', n < step);
   });
 
+  const holdBadge = document.getElementById('holdTimerBadge');
   if (step === 4) {
+    if (holdBadge) holdBadge.classList.remove('d-none');
     startHoldCountdown(600);
+  } else {
+    if (holdBadge) holdBadge.classList.add('d-none');
+    if (holdTimerInterval) clearInterval(holdTimerInterval);
   }
 
   window.scrollTo({ top: 200, behavior: 'smooth' });
@@ -483,6 +488,13 @@ function checkBookingConfirmed() {
 function onBookingSuccess() {
   if (pollInterval) clearInterval(pollInterval);
   if (holdTimerInterval) clearInterval(holdTimerInterval);
+  const holdBadge = document.getElementById('holdTimerBadge');
+  if (holdBadge) holdBadge.classList.add('d-none');
+  const payActions = document.getElementById('paymentActions');
+  if (payActions) payActions.classList.add('d-none');
+  const statusBox = document.getElementById('paymentStatusBox');
+  if (statusBox) statusBox.classList.add('d-none');
+
   sessionStorage.removeItem('es_pending_booking');
   if (window.EsCache) {
     const user = EsAuthStore.getUser();
@@ -494,6 +506,41 @@ function onBookingSuccess() {
   esToast('Payment Confirmed! Passes dispatched to emails.', 'success');
   goStep(5);
 }
+
+// 1. Cross-tab synchronization via BroadcastChannel & localStorage
+try {
+  const checkoutChannel = new BroadcastChannel('eventsphere_checkout');
+  checkoutChannel.onmessage = (event) => {
+    if (event.data?.type === 'PAYMENT_COMPLETE') {
+      onBookingSuccess();
+    }
+  };
+} catch (e) {}
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'es_payment_success') {
+    onBookingSuccess();
+  }
+});
+
+// 2. Immediate re-check when the user switches back / focuses this tab
+async function syncBookingOnFocus() {
+  if (currentBookingId) {
+    try {
+      const res = await BookingsAPI.getById(currentBookingId);
+      const b = res?.data || res;
+      if (b && b.status === 'CONFIRMED') {
+        onBookingSuccess();
+      }
+    } catch (e) {}
+  }
+}
+window.addEventListener('focus', syncBookingOnFocus);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    syncBookingOnFocus();
+  }
+});
 
 async function simulateSandboxPayment() {
   if (!currentBookingId) {
